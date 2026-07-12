@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom global styles for sophisticated dark theme scrollbars and focus outlines */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5a368;
+}
+
+/* --- LIGHT THEME ACCESSIBILITY OVERRIDES --- */
+.theme-light {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+}
+
+/* Background overrides */
+.theme-light.bg-\[\#0a0a0a\],
+.theme-light .bg-\[\#0a0a0a\],
+.theme-light .bg-black {
+  background-color: #f8fafc !important;
+}
+.theme-light .bg-\[\#0d0d0d\],
+.theme-light .bg-slate-950,
+.theme-light .bg-zinc-950,
+.theme-light .bg-slate-900 {
+  background-color: #ffffff !important;
+}
+.theme-light .bg-\[\#111111\],
+.theme-light .bg-\[\#151515\],
+.theme-light .bg-\[\#1a1a1a\],
+.theme-light .bg-zinc-900,
+.theme-light .bg-slate-800 {
+  background-color: #f1f5f9 !important; /* slate-100 */
+}
+.theme-light .bg-\[\#070707\],
+.theme-light .bg-black\/30,
+.theme-light .bg-black\/85,
+.theme-light .bg-[#000000]/30 {
+  background-color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* Action button background overrides */
+.theme-light .bg-\[\#c5a368\] {
+  background-color: #b45309 !important; /* richer amber/gold for light accessibility */
+  color: #ffffff !important;
+}
+.theme-light .bg-\[\#c5a368\]:hover {
+  background-color: #92400e !important;
+}
+.theme-light .bg-\[\#c5a368\]\/10 {
+  background-color: rgba(180, 83, 9, 0.1) !important;
+}
+
+/* Border overrides */
+.theme-light header,
+.theme-light footer,
+.theme-light div,
+.theme-light button,
+.theme-light label {
+  &.border-\[\#1a1a1a\], .border-\[\#1a1a1a\] {
+    border-color: #e2e8f0 !important; /* slate-200 */
+  }
+  &.border-\[\#2a2a2a\], .border-\[\#2a2a2a\],
+  &.border-slate-800, .border-slate-800,
+  &.border-zinc-800, .border-zinc-800,
+  &.border-gray-800, .border-gray-800 {
+    border-color: #cbd5e1 !important; /* slate-300 */
+  }
+  &.border-gray-700, .border-gray-700,
+  &.border-zinc-700, .border-zinc-700 {
+    border-color: #94a3b8 !important; /* slate-400 */
+  }
+}
+
+/* Text color overrides */
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light h5,
+.theme-light h6,
+.theme-light span,
+.theme-light button,
+.theme-light p,
+.theme-light div {
+  &.text-white, .text-white,
+  &.text-zinc-50, .text-zinc-50,
+  &.text-slate-50, .text-slate-50 {
+    color: #0f172a !important; /* slate-900 */
+  }
+  &.text-\[\#e0e0e0\], .text-\[\#e0e0e0\],
+  &.text-zinc-200, .text-zinc-200,
+  &.text-slate-200, .text-slate-200 {
+    color: #1e293b !important; /* slate-800 */
+  }
+  &.text-gray-300, .text-gray-300,
+  &.text-zinc-300, .text-zinc-300,
+  &.text-slate-300, .text-slate-300 {
+    color: #334155 !important; /* slate-700 */
+  }
+  &.text-gray-400, .text-gray-400,
+  &.text-zinc-400, .text-zinc-400,
+  &.text-slate-400, .text-slate-400 {
+    color: #475569 !important; /* slate-600 */
+  }
+  &.text-gray-500, .text-gray-500,
+  &.text-zinc-500, .text-zinc-500,
+  &.text-slate-500, .text-slate-500 {
+    color: #64748b !important; /* slate-500 */
+  }
+}
+
+/* Gold text/accent overrides for high contrast */
+.theme-light .text-\[\#c5a368\],
+.theme-light .text-\[\#8a6d3b\] {
+  color: #b45309 !important; /* rich high contrast amber */
+}
+.theme-light .border-\[\#c5a368\],
+.theme-light .border-\[\#c5a368\]\/20,
+.theme-light .border-\[\#c5a368\]\/30,
+.theme-light .border-\[\#c5a368\]\/40 {
+  border-color: #b45309 !important;
+}
+
+/* Text input and placeholder overrides */
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: #94a3b8 !important; /* slate-400 */
+}
+.theme-light input,
+.theme-light textarea,
+.theme-light select {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+
+/* Custom scrollbars for light theme */
+.theme-light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #b45309;
+}
+

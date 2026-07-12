@@ -1,0 +1,6 @@
+{
+  "name": "All-in-One Media & Format Converter",
+  "description": "A comprehensive utility suite featuring a video splitter, image format converter, PDF compiler, audio trimmer, and social media downloader helper.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

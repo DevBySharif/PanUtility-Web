@@ -26,7 +26,7 @@ function getGeminiClient(): GoogleGenAI {
   return aiClient;
 }
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = express();
 
   // Increase body size limit for base64 audio uploads
@@ -289,12 +289,17 @@ async function bootstrap() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-  });
+  if (process.env.VERCEL !== "1") {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://0.0.0.0:${PORT}`);
+    });
+  }
+  return app;
 }
 
-bootstrap().catch((err) => {
-  console.error("Bootstrapping server failed:", err);
-  process.exit(1);
-});
+if (process.env.VERCEL !== "1") {
+  bootstrap().catch((err) => {
+    console.error("Bootstrapping server failed:", err);
+    process.exit(1);
+  });
+}

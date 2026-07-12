@@ -174,3 +174,21 @@
 .theme-light ::-webkit-scrollbar-thumb:hover {
   background: #059669;
 }
+
+/* --- PREMIUM PHOSPHOR DUOTONE ICON CUSTOMIZATION --- */
+svg .ph-duotone {
+  opacity: 0.38 !important;
+  fill: currentColor !important;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), fill 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover svg .ph-duotone,
+[class*="group-hover"]:hover svg .ph-duotone {
+  opacity: 0.75 !important;
+}
+
+/* Enhancing glow aura on cards */
+.group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.25) !important;
+}

@@ -403,6 +403,62 @@ function AppContent() {
     return iconMap[name] || <Grid className="w-5 h-5" />;
   };
 
+  const getPremiumIcon = (name: string, category: string) => {
+    const icon = getIcon(name);
+    
+    let glow = "rgba(16,185,129,0.25)";
+    let from = "from-emerald-500/10";
+    let to = "to-teal-500/2";
+    let border = "border-emerald-500/15 group-hover:border-emerald-500/40";
+    let text = "text-emerald-400";
+    
+    if (category === 'Video') {
+      glow = "rgba(244,63,94,0.25)";
+      from = "from-rose-500/10";
+      to = "to-orange-500/2";
+      border = "border-rose-500/15 group-hover:border-rose-500/40";
+      text = "text-rose-400";
+    } else if (category === 'Image') {
+      glow = "rgba(6,182,212,0.25)";
+      from = "from-cyan-500/10";
+      to = "to-blue-500/2";
+      border = "border-cyan-500/15 group-hover:border-cyan-500/40";
+      text = "text-cyan-400";
+    } else if (category === 'Audio') {
+      glow = "rgba(16,185,129,0.25)";
+      from = "from-emerald-500/10";
+      to = "to-teal-500/2";
+      border = "border-emerald-500/15 group-hover:border-emerald-500/40";
+      text = "text-emerald-400";
+    } else if (category === 'Document') {
+      glow = "rgba(59,130,246,0.25)";
+      from = "from-blue-500/10";
+      to = "to-indigo-500/2";
+      border = "border-blue-500/15 group-hover:border-blue-500/40";
+      text = "text-blue-400";
+    } else {
+      glow = "rgba(245,158,11,0.25)";
+      from = "from-amber-500/10";
+      to = "to-yellow-500/2";
+      border = "border-amber-500/15 group-hover:border-amber-500/40";
+      text = "text-amber-400";
+    }
+    
+    return (
+      <div 
+        className={`relative p-3 rounded-xl bg-gradient-to-br ${from} ${to} border ${border} ${text} transition-all duration-300 group-hover:scale-105 shadow-inner flex items-center justify-center`}
+        style={{ boxShadow: `0 0 20px -5px ${glow}` }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center opacity-30 blur-[2px] group-hover:opacity-60 transition-opacity">
+          {icon}
+        </div>
+        <div className="relative z-10 flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+    );
+  };
+
   const categories = [
     'All', 'Video', 'Image', 'Document', 'Audio', 'Text & Writing', 
     'Developer Tools', 'Math & Finance', 'Health & Lifestyle', 'Fun & Games'
@@ -873,8 +929,8 @@ function AppContent() {
                           </button>
 
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded bg-zinc-900 border border-zinc-800 text-emerald-400 shrink-0">
-                              {getIcon(tool.icon)}
+                            <div className="shrink-0 scale-90">
+                              {getPremiumIcon(tool.icon, tool.category)}
                             </div>
                             <div className="min-w-0">
                               <h3 className="font-sans text-xs font-semibold text-white truncate group-hover:text-emerald-400 transition-colors leading-tight">
@@ -1005,9 +1061,9 @@ function AppContent() {
                       )}
 
                       <div className="flex flex-col gap-4">
-                        {/* Icon Container */}
-                        <div className="p-3 rounded-lg w-fit bg-zinc-900 border border-zinc-800 text-emerald-400 group-hover:text-white group-hover:bg-emerald-600 transition-colors">
-                          {getIcon(tool.icon)}
+                        {/* Premium Glowing Glassmorphic Icon Container */}
+                        <div className="w-fit">
+                          {getPremiumIcon(tool.icon, tool.category)}
                         </div>
 
                         {/* Text details */}

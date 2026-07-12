@@ -230,12 +230,12 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-2.5">
-            <Download className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
+            <Download className="w-8 h-8 text-[#10b981]" />
             Social Media Downloader
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -250,12 +250,12 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Link className="w-5 h-5 text-[#c5a368]" />
-              <h2 className="font-serif italic text-white text-base">Enter Social Media Link</h2>
+              <Link className="w-5 h-5 text-[#10b981]" />
+              <h2 className="font-sans text-white text-base">Enter Social Media Link</h2>
             </div>
 
             <div className="flex flex-col md:flex-row gap-3">
-              <div className="relative flex-1 rounded border border-[#2a2a2a] focus-within:border-[#c5a368] transition-colors overflow-hidden flex items-center px-3.5 bg-[#151515]">
+              <div className="relative flex-1 rounded border border-[#2a2a2a] focus-within:border-[#10b981] transition-colors overflow-hidden flex items-center px-3.5 bg-[#151515]">
                 <Search className="w-4.5 h-4.5 text-gray-500 shrink-0 mr-2" />
                 <input
                   type="url"
@@ -269,7 +269,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
               <button
                 onClick={handleStartExtraction}
                 disabled={!url.trim() || status === 'parsing' || status === 'downloading'}
-                className="py-3.5 px-6 bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all hover:shadow-md cursor-pointer shrink-0 disabled:bg-[#151515] disabled:text-gray-600 disabled:border-[#2a2a2a] disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+                className="py-3.5 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all hover:shadow-md cursor-pointer shrink-0 disabled:bg-[#151515] disabled:text-gray-600 disabled:border-[#2a2a2a] disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
               >
                 Analyze URL
               </button>
@@ -286,18 +286,18 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   onClick={() => setResolutionPreference('high')}
                   className={`flex-1 py-2.5 px-3 border rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     resolutionPreference === 'high'
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
-                  <Video className="w-3.5 h-3.5 text-[#c5a368]" /> Exact High Resolution (Source Stream)
+                  <Video className="w-3.5 h-3.5 text-[#10b981]" /> Exact High Resolution (Source Stream)
                 </button>
                 <button
                   type="button"
                   onClick={() => setResolutionPreference('low')}
                   className={`flex-1 py-2.5 px-3 border rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     resolutionPreference === 'low'
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
@@ -315,10 +315,10 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   exit={{ opacity: 0 }}
                   className="bg-[#070707] rounded p-4 border border-[#1a1a1a] flex items-center gap-3 shadow-inner"
                 >
-                  <RefreshCw className="w-5 h-5 text-[#c5a368] animate-spin shrink-0" />
+                  <RefreshCw className="w-5 h-5 text-[#10b981] animate-spin shrink-0" />
                   <div className="font-mono text-xs">
                     <span className="text-gray-500 block font-bold uppercase tracking-wider">EXTRACTING METADATA</span>
-                    <span className="text-[#c5a368] mt-1 block font-medium">{parsingStep}</span>
+                    <span className="text-[#10b981] mt-1 block font-medium">{parsingStep}</span>
                   </div>
                 </motion.div>
               )}
@@ -348,10 +348,10 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   {/* Details and Actions */}
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest bg-[#c5a368]/10 text-[#c5a368] px-2.5 py-1 rounded border border-[#c5a368]/20">
+                      <span className="text-[10px] font-bold uppercase tracking-widest bg-[#10b981]/10 text-[#10b981] px-2.5 py-1 rounded border border-[#10b981]/20">
                         {detectedPlatform} Stream Ready
                       </span>
-                      <h3 className="text-base font-serif italic text-white mt-3 leading-snug">{title}</h3>
+                      <h3 className="text-base font-sans text-white mt-3 leading-snug">{title}</h3>
                       <p className="text-[11px] text-gray-400 mt-1 truncate max-w-[320px]" title={url}>Source: {url}</p>
                     </div>
 
@@ -364,28 +364,28 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                             <>
                               <button
                                 onClick={() => handleDownload('1080p Ultra High Definition', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#c5a368]" /> MP4 Video (1080p HD)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (1080p HD)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~38.4 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('720p Standard High Definition', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#c5a368]" /> MP4 Video (720p HD)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (720p HD)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~18.2 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 320kbps Studio Master', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
                                 <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (320kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~8.5 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 192kbps High Quality', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
                                 <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (192kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~4.2 MB</span>
@@ -395,28 +395,28 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                             <>
                               <button
                                 onClick={() => handleDownload('480p SD Mobile Optimized', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#c5a368]" /> MP4 Video (480p SD)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (480p SD)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~7.4 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('360p Low Bandwidth', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#c5a368]" /> MP4 Video (360p SD)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (360p SD)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~3.1 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 128kbps Standard', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
                                 <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (128kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~3.1 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 96kbps Compact', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
+                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
                                 <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (96kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~1.8 MB</span>
@@ -430,12 +430,12 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                     {/* Download progress */}
                     {status === 'downloading' && (
                       <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col gap-2">
-                        <div className="flex justify-between items-center text-xs font-semibold text-[#c5a368]">
+                        <div className="flex justify-between items-center text-xs font-semibold text-[#10b981]">
                           <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Packaging {downloadFormat}...</span>
                           <span>{downloadProgress}%</span>
                         </div>
                         <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-[#c5a368] h-full transition-all duration-200" style={{ width: `${downloadProgress}%` }} />
+                          <div className="bg-[#10b981] h-full transition-all duration-200" style={{ width: `${downloadProgress}%` }} />
                         </div>
                       </div>
                     )}
@@ -468,8 +468,8 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           
           <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col gap-4">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Terminal className="w-5 h-5 text-[#c5a368]" />
-              <h2 className="font-serif italic text-white text-base">Direct Stream Sniffer</h2>
+              <Terminal className="w-5 h-5 text-[#10b981]" />
+              <h2 className="font-sans text-white text-base">Direct Stream Sniffer</h2>
             </div>
             
             <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
@@ -485,8 +485,8 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
               <li>Paste that direct link here! Our converter will extract, buffer, and download the real stream directly in full resolution.</li>
             </ol>
 
-            <div className="bg-[#c5a368]/5 rounded p-3 border border-[#c5a368]/25 flex items-center gap-2 text-[10px] text-[#c5a368] font-semibold leading-relaxed">
-              <Shield className="w-4 h-4 text-[#c5a368] shrink-0" />
+            <div className="bg-[#10b981]/5 rounded p-3 border border-[#10b981]/25 flex items-center gap-2 text-[10px] text-[#10b981] font-semibold leading-relaxed">
+              <Shield className="w-4 h-4 text-[#10b981] shrink-0" />
               This trick runs 100% in your browser sandbox, keeping your credentials completely safe.
             </div>
           </div>

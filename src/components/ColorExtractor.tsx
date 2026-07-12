@@ -148,12 +148,12 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-2.5">
-            <Palette className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
+            <Palette className="w-8 h-8 text-[#10b981]" />
             Color Palette Extractor
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -174,7 +174,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
         /* Dropzone */
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368]/40 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[250px]"
+          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[250px]"
         >
           <input
             type="file"
@@ -183,12 +183,12 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
             accept="image/*"
             className="hidden"
           />
-          <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#c5a368]">
+          <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
             <Palette className="w-8 h-8" />
           </div>
-          <h3 className="text-white font-serif italic text-base">Drag & drop your image</h3>
+          <h3 className="text-white font-sans text-base">Drag & drop your image</h3>
           <p className="text-gray-500 text-xs mt-1 mb-4">Upload any JPG, PNG, WEBP, or GIF image to extract its swatches</p>
-          <span className="text-xs font-bold text-[#0a0a0a] bg-[#c5a368] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-all">
+          <span className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-all">
             Select Image
           </span>
         </div>
@@ -207,8 +207,8 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
               />
               {isExtracting && (
                 <div className="absolute inset-0 bg-[#0a0a0a]/80 flex flex-col items-center justify-center gap-2">
-                  <RefreshCw className="w-5 h-5 text-[#c5a368] animate-spin" />
-                  <span className="text-xs font-bold text-[#c5a368] animate-pulse">Extracting spectrum...</span>
+                  <RefreshCw className="w-5 h-5 text-[#10b981] animate-spin" />
+                  <span className="text-xs font-bold text-[#10b981] animate-pulse">Extracting spectrum...</span>
                 </div>
               )}
             </div>
@@ -220,8 +220,8 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
           {/* Extracted Swatches */}
           <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Sparkles className="w-5 h-5 text-[#c5a368]" />
-              <h2 className="font-serif italic text-white text-lg">Extracted Palette Swatches</h2>
+              <Sparkles className="w-5 h-5 text-[#10b981]" />
+              <h2 className="font-sans text-white text-lg">Extracted Palette Swatches</h2>
             </div>
 
             {palette.length > 0 ? (
@@ -233,7 +233,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => copyToClipboard(swatch.hex)}
-                    className="border border-[#1a1a1a] hover:border-[#c5a368]/40 bg-[#151515] rounded p-3.5 flex items-center justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer group active:scale-98 transition-all"
+                    className="border border-[#1a1a1a] hover:border-[#10b981]/40 bg-[#151515] rounded p-3.5 flex items-center justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer group active:scale-98 transition-all"
                   >
                     <div className="flex items-center gap-3">
                       {/* Color Block */}
@@ -249,7 +249,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
                     </div>
 
                     {/* Copy Accent Button */}
-                    <div className="p-1.5 rounded bg-[#0d0d0d] group-hover:bg-[#c5a368]/10 text-gray-400 group-hover:text-[#c5a368] transition-colors">
+                    <div className="p-1.5 rounded bg-[#0d0d0d] group-hover:bg-[#10b981]/10 text-gray-400 group-hover:text-[#10b981] transition-colors">
                       {copiedColor === swatch.hex ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       ) : (

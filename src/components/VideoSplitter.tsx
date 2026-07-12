@@ -434,12 +434,12 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-3">
-            <Scissors className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-3">
+            <Scissors className="w-8 h-8 text-[#10b981]" />
             Video Splitting & Cutting
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -460,7 +460,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
         /* Video Upload Prompt */
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368]/50 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[300px]"
+          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/50 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[300px]"
         >
           <input
             type="file"
@@ -469,12 +469,12 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
             accept="video/*"
             className="hidden"
           />
-          <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#c5a368]">
+          <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
             <Film className="w-8 h-8" />
           </div>
-          <h3 className="text-white font-serif italic text-lg">Drag & drop your video</h3>
+          <h3 className="text-white font-sans text-lg">Drag & drop your video</h3>
           <p className="text-gray-500 text-xs mt-1 mb-4">Supports MP4, WebM, MOV, OGG containers up to 150MB</p>
-          <span className="text-xs font-bold text-[#0a0a0a] bg-[#c5a368] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-colors">
+          <span className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-colors">
             Select Video File
           </span>
         </div>
@@ -497,7 +497,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
               {!isPlaying && (
                 <button 
                   onClick={handlePlayPause}
-                  className="absolute p-4 rounded-full bg-[#c5a368]/90 hover:bg-[#c5a368] text-[#0a0a0a] shadow-md transform transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                  className="absolute p-4 rounded-full bg-[#10b981]/90 hover:bg-[#10b981] text-[#0a0a0a] shadow-md transform transition-all hover:scale-110 active:scale-95 cursor-pointer"
                 >
                   <Play className="w-6 h-6 fill-current text-[#0a0a0a]" />
                 </button>
@@ -510,7 +510,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 onClick={() => setSplitMode('trim')}
                 className={`flex-1 py-2 rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
                   splitMode === 'trim'
-                    ? 'bg-[#c5a368] text-[#0a0a0a]'
+                    ? 'bg-[#10b981] text-[#0a0a0a]'
                     : 'text-gray-400 hover:text-white bg-transparent'
                 }`}
               >
@@ -520,7 +520,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 onClick={() => setSplitMode('batch')}
                 className={`flex-1 py-2 rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
                   splitMode === 'batch'
-                    ? 'bg-[#c5a368] text-[#0a0a0a]'
+                    ? 'bg-[#10b981] text-[#0a0a0a]'
                     : 'text-gray-400 hover:text-white bg-transparent'
                 }`}
               >
@@ -531,13 +531,13 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
             {/* Range Slider controls */}
             <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
               <div className="flex items-center justify-between font-mono text-xs text-gray-400 font-bold uppercase tracking-wider">
-                <span className="text-[#c5a368] flex items-center gap-1.5">
+                <span className="text-[#10b981] flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" /> Start: {formatTime(startTime)}
                 </span>
                 <span className="text-gray-500">
                   Current: {formatTime(currentTime)}
                 </span>
-                <span className="text-[#8a6d3b] flex items-center gap-1.5">
+                <span className="text-[#059669] flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" /> End: {formatTime(endTime)}
                 </span>
               </div>
@@ -548,7 +548,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 <div className="h-2 bg-[#1a1a1a] rounded-full w-full relative">
                   {/* Selected Trim Range Indicator */}
                   <div 
-                    className="absolute h-full bg-[#c5a368] rounded-full"
+                    className="absolute h-full bg-[#10b981] rounded-full"
                     style={{
                       left: `${(startTime / duration) * 100}%`,
                       width: `${((endTime - startTime) / duration) * 100}%`
@@ -570,7 +570,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                     step="0.01"
                     value={startTime}
                     onChange={(e) => handleStartChange(parseFloat(e.target.value))}
-                    className="absolute w-full accent-[#c5a368] h-1.5 opacity-0 cursor-pointer pointer-events-auto"
+                    className="absolute w-full accent-[#10b981] h-1.5 opacity-0 cursor-pointer pointer-events-auto"
                     style={{ zIndex: 3 }}
                   />
                   <input
@@ -580,7 +580,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                     step="0.01"
                     value={endTime}
                     onChange={(e) => handleEndChange(parseFloat(e.target.value))}
-                    className="absolute w-full accent-[#c5a368] h-1.5 opacity-0 cursor-pointer pointer-events-auto"
+                    className="absolute w-full accent-[#10b981] h-1.5 opacity-0 cursor-pointer pointer-events-auto"
                     style={{ zIndex: 3 }}
                   />
                 </div>
@@ -591,7 +591,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handlePlayPause}
-                    className="p-2 bg-[#151515] hover:bg-[#1a1a1a] text-[#c5a368] rounded border border-[#2a2a2a] transition-colors cursor-pointer"
+                    className="p-2 bg-[#151515] hover:bg-[#1a1a1a] text-[#10b981] rounded border border-[#2a2a2a] transition-colors cursor-pointer"
                   >
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
@@ -603,7 +603,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 {splitMode === 'batch' && (
                   <button
                     onClick={addSegment}
-                    className="px-3.5 py-1.5 bg-[#c5a368]/10 hover:bg-[#c5a368]/20 border border-[#c5a368]/30 text-[#c5a368] rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 border border-[#10b981]/30 text-[#10b981] rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add Segment
                   </button>
@@ -623,7 +623,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                       setVolume(v);
                       if (videoRef.current) videoRef.current.volume = v;
                     }}
-                    className="w-16 accent-[#c5a368] h-1 bg-[#1a1a1a] rounded cursor-pointer"
+                    className="w-16 accent-[#10b981] h-1 bg-[#1a1a1a] rounded cursor-pointer"
                   />
                 </div>
               </div>
@@ -637,8 +637,8 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
               /* Single Trim Sidebar panel */
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-                  <Settings2 className="w-5 h-5 text-[#c5a368]" />
-                  <h2 className="font-serif italic text-lg text-white">Cutting Options</h2>
+                  <Settings2 className="w-5 h-5 text-[#10b981]" />
+                  <h2 className="font-sans text-lg text-white">Cutting Options</h2>
                 </div>
 
                 {/* Method choice */}
@@ -651,7 +651,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                       onClick={() => setExportMethod('record')}
                       className={`p-2 font-semibold border rounded transition-all cursor-pointer ${
                         exportMethod === 'record'
-                          ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                          ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                           : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                       }`}
                     >
@@ -661,7 +661,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                       onClick={() => setExportMethod('slice')}
                       className={`p-2 font-semibold border rounded transition-all cursor-pointer ${
                         exportMethod === 'slice'
-                          ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                          ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                           : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                       }`}
                     >
@@ -685,7 +685,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                   <div><span className="font-bold text-gray-500 uppercase tracking-widest text-[9px] block">Original Size</span> {Math.round(videoFile.size / 1024 / 1024 * 100) / 100} MB</div>
                   <div><span className="font-bold text-gray-500 uppercase tracking-widest text-[9px] block">Duration</span> {formatTime(duration)}</div>
                   <div className="border-t border-[#2a2a2a] my-1 pt-2">
-                    <span className="font-semibold text-[#c5a368]">Export Segment:</span> {formatTime(endTime - startTime)}
+                    <span className="font-semibold text-[#10b981]">Export Segment:</span> {formatTime(endTime - startTime)}
                   </div>
                 </div>
 
@@ -693,19 +693,19 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 {splitStatus !== 'processing' ? (
                   <button
                     onClick={handleSplitVideo}
-                    className="w-full py-3 px-4 bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Scissors className="w-4 h-4" /> Trim & Extract Video
                   </button>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-xs font-semibold text-[#c5a368]">
+                    <div className="flex items-center justify-between text-xs font-semibold text-[#10b981]">
                       <span>Exporting segment...</span>
                       <span>{Math.round(splitProgress)}%</span>
                     </div>
                     <div className="w-full bg-[#1a1a1a] rounded-full h-2 overflow-hidden">
                       <div 
-                        className="bg-[#c5a368] h-full transition-all duration-300"
+                        className="bg-[#10b981] h-full transition-all duration-300"
                         style={{ width: `${splitProgress}%` }}
                       />
                     </div>
@@ -741,8 +741,8 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#2a2a2a]">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-5 h-5 text-[#c5a368]" />
-                    <h2 className="font-serif italic text-lg text-white font-bold">Multi-Split Queue</h2>
+                    <Sliders className="w-5 h-5 text-[#10b981]" />
+                    <h2 className="font-sans text-lg text-white font-bold">Multi-Split Queue</h2>
                   </div>
                   {segments.length > 0 && (
                     <button
@@ -793,9 +793,9 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                         {seg.status === 'processing' && (
                           <div className="flex flex-col gap-1">
                             <div className="w-full bg-[#1a1a1a] rounded-full h-1 overflow-hidden">
-                              <div className="bg-[#c5a368] h-full" style={{ width: `${seg.progress}%` }} />
+                              <div className="bg-[#10b981] h-full" style={{ width: `${seg.progress}%` }} />
                             </div>
-                            <span className="text-[8px] font-mono font-bold text-[#c5a368] uppercase tracking-wider">Compiling Segment...</span>
+                            <span className="text-[8px] font-mono font-bold text-[#10b981] uppercase tracking-wider">Compiling Segment...</span>
                           </div>
                         )}
 
@@ -815,7 +815,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                     <button
                       onClick={handleBatchSplit}
                       disabled={isBatchProcessing}
-                      className="w-full py-3 bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] disabled:bg-[#1a1a1a] disabled:text-gray-600 rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] disabled:bg-[#1a1a1a] disabled:text-gray-600 rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       {isBatchProcessing ? (
                         <>
@@ -844,7 +844,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
             {splitLogs.length > 0 && splitMode === 'trim' && (
               <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-4 shadow-inner flex flex-col gap-2">
                 <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest block font-mono">Console Logs</span>
-                <div className="max-h-[140px] overflow-y-auto flex flex-col gap-1 font-mono text-[10px] text-[#c5a368] scrollbar-thin">
+                <div className="max-h-[140px] overflow-y-auto flex flex-col gap-1 font-mono text-[10px] text-[#10b981] scrollbar-thin">
                   {splitLogs.map((log, idx) => (
                     <div key={idx} className="leading-normal opacity-90">{log}</div>
                   ))}

@@ -603,7 +603,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   // 19. Pixel Art Drawer State
   const [pixelGrid, setPixelGrid] = useState<string[]>(Array(64).fill('#0d0d0d'));
-  const [selectedColor, setSelectedColor] = useState('#c5a368');
+  const [selectedColor, setSelectedColor] = useState('#10b981');
 
   // 20. Water Level log
   const [waterOunces, setWaterOunces] = useState(0);
@@ -619,7 +619,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     <div className="bg-[#0d0d0d] border border-[#1f1f1f] rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[640px] relative animate-in fade-in duration-300">
       
       {/* Decorative Golden Accent Lines */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#c5a368]/40 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#10b981]/40 to-transparent" />
       
       {/* Left panel / sidebar summary */}
       <div className="w-full md:w-80 bg-[#080808] border-b md:border-b-0 md:border-r border-[#1a1a1a] p-6 flex flex-col justify-between shrink-0">
@@ -629,7 +629,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               stopAudio();
               onBack();
             }}
-            className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#c5a368] font-bold hover:text-white transition-colors cursor-pointer group"
+            className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-[#10b981] font-bold hover:text-white transition-colors cursor-pointer group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Dashboard</span>
@@ -637,10 +637,10 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           
           <div>
             <div className={`p-2.5 rounded-lg w-fit ${tool.color} mb-3.5`}>
-              <Sparkles className="w-5 h-5 text-[#c5a368]" />
+              <Sparkles className="w-5 h-5 text-[#10b981]" />
             </div>
-            <h1 className="font-serif italic text-2xl text-white tracking-tight">{tool.title}</h1>
-            <span className="text-[9px] bg-[#1a1a1a] text-[#c5a368] border border-[#2a2a2a] px-2 py-0.5 rounded font-mono uppercase tracking-wider inline-block mt-2 font-bold">
+            <h1 className="font-sans text-2xl text-white tracking-tight">{tool.title}</h1>
+            <span className="text-[9px] bg-[#1a1a1a] text-[#10b981] border border-[#2a2a2a] px-2 py-0.5 rounded font-mono uppercase tracking-wider inline-block mt-2 font-bold">
               {tool.category}
             </span>
             <p className="text-gray-400 text-xs mt-3 leading-relaxed">
@@ -656,7 +656,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
             <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto font-mono text-[9px] text-gray-400">
               {gameLogs.map((log, i) => (
                 <div key={i} className="leading-relaxed border-l border-gray-800 pl-1.5 text-left">
-                  <span className="text-[#c5a368]">&bull;</span> {log}
+                  <span className="text-[#10b981]">&bull;</span> {log}
                 </div>
               ))}
             </div>
@@ -698,7 +698,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       }
                     }}
                     placeholder={`Type or paste your content here...`}
-                    className="w-full min-h-[160px] bg-[#070707] border border-[#222] rounded-xl p-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#c5a368]/40 focus:ring-1 focus:ring-[#c5a368]/20 transition-all font-mono leading-relaxed shadow-inner"
+                    className="w-full min-h-[160px] bg-[#070707] border border-[#222] rounded-xl p-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#10b981]/40 focus:ring-1 focus:ring-[#10b981]/20 transition-all font-mono leading-relaxed shadow-inner"
                   />
                 </div>
                 
@@ -710,7 +710,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     {outputText && (
                       <button
                         onClick={() => handleCopy(outputText)}
-                        className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#c5a368] hover:text-white transition-colors bg-[#111] px-2.5 py-1 rounded-md border border-[#222] cursor-pointer"
+                        className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#10b981] hover:text-white transition-colors bg-[#111] px-2.5 py-1 rounded-md border border-[#222] cursor-pointer"
                       >
                         {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                         <span>{copied ? 'Copied' : 'Copy'}</span>
@@ -721,7 +721,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     readOnly
                     value={outputText}
                     placeholder="Processed results will compile here..."
-                    className="w-full min-h-[160px] bg-[#060606]/80 border border-[#222]/80 rounded-xl p-4 text-xs text-[#c5a368] font-mono leading-relaxed shadow-inner"
+                    className="w-full min-h-[160px] bg-[#060606]/80 border border-[#222]/80 rounded-xl p-4 text-xs text-[#10b981] font-mono leading-relaxed shadow-inner"
                   />
                 </div>
               </div>
@@ -741,14 +741,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 
                 {tool.id === 'binary-translator' && (
                   <>
-                    <button onClick={() => runBinaryTranslate(true)} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Text &rarr; Binary</button>
+                    <button onClick={() => runBinaryTranslate(true)} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Text &rarr; Binary</button>
                     <button onClick={() => runBinaryTranslate(false)} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Binary &rarr; Text</button>
                   </>
                 )}
 
                 {tool.id === 'morse-translator' && (
                   <>
-                    <button onClick={() => runMorseCode(true)} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Text &rarr; Morse</button>
+                    <button onClick={() => runMorseCode(true)} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Text &rarr; Morse</button>
                     <button onClick={() => runMorseCode(false)} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Morse &rarr; Text</button>
                     {outputText && (
                       <button onClick={playMorseSound} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#151515] border border-cyan-500/30 text-cyan-400 hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">
@@ -760,28 +760,28 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                 {tool.id === 'base64-coder' && (
                   <>
-                    <button onClick={() => runBase64(true)} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode Base64</button>
+                    <button onClick={() => runBase64(true)} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode Base64</button>
                     <button onClick={() => runBase64(false)} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Decode Base64</button>
                   </>
                 )}
 
                 {tool.id === 'url-coder' && (
                   <>
-                    <button onClick={() => setOutputText(encodeURIComponent(inputText))} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode URL</button>
+                    <button onClick={() => setOutputText(encodeURIComponent(inputText))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode URL</button>
                     <button onClick={() => setOutputText(decodeURIComponent(inputText))} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Decode URL</button>
                   </>
                 )}
 
                 {tool.id === 'html-entities' && (
                   <>
-                    <button onClick={() => setOutputText(inputText.replace(/[\u00A0-\u9999<>\&]/g, (i) => '&#'+i.charCodeAt(0)+';'))} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode HTML Entities</button>
+                    <button onClick={() => setOutputText(inputText.replace(/[\u00A0-\u9999<>\&]/g, (i) => '&#'+i.charCodeAt(0)+';'))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode HTML Entities</button>
                   </>
                 )}
 
                 {tool.id === 'lorem-ipsum' && (
                   <div className="flex items-center gap-4">
                     <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Paragraph count:</span>
-                    <input type="number" min="1" max="10" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="w-14 bg-black border border-[#222] text-xs text-[#c5a368] font-bold p-1 rounded font-mono text-center" />
+                    <input type="number" min="1" max="10" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="w-14 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-1 rounded font-mono text-center" />
                     <button 
                       onClick={() => {
                         const words = ['lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'curabitur', 'sed', 'diam', 'id', 'nisi', 'interdum', 'faucibus', 'tempor', 'nec', 'purus'];
@@ -796,7 +796,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         setOutputText(p.trim());
                         addLog(`Generated ${sliderVal} paragraphs of Lorem Ipsum.`);
                       }} 
-                      className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold"
+                      className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold"
                     >
                       Generate Lorem Ipsum
                     </button>
@@ -809,7 +809,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                 {tool.id === 'text-reverser' && (
                   <>
-                    <button onClick={() => setOutputText(inputText.split('').reverse().join(''))} className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold">Reverse Characters</button>
+                    <button onClick={() => setOutputText(inputText.split('').reverse().join(''))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Reverse Characters</button>
                     <button onClick={() => setOutputText(inputText.split(/\s+/).reverse().join(' '))} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Reverse Words</button>
                   </>
                 )}
@@ -823,7 +823,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         setOutputText(uniqueLines.join('\n'));
                         addLog('Removed duplicate empty strings.');
                       }} 
-                      className="px-3.5 py-1.5 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-xs rounded transition-all cursor-pointer font-bold"
+                      className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold"
                     >
                       Deduplicate Lines
                     </button>
@@ -840,7 +840,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       setOutputText('{\n  "status": "YAML converter simulation ready",\n  "tip": "Simple YAML parsed successfully entirely client side"\n}');
                       addLog('Simulated client-side YAML parsing.');
                     }} 
-                    className="px-4 py-1.5 bg-[#c5a368] text-black text-xs rounded transition-all cursor-pointer font-bold"
+                    className="px-4 py-1.5 bg-[#10b981] text-black text-xs rounded transition-all cursor-pointer font-bold"
                   >
                     Format YAML to JSON
                   </button>
@@ -867,7 +867,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               
               {tool.id === 'scientific-calc' && (
                 <div className="flex flex-col gap-3">
-                  <div className="bg-black border border-[#222] p-4 rounded-xl text-right text-2xl font-mono text-[#c5a368] truncate shadow-inner h-16 flex items-center justify-end">
+                  <div className="bg-black border border-[#222] p-4 rounded-xl text-right text-2xl font-mono text-[#10b981] truncate shadow-inner h-16 flex items-center justify-end">
                     {inputText || '0'}
                   </div>
                   <div className="grid grid-cols-5 gap-2">
@@ -926,7 +926,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           setInputText('Error');
                         }
                       }}
-                      className="col-span-2 p-3 bg-[#c5a368] text-black hover:bg-[#c5a368]/90 text-sm font-bold rounded-lg font-mono transition-all cursor-pointer"
+                      className="col-span-2 p-3 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-sm font-bold rounded-lg font-mono transition-all cursor-pointer"
                     >
                       =
                     </button>
@@ -951,7 +951,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             (type === 'temp' && checkboxState.opt2) ||
                             (type === 'weight' && checkboxState.opt3) ||
                             (type === 'volume' && checkboxState.opt4)
-                              ? 'bg-[#c5a368] text-black border-[#c5a368]'
+                              ? 'bg-[#10b981] text-black border-[#10b981]'
                               : 'bg-[#151515] border-[#222] text-gray-400 hover:bg-[#1a1a1a]'
                           }`}
                         >
@@ -964,7 +964,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <div className="flex flex-col gap-1.5 mt-2">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between">
                       <span>Value to Convert</span>
-                      <span className="text-[#c5a368] font-mono">{sliderVal}</span>
+                      <span className="text-[#10b981] font-mono">{sliderVal}</span>
                     </label>
                     <input 
                       type="range" 
@@ -977,13 +977,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         const currentType = checkboxState.opt1 ? 'length' : checkboxState.opt2 ? 'temp' : checkboxState.opt3 ? 'weight' : 'volume';
                         runUnitConvert(val, currentType);
                       }}
-                      className="w-full accent-[#c5a368]"
+                      className="w-full accent-[#10b981]"
                     />
                   </div>
 
                   <div className="bg-black border border-[#222] rounded-xl p-4 mt-2">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Conversion Results</span>
-                    <p className="text-sm font-mono text-[#c5a368] leading-relaxed">
+                    <p className="text-sm font-mono text-[#10b981] leading-relaxed">
                       {outputText || 'Select a Category and drag the slider above.'}
                     </p>
                   </div>
@@ -995,7 +995,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between">
                       <span>Amount (USD)</span>
-                      <span className="text-[#c5a368] font-mono">${sliderVal}</span>
+                      <span className="text-[#10b981] font-mono">${sliderVal}</span>
                     </label>
                     <input 
                       type="range" 
@@ -1012,13 +1012,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           `${val} USD = ${(val * 1.36).toFixed(2)} CAD`
                         );
                       }}
-                      className="w-full accent-[#c5a368]"
+                      className="w-full accent-[#10b981]"
                     />
                   </div>
 
                   <div className="bg-black border border-[#222] rounded-xl p-4">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Dynamic World Exchanges</span>
-                    <pre className="text-xs font-mono text-[#c5a368] leading-relaxed whitespace-pre-line">
+                    <pre className="text-xs font-mono text-[#10b981] leading-relaxed whitespace-pre-line">
                       {outputText || 'Drag the amount slider above to see rates.'}
                     </pre>
                   </div>
@@ -1043,13 +1043,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           `If $500 decreases by ${val}%, discounted sum is $${(500 * (1 - val/100)).toFixed(2)}`
                         );
                       }}
-                      className="accent-[#c5a368] w-full"
+                      className="accent-[#10b981] w-full"
                     />
                   </div>
 
                   <div className="bg-black border border-[#222] p-4 rounded-xl">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Proportional Math Output</span>
-                    <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                    <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                       {outputText || 'Drag the percentage slider to solve.'}
                     </pre>
                   </div>
@@ -1061,7 +1061,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Bill Amount ($)</span>
-                      <input type="number" min="1" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="bg-black border border-[#222] text-[#c5a368] p-2 rounded text-sm font-mono font-bold" />
+                      <input type="number" min="1" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Number of People</span>
@@ -1070,7 +1070,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           const val = parseInt(e.target.value) || 2;
                           setCheckboxState({ opt1: val === 2, opt2: val === 3, opt3: val === 4, opt4: val >= 5 });
                         }} 
-                        className="bg-black border border-[#222] text-[#c5a368] p-2 rounded text-sm font-mono font-bold" 
+                        className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" 
                       />
                     </div>
                   </div>
@@ -1090,7 +1090,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             `Individual Share: $${share.toFixed(2)} per person`
                           );
                         }}
-                        className="flex-grow p-2 bg-[#151515] border border-[#222] hover:border-[#c5a368]/40 hover:bg-[#1a1a1a] text-white text-xs font-bold rounded font-mono cursor-pointer"
+                        className="flex-grow p-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 hover:bg-[#1a1a1a] text-white text-xs font-bold rounded font-mono cursor-pointer"
                       >
                         {p}% Tip
                       </button>
@@ -1099,7 +1099,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                   <div className="bg-black border border-[#222] p-4 rounded-xl">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Tip Breakdown Results</span>
-                    <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                    <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                       {outputText || 'Enter bill info and click on tip percentage.'}
                     </pre>
                   </div>
@@ -1112,7 +1112,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     <span className="text-xs text-white font-mono block">Interactive Course Grades List:</span>
                     <button
                       onClick={handleAddGpaCourse}
-                      className="text-[9px] bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] text-[#c5a368] px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      className="text-[9px] bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] text-[#10b981] px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors cursor-pointer"
                     >
                       + Add Course
                     </button>
@@ -1120,7 +1120,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   
                   <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
                     {gpaCourses.length === 0 ? (
-                      <span className="text-xs text-gray-500 font-serif italic text-center py-4 block">No courses added. Click "+ Add Course" to start.</span>
+                      <span className="text-xs text-gray-500 font-sans text-center py-4 block">No courses added. Click "+ Add Course" to start.</span>
                     ) : (
                       gpaCourses.map((course) => (
                         <div key={course.id} className="flex gap-2 items-center bg-black/40 border border-[#1a1a1a] p-2 rounded-lg">
@@ -1128,13 +1128,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             type="text"
                             value={course.name}
                             onChange={(e) => handleUpdateGpaCourse(course.id, 'name', e.target.value)}
-                            className="flex-1 bg-black border border-[#222] text-xs text-white px-2 py-1 rounded font-mono focus:border-[#c5a368]/60 focus:outline-none"
+                            className="flex-1 bg-black border border-[#222] text-xs text-white px-2 py-1 rounded font-mono focus:border-[#10b981]/60 focus:outline-none"
                             placeholder="Course name"
                           />
                           <select
                             value={course.credits}
                             onChange={(e) => handleUpdateGpaCourse(course.id, 'credits', parseInt(e.target.value) || 3)}
-                            className="w-16 bg-black border border-[#222] text-xs text-[#c5a368] px-2 py-1 rounded font-mono focus:outline-none cursor-pointer"
+                            className="w-16 bg-black border border-[#222] text-xs text-[#10b981] px-2 py-1 rounded font-mono focus:outline-none cursor-pointer"
                           >
                             {[1, 2, 3, 4, 5].map(c => (
                               <option key={c} value={c} className="bg-black text-white">{c} Cr</option>
@@ -1163,7 +1163,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                   <button
                     onClick={handleCalculateGpa}
-                    className="w-full py-2 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer mt-1"
+                    className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer mt-1"
                   >
                     Calculate Cumulative Grade Point Average
                   </button>
@@ -1198,13 +1198,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         );
                         addLog('Estimated precise age metrics.');
                       }}
-                      className="bg-black border border-[#222] text-[#c5a368] p-3 rounded-lg text-sm font-mono font-bold w-full"
+                      className="bg-black border border-[#222] text-[#10b981] p-3 rounded-lg text-sm font-mono font-bold w-full"
                     />
                   </div>
 
                   {outputText && (
                     <div className="bg-black border border-[#222] p-4 rounded-xl">
-                      <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                      <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                         {outputText}
                       </pre>
                     </div>
@@ -1216,16 +1216,16 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 <div className="flex flex-col gap-4 text-left">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Principal amount ($)</span>
-                    <input type="number" min="1000" defaultValue="15000" id="loan-amount-input" className="bg-black border border-[#222] text-[#c5a368] p-2 rounded text-sm font-mono font-bold" />
+                    <input type="number" min="1000" defaultValue="15000" id="loan-amount-input" className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Interest Rate (%)</span>
-                      <input type="number" min="1" step="0.1" defaultValue="5.5" id="loan-rate-input" className="bg-black border border-[#222] text-[#c5a368] p-2 rounded text-sm font-mono font-bold" />
+                      <input type="number" min="1" step="0.1" defaultValue="5.5" id="loan-rate-input" className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Duration (Years)</span>
-                      <input type="number" min="1" defaultValue="5" id="loan-years-input" className="bg-black border border-[#222] text-[#c5a368] p-2 rounded text-sm font-mono font-bold" />
+                      <input type="number" min="1" defaultValue="5" id="loan-years-input" className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
                     </div>
                   </div>
                   <button 
@@ -1242,13 +1242,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         `Cumulative Interest Expense: $${((monthlyPayment * totalMonths) - amount).toFixed(2)}`
                       );
                     }} 
-                    className="w-full py-2 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer"
+                    className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer"
                   >
                     Generate Amortization Forecast
                   </button>
                   {outputText && (
                     <div className="bg-black border border-[#222] p-4 rounded-xl">
-                      <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                      <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                         {outputText}
                       </pre>
                     </div>
@@ -1268,7 +1268,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between font-mono">
                       <span>Height (cm)</span>
-                      <span className="text-[#c5a368] font-bold">{sliderVal + 100} cm</span>
+                      <span className="text-[#10b981] font-bold">{sliderVal + 100} cm</span>
                     </label>
                     <input 
                       type="range" 
@@ -1280,14 +1280,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         setSliderVal(h);
                         runBmi(checkboxState.opt1 ? 70 : 90, h + 100);
                       }}
-                      className="w-full accent-[#c5a368]"
+                      className="w-full accent-[#10b981]"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5 mt-2">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between font-mono">
                       <span>Weight (kg)</span>
-                      <span className="text-[#c5a368] font-bold">{checkboxState.opt1 ? 70 : checkboxState.opt2 ? 80 : checkboxState.opt3 ? 90 : 100} kg</span>
+                      <span className="text-[#10b981] font-bold">{checkboxState.opt1 ? 70 : checkboxState.opt2 ? 80 : checkboxState.opt3 ? 90 : 100} kg</span>
                     </label>
                     <div className="grid grid-cols-4 gap-2">
                       {[70, 80, 90, 100].map(w => (
@@ -1302,7 +1302,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             (w === 80 && checkboxState.opt2) ||
                             (w === 90 && checkboxState.opt3) ||
                             (w === 100 && checkboxState.opt4)
-                              ? 'bg-[#c5a368] text-black border-[#c5a368]'
+                              ? 'bg-[#10b981] text-black border-[#10b981]'
                               : 'bg-[#151515] border-[#222] text-gray-400'
                           }`}
                         >
@@ -1314,7 +1314,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                   <div className="bg-black border border-[#222] rounded-xl p-4 mt-2">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Physical Evaluation Results</span>
-                    <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                    <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                       {outputText || 'Adjust parameters to discover Body Mass Index indices.'}
                     </pre>
                   </div>
@@ -1324,9 +1324,9 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               {tool.id === 'pomodoro' && (
                 <div className="flex flex-col items-center gap-4">
                   <div className="relative w-40 h-40 flex items-center justify-center border-4 border-[#222] rounded-full bg-black/60 shadow-inner">
-                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#c5a368]/20 animate-spin-slow" />
+                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#10b981]/20 animate-spin-slow" />
                     <div className="flex flex-col items-center">
-                      <span className="text-3xl font-mono text-[#c5a368] font-bold">
+                      <span className="text-3xl font-mono text-[#10b981] font-bold">
                         {timerRunning 
                           ? `${Math.floor(timerCount / 60).toString().padStart(2, '0')}:${(timerCount % 60).toString().padStart(2, '0')}`
                           : '25:00'
@@ -1339,7 +1339,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   </div>
 
                   <div className="flex gap-2 w-full">
-                    <button onClick={() => startPomodoro(25)} className="flex-grow py-2 bg-[#c5a368] hover:bg-[#c5a368]/90 text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">25m Work Focus</button>
+                    <button onClick={() => startPomodoro(25)} className="flex-grow py-2 bg-[#10b981] hover:bg-[#10b981]/90 text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">25m Work Focus</button>
                     <button onClick={() => startPomodoro(5)} className="flex-grow py-2 bg-[#151515] border border-[#222] text-white hover:bg-[#1a1a1a] font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">5m Short Break</button>
                     {timerRunning && (
                       <button onClick={() => setTimerRunning(false)} className="px-3.5 bg-red-500 hover:bg-red-600 text-white rounded cursor-pointer transition-all">
@@ -1360,14 +1360,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         boxShadow: timerRunning ? `0 0 ${breathProgress * 30 + 10}px rgba(197, 163, 104, 0.4)` : 'none'
                       }}
                       transition={{ duration: 1, ease: 'easeInOut' }}
-                      className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#8a6d3b] to-[#c5a368] flex items-center justify-center text-black font-bold"
+                      className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#059669] to-[#10b981] flex items-center justify-center text-black font-bold"
                     >
                       <Wind className="w-8 h-8 text-[#0d0d0d] animate-pulse" />
                     </motion.div>
                   </div>
 
                   <div className="text-center">
-                    <h3 className="font-serif italic text-lg text-white">
+                    <h3 className="font-sans text-lg text-white">
                       {timerRunning ? breathingPhase : 'Box Breathing Sphere'}
                     </h3>
                     <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
@@ -1380,7 +1380,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                   <button
                     onClick={() => setTimerRunning(!timerRunning)}
-                    className="w-full py-2.5 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-widest hover:bg-[#c5a368]/90 transition-all cursor-pointer"
+                    className="w-full py-2.5 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-widest hover:bg-[#10b981]/90 transition-all cursor-pointer"
                   >
                     {timerRunning ? 'Halt Training' : 'Initiate Breathing Timer'}
                   </button>
@@ -1389,7 +1389,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
               {tool.id === 'noise-maker' && (
                 <div className="flex flex-col gap-4">
-                  <span className="text-xs text-gray-400 font-serif italic">Synthesize pure ambient frequency waveforms offline.</span>
+                  <span className="text-xs text-gray-400 font-sans">Synthesize pure ambient frequency waveforms offline.</span>
                   
                   <div className="grid grid-cols-3 gap-2.5">
                     <button
@@ -1508,11 +1508,11 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           setOutputText(`Lifestyle tracking coefficient: ${val}%\nDaily target progress status: Safe & Balanced`);
                         }
                       }}
-                      className="accent-[#c5a368] w-full"
+                      className="accent-[#10b981] w-full"
                     />
                   </div>
                   <div className="bg-black border border-[#222] p-4 rounded-xl">
-                    <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                    <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                       {outputText || 'Adjust slider to calculate lifestyle health targets.'}
                     </pre>
                   </div>
@@ -1530,43 +1530,43 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 <div className="flex flex-col gap-4 text-left">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Password Length</span>
-                    <span className="text-[#c5a368] font-mono font-bold text-xs">{sliderVal} chars</span>
+                    <span className="text-[#10b981] font-mono font-bold text-xs">{sliderVal} chars</span>
                   </div>
-                  <input type="range" min="6" max="32" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 6)} className="w-full accent-[#c5a368]" />
+                  <input type="range" min="6" max="32" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 6)} className="w-full accent-[#10b981]" />
 
                   <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => setCheckboxState(prev => ({ ...prev, opt1: !prev.opt1 }))}
-                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt1 ? 'bg-[#c5a368]/10 border-[#c5a368]/40 text-[#c5a368]' : 'bg-black border-[#222] text-gray-500'}`}
+                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt1 ? 'bg-[#10b981]/10 border-[#10b981]/40 text-[#10b981]' : 'bg-black border-[#222] text-gray-500'}`}
                     >
                       Lowercase (a-z)
                     </button>
                     <button 
                       onClick={() => setCheckboxState(prev => ({ ...prev, opt2: !prev.opt2 }))}
-                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt2 ? 'bg-[#c5a368]/10 border-[#c5a368]/40 text-[#c5a368]' : 'bg-black border-[#222] text-gray-500'}`}
+                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt2 ? 'bg-[#10b981]/10 border-[#10b981]/40 text-[#10b981]' : 'bg-black border-[#222] text-gray-500'}`}
                     >
                       Uppercase (A-Z)
                     </button>
                     <button 
                       onClick={() => setCheckboxState(prev => ({ ...prev, opt3: !prev.opt3 }))}
-                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt3 ? 'bg-[#c5a368]/10 border-[#c5a368]/40 text-[#c5a368]' : 'bg-black border-[#222] text-gray-500'}`}
+                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt3 ? 'bg-[#10b981]/10 border-[#10b981]/40 text-[#10b981]' : 'bg-black border-[#222] text-gray-500'}`}
                     >
                       Numbers (0-9)
                     </button>
                     <button 
                       onClick={() => setCheckboxState(prev => ({ ...prev, opt4: !prev.opt4 }))}
-                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt4 ? 'bg-[#c5a368]/10 border-[#c5a368]/40 text-[#c5a368]' : 'bg-black border-[#222] text-gray-500'}`}
+                      className={`p-2 rounded text-xs font-bold border transition-all ${checkboxState.opt4 ? 'bg-[#10b981]/10 border-[#10b981]/40 text-[#10b981]' : 'bg-black border-[#222] text-gray-500'}`}
                     >
                       Special Signs
                     </button>
                   </div>
 
-                  <button onClick={runPasswordGen} className="w-full py-2 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">Generate Password</button>
+                  <button onClick={runPasswordGen} className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">Generate Password</button>
 
                   {outputText && (
                     <div className="bg-black border border-[#222] p-3 rounded-lg flex items-center justify-between font-mono mt-1">
-                      <span className="text-[#c5a368] text-sm font-bold truncate">{outputText}</span>
-                      <button onClick={() => handleCopy(outputText)} className="text-[#c5a368] hover:text-white cursor-pointer">
+                      <span className="text-[#10b981] text-sm font-bold truncate">{outputText}</span>
+                      <button onClick={() => handleCopy(outputText)} className="text-[#10b981] hover:text-white cursor-pointer">
                         {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
@@ -1580,12 +1580,12 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     <motion.div
                       animate={{ rotateY: gameActive ? 360 * 3 : 0 }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="w-20 h-20 bg-gradient-to-tr from-[#8a6d3b] to-[#c5a368] rounded-full flex items-center justify-center border border-[#c5a368]/40 text-black font-serif italic text-lg font-bold shadow-lg"
+                      className="w-20 h-20 bg-gradient-to-tr from-[#059669] to-[#10b981] rounded-full flex items-center justify-center border border-[#10b981]/40 text-black font-sans text-lg font-bold shadow-lg"
                     >
                       {outputText || '$'}
                     </motion.div>
                   </div>
-                  <button onClick={runCoinFlip} disabled={gameActive} className="w-full py-2 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">
+                  <button onClick={runCoinFlip} disabled={gameActive} className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">
                     {gameActive ? 'Flipping...' : 'Flip Silver Coin'}
                   </button>
                   <span className="text-[9px] text-gray-500 font-mono">Tally sessions flipped: {gameScore} rounds</span>
@@ -1621,7 +1621,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       <button
                         key={choice}
                         onClick={() => runRpsGame(choice)}
-                        className="p-4 bg-[#151515] hover:bg-[#1a1a1a] border border-[#222] text-xs font-bold text-white rounded-xl uppercase tracking-widest transition-all cursor-pointer hover:border-[#c5a368]/40"
+                        className="p-4 bg-[#151515] hover:bg-[#1a1a1a] border border-[#222] text-xs font-bold text-white rounded-xl uppercase tracking-widest transition-all cursor-pointer hover:border-[#10b981]/40"
                       >
                         {choice}
                       </button>
@@ -1629,7 +1629,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   </div>
 
                   {outputText && (
-                    <div className="bg-black border border-[#222] p-4 rounded-xl font-mono text-sm text-[#c5a368] text-center">
+                    <div className="bg-black border border-[#222] p-4 rounded-xl font-mono text-sm text-[#10b981] text-center">
                       {outputText}
                     </div>
                   )}
@@ -1639,19 +1639,19 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               {/* General support for game simulators */}
               {!['password-gen', 'coin-flipper', 'dice-roller', 'rock-paper-scissors'].includes(tool.id) && (
                 <div className="flex flex-col gap-4 text-left">
-                  <span className="text-xs text-gray-400 font-serif italic">Arcade workspace simulation:</span>
+                  <span className="text-xs text-gray-400 font-sans">Arcade workspace simulation:</span>
                   <button 
                     onClick={() => {
                       setGameScore(prev => prev + 1);
                       setOutputText(`Action Triggered successfully!\nSession Rating: Classic Sandbox Level 1\nTally High Score: ${gameScore + 1}`);
                       addLog('Registered interactive game move.');
                     }}
-                    className="w-full py-2 bg-[#c5a368] text-black font-bold text-xs rounded uppercase tracking-wider cursor-pointer"
+                    className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider cursor-pointer"
                   >
                     Trigger Interactive Action Move
                   </button>
                   {outputText && (
-                    <div className="bg-black border border-[#222] p-4 rounded-xl font-mono text-xs text-[#c5a368]">
+                    <div className="bg-black border border-[#222] p-4 rounded-xl font-mono text-xs text-[#10b981]">
                       {outputText}
                     </div>
                   )}
@@ -1691,10 +1691,10 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       };
                       input.click();
                     }}
-                    className="border border-dashed border-[#222] hover:border-[#c5a368]/40 bg-[#070707] rounded-xl p-8 text-center cursor-pointer transition-all"
+                    className="border border-dashed border-[#222] hover:border-[#10b981]/40 bg-[#070707] rounded-xl p-8 text-center cursor-pointer transition-all"
                   >
                     <SlidersHorizontal className="w-6 h-6 text-gray-500 mx-auto mb-3" />
-                    <p className="text-xs text-white font-serif italic">Drag & drop or click to upload target media file</p>
+                    <p className="text-xs text-white font-sans">Drag & drop or click to upload target media file</p>
                     <p className="text-[9px] text-gray-500 mt-1">Ready for real-time localized GPU processing sandbox</p>
                   </div>
                 ) : (
@@ -1726,19 +1726,19 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                           <div>
                             <span className="text-[10px] text-gray-500 block mb-1">Brightness ({filterBrightness}%)</span>
-                            <input type="range" min="50" max="150" value={filterBrightness} onChange={(e) => setFilterBrightness(parseInt(e.target.value))} className="accent-[#c5a368] w-full" />
+                            <input type="range" min="50" max="150" value={filterBrightness} onChange={(e) => setFilterBrightness(parseInt(e.target.value))} className="accent-[#10b981] w-full" />
                           </div>
                           <div>
                             <span className="text-[10px] text-gray-500 block mb-1">Contrast ({filterContrast}%)</span>
-                            <input type="range" min="50" max="150" value={filterContrast} onChange={(e) => setFilterContrast(parseInt(e.target.value))} className="accent-[#c5a368] w-full" />
+                            <input type="range" min="50" max="150" value={filterContrast} onChange={(e) => setFilterContrast(parseInt(e.target.value))} className="accent-[#10b981] w-full" />
                           </div>
                           <div>
                             <span className="text-[10px] text-gray-500 block mb-1">Grayscale ({filterGrayscale}%)</span>
-                            <input type="range" min="0" max="100" value={filterGrayscale} onChange={(e) => setFilterGrayscale(parseInt(e.target.value))} className="accent-[#c5a368] w-full" />
+                            <input type="range" min="0" max="100" value={filterGrayscale} onChange={(e) => setFilterGrayscale(parseInt(e.target.value))} className="accent-[#10b981] w-full" />
                           </div>
                           <div>
                             <span className="text-[10px] text-gray-500 block mb-1">Blur ({filterBlur}px)</span>
-                            <input type="range" min="0" max="10" value={filterBlur} onChange={(e) => setFilterBlur(parseInt(e.target.value))} className="accent-[#c5a368] w-full" />
+                            <input type="range" min="0" max="10" value={filterBlur} onChange={(e) => setFilterBlur(parseInt(e.target.value))} className="accent-[#10b981] w-full" />
                           </div>
                         </div>
                       </div>
@@ -1748,7 +1748,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     {tool.id === 'pixel-art' && (
                       <div className="flex flex-col items-center gap-3">
                         <div className="flex gap-2 mb-1.5">
-                          {['#c5a368', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#0d0d0d'].map(color => (
+                          {['#10b981', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#0d0d0d'].map(color => (
                             <button
                               key={color}
                               onClick={() => setSelectedColor(color)}
@@ -1790,7 +1790,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             addLog('Media conversion finalized.');
                           }
                         }} 
-                        className="py-2 bg-[#c5a368] text-black text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
+                        className="py-2 bg-[#10b981] text-black text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
                       >
                         {tool.id === 'exif-viewer' ? 'Extract Metadata' : 'Convert File'}
                       </button>
@@ -1806,7 +1806,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                     {outputText && (
                       <div className="bg-black border border-[#222] p-4 rounded-xl text-left">
-                        <pre className="text-xs font-mono text-[#c5a368] whitespace-pre-line leading-relaxed">
+                        <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
                           {outputText}
                         </pre>
                       </div>

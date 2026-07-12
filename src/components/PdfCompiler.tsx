@@ -281,12 +281,12 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-3">
-            <FileText className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-3">
+            <FileText className="w-8 h-8 text-[#10b981]" />
             PDF Compiler (Images to PDF)
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -307,14 +307,14 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         {/* Left Side Options */}
         <div className="lg:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#c5a368]" />
-            <h2 className="font-serif italic text-lg text-white">PDF Configuration</h2>
+            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <h2 className="font-sans text-lg text-white">PDF Configuration</h2>
           </div>
 
           {/* PDF File Name */}
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">File Name</label>
-            <div className="flex rounded border border-[#2a2a2a] bg-[#151515] text-white focus-within:border-[#c5a368] overflow-hidden text-sm">
+            <div className="flex rounded border border-[#2a2a2a] bg-[#151515] text-white focus-within:border-[#10b981] overflow-hidden text-sm">
               <input
                 type="text"
                 placeholder="compiled_document"
@@ -344,7 +344,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   }}
                   className={`py-2 px-1 text-xs font-semibold rounded border transition-all cursor-pointer text-center ${
                     pageSize === size
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
@@ -368,7 +368,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   }}
                   className={`py-2 px-1 text-xs font-semibold rounded border transition-all cursor-pointer text-center disabled:opacity-30 disabled:cursor-not-allowed ${
                     orientation === orient && pageSize !== 'original'
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
@@ -394,7 +394,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   }}
                   className={`py-2 px-1 text-xs font-semibold rounded border transition-all cursor-pointer text-center ${
                     margin === m
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
@@ -413,7 +413,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                 className={`w-full py-3 px-4 rounded font-bold text-xs uppercase tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   items.length === 0
                     ? 'bg-[#151515] text-gray-600 border border-[#2a2a2a] cursor-not-allowed'
-                    : 'bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] hover:shadow-md'
+                    : 'bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] hover:shadow-md'
                 }`}
               >
                 {isCompiling ? (
@@ -455,8 +455,8 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[180px] ${
               isDragging
-                ? 'border-[#c5a368] bg-[#c5a368]/10'
-                : 'border-[#2a2a2a] hover:border-[#c5a368]/40 bg-[#0d0d0d]'
+                ? 'border-[#10b981] bg-[#10b981]/10'
+                : 'border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d]'
             }`}
           >
             <input
@@ -467,12 +467,12 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
               accept="image/*"
               className="hidden"
             />
-            <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#c5a368]">
+            <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#10b981]">
               <Upload className="w-6 h-6" />
             </div>
-            <h3 className="text-white font-serif italic text-base">Drag & drop images to convert to PDF</h3>
+            <h3 className="text-white font-sans text-base">Drag & drop images to convert to PDF</h3>
             <p className="text-gray-500 text-xs mt-1 mb-3">Upload pages in the order you'd like, or sort them below</p>
-            <span className="text-[11px] font-bold text-[#0a0a0a] bg-[#c5a368] px-3 py-1.5 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-all">
+            <span className="text-[11px] font-bold text-[#0a0a0a] bg-[#10b981] px-3 py-1.5 rounded uppercase tracking-wider hover:bg-[#059669] transition-all">
               Choose Images
             </span>
           </div>
@@ -497,7 +497,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-3.5 flex items-center justify-between gap-4 shadow-sm group hover:border-[#c5a368]/30 transition-colors"
+                  className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-3.5 flex items-center justify-between gap-4 shadow-sm group hover:border-[#10b981]/30 transition-colors"
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     {/* Page counter & Thumbnail */}

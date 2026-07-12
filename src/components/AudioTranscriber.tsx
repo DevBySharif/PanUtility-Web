@@ -355,12 +355,12 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-[#10b981]" />
             AI Audio Transcriber
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -393,7 +393,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
           {/* File Upload card */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368]/50 bg-[#0d0d0d] rounded-xl p-10 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[300px]"
+            className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/50 bg-[#0d0d0d] rounded-xl p-10 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[300px]"
           >
             <input
               type="file"
@@ -402,22 +402,22 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               accept="audio/*"
               className="hidden"
             />
-            <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#c5a368]">
+            <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
               <Upload className="w-8 h-8" />
             </div>
-            <h3 className="text-white font-serif italic text-lg">Upload an audio file</h3>
+            <h3 className="text-white font-sans text-lg">Upload an audio file</h3>
             <p className="text-gray-500 text-xs mt-1 mb-4">Supports MP3, WAV, AAC, M4A, FLAC, WEBM</p>
-            <span className="text-xs font-bold text-[#0a0a0a] bg-[#c5a368] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-colors">
+            <span className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-colors">
               Select Audio File
             </span>
           </div>
 
           {/* Live Mic Recorder Card */}
           <div className="border border-[#1a1a1a] bg-[#0d0d0d] rounded-xl p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
-            <div className={`p-4 rounded-xl shadow-sm mb-4 transition-all ${isRecording ? 'bg-red-950/30 border border-red-900 text-red-500 animate-pulse' : 'bg-[#151515] border border-[#2a2a2a] text-[#c5a368]'}`}>
+            <div className={`p-4 rounded-xl shadow-sm mb-4 transition-all ${isRecording ? 'bg-red-950/30 border border-red-900 text-red-500 animate-pulse' : 'bg-[#151515] border border-[#2a2a2a] text-[#10b981]'}`}>
               {isRecording ? <Mic className="w-8 h-8 text-red-500" /> : <Mic className="w-8 h-8" />}
             </div>
-            <h3 className="text-white font-serif italic text-lg">{isRecording ? 'Recording Audio' : 'Record voice note'}</h3>
+            <h3 className="text-white font-sans text-lg">{isRecording ? 'Recording Audio' : 'Record voice note'}</h3>
             <p className="text-gray-500 text-xs mt-1 mb-4">
               {isRecording ? `Recording time: ${formatTime(recordingSeconds)}` : 'Record live voice note using your browser microphone'}
             </p>
@@ -431,7 +431,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
             ) : (
               <button
                 onClick={startRecording}
-                className="text-xs font-bold text-[#0a0a0a] bg-[#c5a368] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-colors cursor-pointer flex items-center gap-1.5"
+                className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <Mic className="w-3.5 h-3.5" /> Start Live Record
               </button>
@@ -446,7 +446,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-lg text-[#c5a368]">
+                <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-lg text-[#10b981]">
                   <Headphones className="w-6 h-6" />
                 </div>
                 <div className="overflow-hidden">
@@ -474,7 +474,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                   max={duration || 100}
                   value={currentTime}
                   onChange={(e) => scrubTo(parseFloat(e.target.value))}
-                  className="w-full accent-[#c5a368] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
+                  className="w-full accent-[#10b981] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
                 />
               </div>
 
@@ -482,7 +482,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={handlePlayPause}
-                  className="p-3 bg-[#c5a368]/95 hover:bg-[#c5a368] text-[#0a0a0a] rounded-full shadow transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="p-3 bg-[#10b981]/95 hover:bg-[#10b981] text-[#0a0a0a] rounded-full shadow transition-all hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   {isPlaying ? <Pause className="w-5 h-5 fill-current text-[#0a0a0a]" /> : <Play className="w-5 h-5 fill-current text-[#0a0a0a]" />}
                 </button>
@@ -493,17 +493,17 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                 {!isTranscribing ? (
                   <button
                     onClick={handleTranscribe}
-                    className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#8a6d3b] to-[#c5a368] hover:shadow-lg text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#059669] to-[#10b981] hover:shadow-lg text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4 fill-current text-[#0a0a0a]" /> Transcribe with AI
                   </button>
                 ) : (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between text-xs font-semibold text-[#c5a368]">
+                    <div className="flex items-center justify-between text-xs font-semibold text-[#10b981]">
                       <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> {progressStep}</span>
                     </div>
                     <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-[#c5a368] h-full w-2/3 animate-pulse" />
+                      <div className="bg-[#10b981] h-full w-2/3 animate-pulse" />
                     </div>
                   </div>
                 )}
@@ -512,8 +512,8 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
 
             {/* Quick Helper card */}
             <div className="bg-[#050505] border border-[#1a1a1a] rounded-xl p-5 text-xs text-gray-400 font-medium leading-relaxed">
-              <span className="text-[10px] font-bold text-[#c5a368] uppercase tracking-widest block mb-2 font-mono">Interactive Navigation</span>
-              Once compiled, the transcription is sliced into clickable line timestamps. You can click on any timestamp (e.g. <span className="text-[#c5a368] font-mono">[00:15]</span>) to jump the audio player instantly to that moment.
+              <span className="text-[10px] font-bold text-[#10b981] uppercase tracking-widest block mb-2 font-mono">Interactive Navigation</span>
+              Once compiled, the transcription is sliced into clickable line timestamps. You can click on any timestamp (e.g. <span className="text-[#10b981] font-mono">[00:15]</span>) to jump the audio player instantly to that moment.
             </div>
           </div>
 
@@ -522,8 +522,8 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
             <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4 min-h-[350px]">
               <div className="flex items-center justify-between pb-3 border-b border-[#2a2a2a]">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#c5a368]" />
-                  <h2 className="font-serif italic text-white text-base">Transcription Output</h2>
+                  <FileText className="w-5 h-5 text-[#10b981]" />
+                  <h2 className="font-sans text-white text-base">Transcription Output</h2>
                 </div>
                 {transcriptionResult && (
                   <div className="flex items-center gap-1.5">
@@ -543,7 +543,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                     </button>
                     <button
                       onClick={downloadAsSRT}
-                      className="px-2.5 py-1.5 bg-[#c5a368]/10 hover:bg-[#c5a368]/20 text-[#c5a368] border border-[#c5a368]/30 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
                       title="Export Subtitles"
                     >
                       SRT Subtitles
@@ -556,7 +556,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               <div className="flex-1 overflow-y-auto max-h-[380px] pr-1">
                 {isTranscribing ? (
                   <div className="h-full flex flex-col items-center justify-center text-center gap-3 py-16">
-                    <RefreshCw className="w-8 h-8 text-[#c5a368] animate-spin" />
+                    <RefreshCw className="w-8 h-8 text-[#10b981] animate-spin" />
                     <p className="text-xs text-gray-400 font-mono">Gemini AI is parsing speech data... Please wait.</p>
                   </div>
                 ) : transcriptLines.length > 0 ? (
@@ -566,12 +566,12 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                         key={idx}
                         className={`flex gap-3 items-start p-2 rounded-lg transition-colors cursor-pointer ${
                           currentTime >= line.seconds && (idx === transcriptLines.length - 1 || currentTime < transcriptLines[idx+1].seconds)
-                            ? 'bg-[#c5a368]/10 border-l-2 border-[#c5a368]'
+                            ? 'bg-[#10b981]/10 border-l-2 border-[#10b981]'
                             : 'hover:bg-[#151515] border-l-2 border-transparent'
                         }`}
                         onClick={() => scrubTo(line.seconds)}
                       >
-                        <span className="font-mono text-[11px] font-bold text-[#c5a368] bg-[#1a1a1a] px-2 py-0.5 rounded shrink-0 select-none">
+                        <span className="font-mono text-[11px] font-bold text-[#10b981] bg-[#1a1a1a] px-2 py-0.5 rounded shrink-0 select-none">
                           {line.timeStr}
                         </span>
                         <p className="text-xs text-gray-300 font-medium leading-relaxed mt-0.5">{line.text}</p>

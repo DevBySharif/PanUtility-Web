@@ -310,12 +310,12 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-3">
-            <FileImage className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-3">
+            <FileImage className="w-8 h-8 text-[#10b981]" />
             Image Format Converter
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -336,8 +336,8 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
         {/* Left Options Side - Configurations */}
         <div className="lg:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-6">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#c5a368]" />
-            <h2 className="font-serif italic text-lg text-white">Conversion Settings</h2>
+            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <h2 className="font-sans text-lg text-white">Conversion Settings</h2>
           </div>
 
           {/* Target Format */}
@@ -350,7 +350,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                   onClick={() => setGlobalFormat(fmt)}
                   className={`py-2 px-3 text-xs font-semibold rounded border transition-all cursor-pointer text-center ${
                     globalFormat === fmt
-                      ? 'border-[#c5a368] bg-[#c5a368]/10 text-[#c5a368]'
+                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
                       : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
                   }`}
                 >
@@ -365,7 +365,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quality</label>
-                <span className="text-xs font-bold text-[#c5a368]">{globalQuality}%</span>
+                <span className="text-xs font-bold text-[#10b981]">{globalQuality}%</span>
               </div>
               <input
                 type="range"
@@ -373,7 +373,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                 max="100"
                 value={globalQuality}
                 onChange={(e) => setGlobalQuality(parseInt(e.target.value))}
-                className="w-full accent-[#c5a368] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
+                className="w-full accent-[#10b981] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
               />
               <span className="text-[10px] text-gray-500">Lower values reduce file size but lower quality.</span>
             </div>
@@ -390,7 +390,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                   type="checkbox"
                   checked={maintainAspectRatio}
                   onChange={(e) => setMaintainAspectRatio(e.target.checked)}
-                  className="rounded text-[#c5a368] focus:ring-0 accent-[#c5a368] w-3.5 h-3.5 cursor-pointer"
+                  className="rounded text-[#10b981] focus:ring-0 accent-[#10b981] w-3.5 h-3.5 cursor-pointer"
                 />
                 Keep Aspect Ratio
               </label>
@@ -404,7 +404,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                   placeholder="Original"
                   value={globalWidth}
                   onChange={(e) => setGlobalWidth(e.target.value)}
-                  className="w-full text-sm border border-[#2a2a2a] rounded px-3 py-2 bg-[#151515] text-white focus:outline-none focus:border-[#c5a368]"
+                  className="w-full text-sm border border-[#2a2a2a] rounded px-3 py-2 bg-[#151515] text-white focus:outline-none focus:border-[#10b981]"
                 />
               </div>
               <div>
@@ -415,12 +415,12 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                   value={globalHeight}
                   onChange={(e) => setGlobalHeight(e.target.value)}
                   disabled={maintainAspectRatio && globalWidth !== ''}
-                  className="w-full text-sm border border-[#2a2a2a] rounded px-3 py-2 bg-[#151515] text-white focus:outline-none focus:border-[#c5a368] disabled:bg-[#121212] disabled:text-gray-600 disabled:border-[#1a1a1a]"
+                  className="w-full text-sm border border-[#2a2a2a] rounded px-3 py-2 bg-[#151515] text-white focus:outline-none focus:border-[#10b981] disabled:bg-[#121212] disabled:text-gray-600 disabled:border-[#1a1a1a]"
                 />
               </div>
             </div>
             {maintainAspectRatio && globalWidth !== '' && (
-              <span className="text-[10px] text-[#c5a368] font-medium">Height will adjust automatically.</span>
+              <span className="text-[10px] text-[#10b981] font-medium">Height will adjust automatically.</span>
             )}
           </div>
 
@@ -432,7 +432,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
               className={`w-full py-3 px-4 rounded font-bold text-xs uppercase tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 images.length === 0 
                   ? 'bg-[#151515] text-gray-600 border border-[#2a2a2a] cursor-not-allowed shadow-none'
-                  : 'bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] hover:shadow-md'
+                  : 'bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] hover:shadow-md'
               }`}
             >
               {isProcessingAll ? (
@@ -466,8 +466,8 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[220px] ${
               isDragging
-                ? 'border-[#c5a368] bg-[#c5a368]/10'
-                : 'border-[#2a2a2a] hover:border-[#c5a368]/40 bg-[#0d0d0d]'
+                ? 'border-[#10b981] bg-[#10b981]/10'
+                : 'border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d]'
             }`}
           >
             <input
@@ -478,12 +478,12 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
               accept="image/*"
               className="hidden"
             />
-            <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#c5a368]">
+            <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#10b981]">
               <Upload className="w-6 h-6" />
             </div>
-            <h3 className="text-white font-serif italic text-base">Drag & drop your images</h3>
+            <h3 className="text-white font-sans text-base">Drag & drop your images</h3>
             <p className="text-gray-500 text-xs mt-1 mb-3">Supports JPG, PNG, WEBP, GIF, SVG, BMP, HEIC</p>
-            <span className="text-[11px] font-bold text-[#0a0a0a] bg-[#c5a368] px-3 py-1.5 rounded uppercase tracking-wider hover:bg-[#8a6d3b] transition-all">
+            <span className="text-[11px] font-bold text-[#0a0a0a] bg-[#10b981] px-3 py-1.5 rounded uppercase tracking-wider hover:bg-[#059669] transition-all">
               Select Files
             </span>
           </div>
@@ -503,7 +503,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4 flex items-center justify-between gap-4 shadow-sm group hover:border-[#c5a368]/30 transition-colors"
+                  className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4 flex items-center justify-between gap-4 shadow-sm group hover:border-[#10b981]/30 transition-colors"
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     {/* Thumbnail */}
@@ -535,7 +535,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                     {img.status === 'pending' && (
                       <button
                         onClick={() => convertSingleImage(img)}
-                        className="p-1.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#c5a368]/40 rounded text-gray-400 hover:text-[#c5a368] transition-colors cursor-pointer"
+                        className="p-1.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-gray-400 hover:text-[#10b981] transition-colors cursor-pointer"
                         title="Convert this image"
                       >
                         <RefreshCw className="w-4 h-4" />
@@ -546,11 +546,11 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                       <div className="flex items-center gap-2">
                         <div className="w-12 bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
                           <div 
-                            className="bg-[#c5a368] h-full transition-all duration-300" 
+                            className="bg-[#10b981] h-full transition-all duration-300" 
                             style={{ width: `${img.progress}%` }}
                           />
                         </div>
-                        <RefreshCw className="w-3.5 h-3.5 text-[#c5a368] animate-spin" />
+                        <RefreshCw className="w-3.5 h-3.5 text-[#10b981] animate-spin" />
                       </div>
                     )}
 

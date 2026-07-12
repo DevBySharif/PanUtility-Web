@@ -74,12 +74,12 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
         <div>
           <button 
             onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#c5a368] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             &larr; Back to Dashboard
           </button>
-          <h1 className="text-3xl font-serif italic text-white tracking-tight flex items-center gap-2.5 flex-wrap">
-            <QrCode className="w-8 h-8 text-[#c5a368]" />
+          <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5 flex-wrap">
+            <QrCode className="w-8 h-8 text-[#10b981]" />
             <span>QR Code Generator</span>
             <span className="text-[9px] bg-sky-950/30 border border-sky-800/50 text-sky-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider font-mono select-none">
               Requires Network
@@ -96,8 +96,8 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
         {/* Left Side: Setup Controls */}
         <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
           <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#c5a368]" />
-            <h2 className="font-serif italic text-lg text-white">QR Code Content & Style</h2>
+            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <h2 className="font-sans text-lg text-white">QR Code Content & Style</h2>
           </div>
 
           {/* Input content */}
@@ -106,7 +106,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
               <span>Text or URL Payload</span>
               <button 
                 onClick={copyToClipboard}
-                className="text-[10px] text-[#c5a368] hover:text-[#8a6d3b] flex items-center gap-1 font-semibold transition-colors cursor-pointer capitalize"
+                className="text-[10px] text-[#10b981] hover:text-[#059669] flex items-center gap-1 font-semibold transition-colors cursor-pointer capitalize"
               >
                 {isCopied ? 'Copied!' : <><Copy className="w-3 h-3" /> Copy Link</>}
               </button>
@@ -116,7 +116,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
               placeholder="Enter link, text message, phone number, or structured contact info..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="w-full text-sm border border-[#2a2a2a] focus:border-[#c5a368] focus:ring-0 rounded px-4 py-3 bg-[#151515] text-white focus:outline-none resize-none placeholder-gray-500"
+              className="w-full text-sm border border-[#2a2a2a] focus:border-[#10b981] focus:ring-0 rounded px-4 py-3 bg-[#151515] text-white focus:outline-none resize-none placeholder-gray-500"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               <span className="flex items-center gap-1"><Sliders className="w-3.5 h-3.5 text-gray-500" /> QR Resolution</span>
-              <span className="text-[#c5a368] font-mono">{size} x {size} px</span>
+              <span className="text-[#10b981] font-mono">{size} x {size} px</span>
             </div>
             <input
               type="range"
@@ -180,7 +180,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
               step="50"
               value={size}
               onChange={(e) => setSize(parseInt(e.target.value))}
-              className="w-full accent-[#c5a368] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
+              className="w-full accent-[#10b981] h-1.5 bg-[#1a1a1a] rounded cursor-pointer"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
           <button
             onClick={downloadQr}
             disabled={isDownloading}
-            className="w-full py-3.5 px-4 bg-[#c5a368] hover:bg-[#8a6d3b] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             {isDownloading ? (
               <><RefreshCw className="w-4 h-4 animate-spin" /> Fetching...</>

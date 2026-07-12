@@ -36,6 +36,16 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [downloadFormat, setDownloadFormat] = useState<string>('');
   
+  const availableFormats = [
+    { id: '720p', label: 'MP4 720p HD', quality: '720p Standard High Definition', isAudio: false, size: '18.2 MB' },
+    { id: '1080p', label: 'MP4 1080p Full HD', quality: '1080p Ultra High Definition', isAudio: false, size: '38.4 MB' },
+    { id: '480p', label: 'MP4 480p SD', quality: '480p SD Mobile Optimized', isAudio: false, size: '7.4 MB' },
+    { id: '360p', label: 'MP4 360p SD', quality: '360p Low Bandwidth', isAudio: false, size: '3.1 MB' },
+    { id: 'mp3-320', label: 'MP3 Audio (320kbps)', quality: 'Audio Track 320kbps Studio Master', isAudio: true, size: '8.5 MB' },
+    { id: 'm4a-192', label: 'M4A Audio (192kbps)', quality: 'Audio Track 192kbps High Quality', isAudio: true, size: '4.2 MB' },
+  ];
+  const [selectedFormatIdx, setSelectedFormatIdx] = useState<number>(0);
+  
   // Custom direct download state
   const [isDirectStream, setIsDirectStream] = useState<boolean>(false);
   const [resolutionPreference, setResolutionPreference] = useState<'high' | 'low'>('high');
@@ -258,253 +268,194 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="flex flex-col gap-6">
         
-        {/* Left Side: URL Submission */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Link className="w-5 h-5 text-[#10b981]" />
-              <h2 className="font-sans text-white text-base">Enter Social Media Link</h2>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="relative flex-1 rounded border border-[#2a2a2a] focus-within:border-[#10b981] transition-colors overflow-hidden flex items-center px-3.5 bg-[#151515]">
-                <MagnifyingGlass className="w-4.5 h-4.5 text-gray-500 shrink-0 mr-2" />
-                <input
-                  type="url"
-                  placeholder="Paste YouTube, TikTok, Instagram, Twitter or Facebook URL..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  disabled={status === 'parsing' || status === 'downloading'}
-                  className="w-full py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-500"
-                />
-              </div>
-              <button
-                onClick={handleStartExtraction}
-                disabled={!url.trim() || status === 'parsing' || status === 'downloading'}
-                className="py-3.5 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all hover:shadow-md cursor-pointer shrink-0 disabled:bg-[#151515] disabled:text-gray-600 disabled:border-[#2a2a2a] disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
-              >
-                Analyze URL
-              </button>
-            </div>
-
-            {/* Resolution Preference Option */}
-            <div className="flex flex-col gap-2 pt-2">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                Resolution & Quality Priority
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={() => setResolutionPreference('high')}
-                  className={`flex-1 py-2.5 px-3 border rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    resolutionPreference === 'high'
-                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
-                      : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
-                  }`}
-                >
-                  <Video className="w-3.5 h-3.5 text-[#10b981]" /> Exact High Resolution (Source Stream)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setResolutionPreference('low')}
-                  className={`flex-1 py-2.5 px-3 border rounded font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    resolutionPreference === 'low'
-                      ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981]'
-                      : 'border-[#2a2a2a] hover:border-gray-700 text-gray-400 bg-transparent'
-                  }`}
-                >
-                  <FileVideo className="w-3.5 h-3.5 text-gray-500" /> Low Bandwidth / Data Saver (360p)
-                </button>
-              </div>
-            </div>
-
-            {/* Extraction Steps / Loading Console */}
-            <AnimatePresence>
-              {status === 'parsing' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-[#070707] rounded p-4 border border-[#1a1a1a] flex items-center gap-3 shadow-inner"
-                >
-                  <ArrowsCounterClockwise className="w-5 h-5 text-[#10b981] animate-spin shrink-0" />
-                  <div className="font-mono text-xs">
-                    <span className="text-gray-500 block font-bold uppercase tracking-wider">EXTRACTING METADATA</span>
-                    <span className="text-[#10b981] mt-1 block font-medium">{parsingStep}</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Extracted Stream Metadata Card */}
-            <AnimatePresence>
-              {(status === 'ready' || status === 'downloading' || status === 'completed') && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="border border-[#2a2a2a] bg-[#111111] rounded-xl p-4 md:p-5 flex flex-col md:flex-row gap-5"
-                >
-                  {/* Thumbnail / Card */}
-                  <div className="w-full md:w-44 aspect-video md:aspect-square bg-[#151515] rounded overflow-hidden relative border border-[#2a2a2a] shrink-0">
-                    <img 
-                      src={thumbnail} 
-                      alt="Extracted Clip Thumbnail" 
-                      className="w-full h-full object-cover" 
-                      referrerPolicy="no-referrer"
-                    />
-                    <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/85 text-[10px] font-bold text-white font-mono">
-                      {duration}
-                    </span>
-                  </div>
-
-                  {/* Details and Actions */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest bg-[#10b981]/10 text-[#10b981] px-2.5 py-1 rounded border border-[#10b981]/20">
-                        {detectedPlatform} Stream Ready
-                      </span>
-                      <h3 className="text-base font-sans text-white mt-3 leading-snug">{title}</h3>
-                      <p className="text-[11px] text-gray-400 mt-1 truncate max-w-[320px]" title={url}>Source: {url}</p>
-                    </div>
-
-                    {/* Download options list */}
-                    {status === 'ready' && (
-                      <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[#2a2a2a]">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Available Formats</span>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {resolutionPreference === 'high' ? (
-                            <>
-                              <button
-                                onClick={() => handleDownload('1080p Ultra High Definition', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (1080p HD)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~38.4 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('720p Standard High Definition', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (720p HD)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~18.2 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('Audio Track 320kbps Studio Master', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (320kbps)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~8.5 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('Audio Track 192kbps High Quality', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (192kbps)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~4.2 MB</span>
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => handleDownload('480p SD Mobile Optimized', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (480p SD)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~7.4 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('360p Low Bandwidth', false)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><Video className="w-3.5 h-3.5 text-[#10b981]" /> MP4 Video (360p SD)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~3.1 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('Audio Track 128kbps Standard', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (128kbps)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~3.1 MB</span>
-                              </button>
-                              <button
-                                onClick={() => handleDownload('Audio Track 96kbps Compact', true)}
-                                className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
-                              >
-                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (96kbps)</span>
-                                <span className="text-[10px] text-gray-500 font-mono">~1.8 MB</span>
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Download progress */}
-                    {status === 'downloading' && (
-                      <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col gap-2">
-                        <div className="flex justify-between items-center text-xs font-semibold text-[#10b981]">
-                          <span className="flex items-center gap-1.5"><ArrowsCounterClockwise className="w-3.5 h-3.5 animate-spin" /> Packaging {downloadFormat}...</span>
-                          <span>{downloadProgress}%</span>
-                        </div>
-                        <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-[#10b981] h-full transition-all duration-200" style={{ width: `${downloadProgress}%` }} />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Completion */}
-                    {status === 'completed' && (
-                      <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col gap-3">
-                        <div className="bg-emerald-950/20 text-emerald-300 rounded p-3 text-xs flex items-center gap-2 border border-emerald-900/40">
-                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className="font-semibold">Media downloaded successfully! Ready in your local storage.</span>
-                        </div>
-                        <button
-                          onClick={resetDownloader}
-                          className="py-2 px-4 bg-[#151515] hover:bg-[#202020] text-gray-300 font-bold text-xs uppercase tracking-wider rounded border border-[#2a2a2a] transition-all cursor-pointer text-center"
-                        >
-                          Convert Another Link
-                        </button>
-                      </div>
-                    )}
-
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Main URL Entry Section (SaveFrom-inspired) */}
+        <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 md:p-8 shadow-xl flex flex-col gap-4 text-center max-w-3xl mx-auto w-full">
+          <div className="flex flex-col items-center gap-1.5 mb-2">
+            <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2 justify-center">
+              <Globe className="w-6 h-6 text-[#10b981]" /> SaveFrom Online Video Downloader
+            </h2>
+            <p className="text-gray-400 text-xs md:text-sm">
+              Download online videos/audio instantly from YouTube, TikTok, Instagram, Twitter, and Facebook.
+            </p>
           </div>
+
+          <div className="flex flex-col sm:flex-row gap-0 rounded-lg overflow-hidden border border-[#2a2a2a] focus-within:border-[#10b981] transition-all bg-[#151515] p-1 shadow-inner">
+            <div className="relative flex-1 flex items-center px-3.5">
+              <Link className="w-4.5 h-4.5 text-gray-500 shrink-0 mr-2" />
+              <input
+                type="url"
+                placeholder="Paste your video link here..."
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                disabled={status === 'parsing' || status === 'downloading'}
+                className="w-full py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-500"
+              />
+            </div>
+            <button
+              onClick={handleStartExtraction}
+              disabled={!url.trim() || status === 'parsing' || status === 'downloading'}
+              className="py-3 px-8 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-widest transition-all cursor-pointer shrink-0 disabled:bg-[#1c1c1c] disabled:text-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-md sm:rounded-none sm:rounded-r-md m-0.5 sm:m-0"
+            >
+              {status === 'parsing' ? (
+                <>
+                  <ArrowsCounterClockwise className="w-4.5 h-4.5 animate-spin" /> Processing...
+                </>
+              ) : (
+                <>
+                  Download &rarr;
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Extraction Steps / Loading Console */}
+          <AnimatePresence>
+            {status === 'parsing' && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="bg-[#070707] rounded p-4 border border-[#1a1a1a] flex items-center gap-3 shadow-inner text-left mt-2"
+              >
+                <ArrowsCounterClockwise className="w-5 h-5 text-[#10b981] animate-spin shrink-0" />
+                <div className="font-mono text-xs">
+                  <span className="text-gray-500 block font-bold uppercase tracking-wider">EXTRACTING STREAM DATA</span>
+                  <span className="text-[#10b981] mt-1 block font-medium">{parsingStep}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Right Side: Pro Stream Sniffer Guide (Power User Trick) */}
-        <div className="lg:col-span-1 flex flex-col gap-6">
-          
-          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col gap-4">
+        {/* Extracted SaveFrom-style Result Card */}
+        <AnimatePresence>
+          {(status === 'ready' || status === 'downloading' || status === 'completed') && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="border border-[#2a2a2a] bg-[#0d0d0d] rounded-xl p-5 md:p-6 max-w-3xl mx-auto w-full shadow-2xl flex flex-col md:flex-row gap-6 items-center md:items-start"
+            >
+              {/* Left Column: Thumbnail */}
+              <div className="w-full md:w-56 aspect-video bg-[#151515] rounded-lg overflow-hidden relative border border-[#2a2a2a] shrink-0 shadow-lg">
+                <img 
+                  src={thumbnail} 
+                  alt="Video Thumbnail" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer"
+                />
+                <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/85 text-[10px] font-bold text-white font-mono">
+                  {duration}
+                </span>
+              </div>
+
+              {/* Right Column: Title and Downloader Controls */}
+              <div className="flex-1 w-full flex flex-col justify-between min-h-[126px]">
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-950/40 text-[#10b981] px-2 py-0.5 rounded border border-[#10b981]/25">
+                    {detectedPlatform} Media Resolved
+                  </span>
+                  <h3 className="text-sm md:text-base font-bold text-white mt-2 leading-snug">{title}</h3>
+                </div>
+
+                {/* SaveFrom Dropdown & Download Button Wrapper */}
+                {status === 'ready' && (
+                  <div className="flex flex-row items-stretch sm:items-center mt-6 gap-0.5 rounded-lg overflow-hidden border border-[#2a2a2a] w-fit">
+                    {/* Primary Green Download Button */}
+                    <button
+                      onClick={() => {
+                        const fmt = availableFormats[selectedFormatIdx];
+                        handleDownload(fmt.quality, fmt.isAudio);
+                      }}
+                      className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 rounded-l-md sm:rounded-none"
+                    >
+                      <Download className="w-4 h-4 text-[#0a0a0a]" /> Download
+                    </button>
+
+                    {/* Resolution Format Dropdown Selector */}
+                    <select
+                      value={selectedFormatIdx}
+                      onChange={(e) => setSelectedFormatIdx(Number(e.target.value))}
+                      className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 focus:outline-none cursor-pointer text-xs font-semibold rounded-r-md sm:rounded-none min-w-[140px]"
+                    >
+                      {availableFormats.map((fmt, idx) => (
+                        <option key={fmt.id} value={idx}>
+                          {fmt.label} ({fmt.size})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Packaging & Download Progress */}
+                {status === 'downloading' && (
+                  <div className="mt-6 flex flex-col gap-2 w-full max-w-sm">
+                    <div className="flex justify-between items-center text-xs font-semibold text-[#10b981]">
+                      <span className="flex items-center gap-1.5">
+                        <ArrowsCounterClockwise className="w-3.5 h-3.5 animate-spin" /> 
+                        Packaging {downloadFormat}...
+                      </span>
+                      <span className="font-mono">{downloadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-[#10b981] h-full transition-all duration-200" style={{ width: `${downloadProgress}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Download Complete Card */}
+                {status === 'completed' && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="bg-emerald-950/20 text-emerald-300 rounded-lg p-3 text-xs flex items-center gap-2 border border-[#10b981]/20 flex-1">
+                      <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                      <span className="font-medium">File successfully compiled and saved to local storage!</span>
+                    </div>
+                    <button
+                      onClick={resetDownloader}
+                      className="py-2.5 px-4 bg-[#151515] hover:bg-[#1a1a1a] text-gray-300 font-bold text-xs uppercase tracking-wider rounded border border-[#2a2a2a] transition-all cursor-pointer text-center shrink-0"
+                    >
+                      Convert Another
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Info & Sniffer Guides Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-4xl mx-auto w-full">
+          <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col gap-3">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
               <Terminal className="w-5 h-5 text-[#10b981]" />
-              <h2 className="font-sans text-white text-base">Direct Stream Sniffer</h2>
+              <h2 className="font-sans text-white text-sm font-semibold">Direct Stream Sniffer Guide</h2>
             </div>
-            
             <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
-              Social platforms actively rotate and encrypt URLs to prevent direct scraping. Our 
-              Downloader can easily compile files if you bypass CORS using this smart <strong>DevTools Sniffer</strong> trick:
+              Social networks rotationally encrypt file URLs to prevent direct downloads. If a link fails, you can sniff the raw stream directly:
             </p>
-
-            <ol className="text-[11px] text-gray-300 flex flex-col gap-3 list-decimal pl-4 font-medium leading-relaxed">
-              <li>Open your favorite platform (TikTok or Instagram) in a web browser.</li>
-              <li>Press <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-300">F12</kbd> or <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-300">Inspect</kbd> and switch to the <strong>Network</strong> tab.</li>
-              <li>Filter the logs by <strong>Media</strong> or search for <code>.mp4</code>.</li>
-              <li>Play the video. Copy the direct stream request URL that appears.</li>
-              <li>Paste that direct link here! Our converter will extract, buffer, and download the real stream directly in full resolution.</li>
+            <ol className="text-[11px] text-gray-300 flex flex-col gap-2 list-decimal pl-4 font-medium leading-relaxed">
+              <li>Open the platform (e.g. TikTok) in a browser and press <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-400">F12</kbd> (Network tab).</li>
+              <li>Filter requests by <strong>Media</strong> or search for <code>.mp4</code>.</li>
+              <li>Play the video, copy the request URL, and paste it here to download in full resolution.</li>
             </ol>
+          </div>
 
-            <div className="bg-[#10b981]/5 rounded p-3 border border-[#10b981]/25 flex items-center gap-2 text-[10px] text-[#10b981] font-semibold leading-relaxed">
-              <Shield className="w-4 h-4 text-[#10b981] shrink-0" />
-              This trick runs 100% in your browser sandbox, keeping your credentials completely safe.
+          <div className="md:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col justify-between gap-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
+              <Shield className="w-5 h-5 text-[#10b981]" />
+              <h2 className="font-sans text-white text-sm font-semibold">100% Secure</h2>
+            </div>
+            <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
+              Downloads and extraction proxy requests operate fully inside your local browser sandboxed context, ensuring zero credentials or account tracking.
+            </p>
+            <div className="text-[10px] font-bold text-[#10b981] bg-[#10b981]/5 border border-[#10b981]/20 rounded p-2 text-center">
+              Client GPU Rendered
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

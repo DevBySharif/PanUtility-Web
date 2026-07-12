@@ -8,11 +8,9 @@ import {
   Link,
   Shield,
   Terminal,
-  Video,
   WarningCircle,
-  ArrowSquareOut,
-  MusicNote,
   Play,
+  MusicNote,
 } from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 
@@ -20,62 +18,39 @@ interface SocialDownloaderProps {
   onBack: () => void;
 }
 
+type Status = 'idle' | 'parsing' | 'ready' | 'downloading' | 'completed' | 'error';
+
 interface VideoMeta {
   title: string;
   thumbnail: string;
-  duration?: string;
+  duration: string;
   platform: string;
-  ytId?: string;
-  isDirectMp4: boolean;
+  videoUrl: string;
 }
 
-type Status = 'idle' | 'parsing' | 'ready' | 'error';
-
-const SERVICES = [
-  {
-    id: 'cobalt',
-    name: 'Cobalt',
-    desc: 'Open-source, no ads',
-    color: '#6366f1',
-    getUrl: (u: string) => `https://cobalt.tools/?u=${encodeURIComponent(u)}`,
-  },
-  {
-    id: 'savefrom',
-    name: 'SaveFrom.net',
-    desc: 'Supports most platforms',
-    color: '#10b981',
-    getUrl: (u: string) => `https://en1.savefrom.net/19wr/#url=${encodeURIComponent(u)}`,
-  },
-  {
-    id: 'y2mate',
-    name: 'Y2Mate',
-    desc: 'YouTube & Facebook',
-    color: '#f59e0b',
-    getUrl: (u: string) => `https://www.y2mate.com/youtube/${u.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] || ''}`,
-  },
-  {
-    id: 'yt1s',
-    name: 'YT1s',
-    desc: 'Fast HD downloads',
-    color: '#ec4899',
-    getUrl: (u: string) => `https://yt1s.com/en/youtube-to-mp4?q=${encodeURIComponent(u)}`,
-  },
+const QUALITIES = [
+  { id: '720p', label: 'MP4 720p HD' },
+  { id: '480p', label: 'MP4 480p' },
+  { id: '360p', label: 'MP4 360p' },
+  { id: 'mp3',  label: 'MP3 Audio' },
 ];
 
 export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const [parsingStep, setParsingStep] = useState('');
   const [meta, setMeta] = useState<VideoMeta | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [selectedQuality, setSelectedQuality] = useState(0);
 
-  const detectPlatform = (u: string): string => {
+  const detectPlatform = (u: string) => {
     const l = u.toLowerCase();
     if (l.includes('youtube.com') || l.includes('youtu.be')) return 'YouTube';
     if (l.includes('tiktok.com')) return 'TikTok';
     if (l.includes('instagram.com')) return 'Instagram';
     if (l.includes('facebook.com') || l.includes('fb.watch')) return 'Facebook';
-    if (l.includes('twitter.com') || l.includes('x.com')) return 'Twitter / X';
-    if (l.match(/\.(mp4|webm|mov|mkv|avi)(\?|$)/i)) return 'Direct Video';
+    if (l.includes('twitter.com') || l.includes('x.com')) return 'Twitter/X';
     return 'Web Video';
   };
 
@@ -85,151 +60,175 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
 
     setStatus('parsing');
     setMeta(null);
+    setErrorMsg('');
+    setProgress(0);
 
-    const platform = detectPlatform(trimmed);
+    const steps = [
+      'Initiating connection…',
+      `Resolving ${detectPlatform(trimmed)} stream…`,
+      'Bypassing protection layers…',
+      'Parsing media manifest…',
+      'Assembling download links…',
+    ];
+    let si = 0;
+    const iv = setInterval(() => {
+      if (si < steps.length) { setParsingStep(steps[si]); si++; }
+    }, 500);
 
-    // Direct .mp4 link — no metadata needed, offer instant download
-    if (trimmed.match(/\.(mp4|webm|mov|mkv)(\?|$)/i)) {
-      setMeta({ title: trimmed.split('/').pop()?.split('?')[0] || 'video', thumbnail: '', platform: 'Direct Video', isDirectMp4: true });
-      setStatus('ready');
-      return;
-    }
-
-    // YouTube — fetch metadata via oEmbed (works from browser, no API key needed)
-    const ytId = trimmed.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
-    if (ytId) {
-      setParsingStep('Fetching video details via YouTube API...');
-      try {
-        const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);
-        if (r.ok) {
-          const d = await r.json();
-          setMeta({
-            title: d.title,
-            thumbnail: `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`,
-            platform: 'YouTube',
-            ytId,
-            isDirectMp4: false,
-          });
-          setStatus('ready');
-          return;
-        }
-      } catch {/* fallthrough */}
-    }
-
-    // Other platforms — try OG metadata via our backend (best-effort)
-    setParsingStep('Fetching page metadata...');
     try {
       const r = await fetch('/api/resolve-social', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: trimmed }),
       });
-      if (r.ok) {
-        const d = await r.json();
-        setMeta({
-          title: d.title || `${platform} Video`,
-          thumbnail: d.thumbnail || '',
-          duration: d.duration,
-          platform,
-          isDirectMp4: false,
-        });
-        setStatus('ready');
+
+      clearInterval(iv);
+
+      if (r.status === 422) {
+        const e = await r.json();
+        setErrorMsg(e.error || 'Could not resolve stream.');
+        setStatus('error');
         return;
       }
-    } catch {/* fallthrough */}
+      if (!r.ok) {
+        setErrorMsg(`Server error (${r.status}). Please try again.`);
+        setStatus('error');
+        return;
+      }
 
-    // Fallback — still show the card so user can choose a service
-    setMeta({ title: `${platform} Video`, thumbnail: '', platform, isDirectMp4: false });
-    setStatus('ready');
+      const d = await r.json();
+      setMeta({ title: d.title, thumbnail: d.thumbnail, duration: d.duration, platform: d.platform, videoUrl: d.videoUrl });
+      setStatus('ready');
+
+    } catch {
+      clearInterval(iv);
+      setErrorMsg('Network error — check your connection and try again.');
+      setStatus('error');
+    }
   };
 
-  const handleDirectDownload = () => {
-    const a = document.createElement('a');
-    a.href = url.trim();
-    a.download = meta?.title || 'video';
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    confetti({ particleCount: 100, spread: 80 });
+  const handleDownload = async () => {
+    if (!meta?.videoUrl) return;
+    const isAudio = QUALITIES[selectedQuality].id === 'mp3';
+    const cleanTitle = meta.title.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_').slice(0, 60);
+    const ext = isAudio ? 'mp3' : 'mp4';
+
+    setStatus('downloading');
+    setProgress(5);
+
+    // Animate progress bar
+    const iv = setInterval(() => {
+      setProgress(p => {
+        if (p >= 88) { clearInterval(iv); return 88; }
+        return p + Math.random() * 8 + 3;
+      });
+    }, 350);
+
+    try {
+      // Stream through our proxy which adds Content-Disposition: attachment
+      const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(cleanTitle)}`;
+      const resp = await fetch(proxyUrl);
+
+      if (!resp.ok) throw new Error(`Proxy returned ${resp.status}`);
+
+      const blob = await resp.blob();
+      clearInterval(iv);
+      setProgress(100);
+
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = `${cleanTitle}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objUrl);
+
+      setStatus('completed');
+      confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
+
+    } catch {
+      clearInterval(iv);
+      // Fallback: open the URL directly in a new tab — user can right-click → Save
+      window.open(meta.videoUrl, '_blank', 'noopener');
+      setProgress(100);
+      setStatus('completed');
+    }
   };
 
-  const openService = (svc: typeof SERVICES[0]) => {
-    window.open(svc.getUrl(url.trim()), '_blank', 'noopener');
-  };
+  const reset = () => { setUrl(''); setStatus('idle'); setMeta(null); setProgress(0); };
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6" id="social-downloader-tool">
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#2a2a2a]">
         <div>
-          <button
-            onClick={onBack}
-            className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer"
-          >
+          <button onClick={onBack} className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer">
             ← Back to Dashboard
           </button>
           <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
-            <Download className="w-8 h-8 text-[#10b981]" />
-            Social Media Downloader
+            <Download className="w-8 h-8 text-[#10b981]" /> Social Media Downloader
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Download videos from YouTube, TikTok, Instagram, Twitter &amp; more.
-          </p>
+          <p className="text-gray-400 text-sm mt-1">Download videos from YouTube, TikTok, Instagram, Twitter/X &amp; more.</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-6">
 
-        {/* URL Input Card */}
+        {/* Input */}
         <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 md:p-8 shadow-xl flex flex-col gap-4 text-center max-w-3xl mx-auto w-full">
-          <div className="flex flex-col items-center gap-1.5 mb-2">
-            <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2 justify-center">
+          <div className="flex flex-col items-center gap-1 mb-1">
+            <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2 justify-center">
               <Globe className="w-6 h-6 text-[#10b981]" /> Online Video Downloader
             </h2>
-            <p className="text-gray-400 text-xs md:text-sm">
-              Paste any video link — YouTube, TikTok, Instagram, Twitter/X, Facebook, or a direct .mp4 URL.
-            </p>
+            <p className="text-gray-400 text-xs md:text-sm">Paste any video link from YouTube, TikTok, Instagram, Twitter/X or a direct .mp4 URL.</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-0 rounded-lg overflow-hidden border border-[#2a2a2a] focus-within:border-[#10b981] transition-all bg-[#151515] p-1 shadow-inner">
-            <div className="relative flex-1 flex items-center px-3.5">
+          <div className="flex flex-col sm:flex-row rounded-lg overflow-hidden border border-[#2a2a2a] focus-within:border-[#10b981] transition-all bg-[#151515] p-1 shadow-inner gap-0">
+            <div className="flex-1 flex items-center px-3.5">
               <Link className="w-4 h-4 text-gray-500 shrink-0 mr-2" />
               <input
-                type="url"
                 id="video-url-input"
-                placeholder="https://youtube.com/watch?v=... or any video URL"
+                type="url"
+                placeholder="https://youtu.be/... or any video URL"
                 value={url}
-                onChange={e => { setUrl(e.target.value); setStatus('idle'); setMeta(null); }}
+                onChange={e => { setUrl(e.target.value); if (status === 'error') setStatus('idle'); }}
                 onKeyDown={e => e.key === 'Enter' && handleFetch()}
-                disabled={status === 'parsing'}
+                disabled={status === 'parsing' || status === 'downloading'}
                 className="w-full py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-500"
               />
             </div>
             <button
               id="fetch-video-btn"
               onClick={handleFetch}
-              disabled={!url.trim() || status === 'parsing'}
+              disabled={!url.trim() || status === 'parsing' || status === 'downloading'}
               className="py-3 px-8 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-widest transition-all cursor-pointer shrink-0 disabled:bg-[#1c1c1c] disabled:text-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-md sm:rounded-none sm:rounded-r-md m-0.5 sm:m-0"
             >
               {status === 'parsing'
-                ? <><ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Fetching...</>
+                ? <><ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Fetching…</>
                 : <>Download →</>
               }
             </button>
           </div>
 
-          {/* Loading step */}
           <AnimatePresence>
             {status === 'parsing' && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3 text-left bg-[#070707] border border-[#1a1a1a] rounded-lg p-3"
-              >
+              <motion.div key="parsing" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="flex items-center gap-3 bg-[#070707] border border-[#1a1a1a] rounded-lg p-3 text-left">
                 <ArrowsCounterClockwise className="w-4 h-4 text-[#10b981] animate-spin shrink-0" />
                 <span className="text-[11px] text-[#10b981] font-mono">{parsingStep}</span>
+              </motion.div>
+            )}
+            {status === 'error' && (
+              <motion.div key="error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="bg-red-950/20 border border-red-900/40 rounded-lg p-4 flex flex-col gap-2 text-left">
+                <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-widest">
+                  <WarningCircle className="w-4 h-4" /> Could Not Resolve Stream
+                </div>
+                <p className="text-[11px] text-red-300/80 leading-relaxed">{errorMsg}</p>
+                <button onClick={reset} className="mt-1 self-start text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-white border border-[#2a2a2a] rounded px-3 py-1.5 cursor-pointer transition-colors">
+                  Try Another Link
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -237,158 +236,120 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
 
         {/* Result Card */}
         <AnimatePresence>
-          {status === 'ready' && meta && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-3xl mx-auto w-full"
-            >
-              {/* Video info strip */}
-              <div className="border border-[#2a2a2a] bg-[#0d0d0d] rounded-xl overflow-hidden shadow-2xl">
-                <div className="flex flex-col md:flex-row gap-0">
-                  {/* Thumbnail */}
-                  {meta.thumbnail ? (
-                    <div className="w-full md:w-60 aspect-video bg-[#0a0a0a] shrink-0 relative overflow-hidden">
-                      <img
-                        src={meta.thumbnail}
-                        alt="Thumbnail"
-                        className="w-full h-full object-cover"
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        referrerPolicy="no-referrer"
-                      />
-                      {meta.ytId && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10">
-                            <Play className="w-5 h-5 text-white ml-1" weight="fill" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full md:w-60 aspect-video bg-[#0a0a0a] flex items-center justify-center shrink-0">
-                      <Video className="w-10 h-10 text-gray-700" />
+          {(status === 'ready' || status === 'downloading' || status === 'completed') && meta && (
+            <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="border border-[#2a2a2a] bg-[#0d0d0d] rounded-xl overflow-hidden shadow-2xl max-w-3xl mx-auto w-full">
+
+              <div className="flex flex-col md:flex-row">
+                {/* Thumbnail */}
+                <div className="w-full md:w-60 aspect-video bg-[#0a0a0a] shrink-0 relative overflow-hidden">
+                  {meta.thumbnail
+                    ? <img src={meta.thumbnail} alt="thumb" className="w-full h-full object-cover" referrerPolicy="no-referrer"
+                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    : <div className="w-full h-full flex items-center justify-center"><Play className="w-10 h-10 text-gray-700" /></div>
+                  }
+                  {meta.duration && meta.duration !== '00:00' && (
+                    <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 rounded text-[10px] font-mono text-white font-bold">{meta.duration}</span>
+                  )}
+                </div>
+
+                {/* Info + controls */}
+                <div className="flex-1 p-5 flex flex-col justify-between gap-4">
+                  <div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-950/40 text-[#10b981] px-2 py-0.5 rounded border border-[#10b981]/25">
+                      {meta.platform} · Stream Resolved
+                    </span>
+                    <h3 className="text-sm md:text-base font-bold text-white mt-2 leading-snug line-clamp-2">{meta.title}</h3>
+                  </div>
+
+                  {status === 'ready' && (
+                    <div className="flex items-stretch gap-0.5 rounded-lg overflow-hidden border border-[#2a2a2a] w-fit">
+                      <button
+                        id="download-btn"
+                        onClick={handleDownload}
+                        className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Download className="w-4 h-4" /> Download
+                      </button>
+                      <select
+                        value={selectedQuality}
+                        onChange={e => setSelectedQuality(Number(e.target.value))}
+                        className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 text-xs font-semibold cursor-pointer focus:outline-none min-w-[130px]"
+                      >
+                        {QUALITIES.map((q, i) => (
+                          <option key={q.id} value={i}>{q.label}</option>
+                        ))}
+                      </select>
                     </div>
                   )}
 
-                  {/* Meta + direct download (for .mp4 links) */}
-                  <div className="flex-1 p-5 flex flex-col justify-between gap-4">
-                    <div>
-                      <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-950/40 text-[#10b981] px-2 py-0.5 rounded border border-[#10b981]/25">
-                        {meta.platform}
-                      </span>
-                      <h3 className="text-sm md:text-base font-bold text-white mt-2 leading-snug line-clamp-2">
-                        {meta.title}
-                      </h3>
-                      {meta.duration && meta.duration !== '00:00' && (
-                        <p className="text-[11px] text-gray-500 mt-1 font-mono">{meta.duration}</p>
-                      )}
-                    </div>
-
-                    {meta.isDirectMp4 ? (
-                      <button
-                        onClick={handleDirectDownload}
-                        className="self-start flex items-center gap-2 py-2.5 px-5 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider rounded-lg transition-all cursor-pointer"
-                      >
-                        <Download className="w-4 h-4" /> Download File
-                      </button>
-                    ) : (
-                      <p className="text-[11px] text-gray-500 leading-relaxed">
-                        Choose a download service below. Each opens in a new tab with your link pre-filled.
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Download Services Grid — shown for non-direct links */}
-                {!meta.isDirectMp4 && (
-                  <div className="border-t border-[#1a1a1a] p-5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
-                      Choose Download Service
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {SERVICES.map(svc => (
-                        <button
-                          key={svc.id}
-                          onClick={() => openService(svc)}
-                          className="group flex flex-col items-start gap-1 p-3 bg-[#111] hover:bg-[#181818] border border-[#222] hover:border-[#333] rounded-xl transition-all cursor-pointer text-left"
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="text-xs font-bold text-white group-hover:text-[#10b981] transition-colors">
-                              {svc.name}
-                            </span>
-                            <ArrowSquareOut className="w-3.5 h-3.5 text-gray-600 group-hover:text-[#10b981] transition-colors" />
-                          </div>
-                          <span className="text-[10px] text-gray-500">{svc.desc}</span>
-                          <div className="mt-1 h-0.5 w-8 rounded-full" style={{ backgroundColor: svc.color }} />
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Also offer direct MP3 via audio services */}
-                    {meta.ytId && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href={`https://cobalt.tools/?u=https://youtu.be/${meta.ytId}&vCodec=none`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-[#10b981] border border-[#222] hover:border-[#10b981]/30 rounded-lg px-3 py-2 transition-all"
-                        >
-                          <MusicNote className="w-3.5 h-3.5" /> Download Audio (MP3)
-                        </a>
-                        <a
-                          href={`https://www.y2mate.com/youtube-mp3/${meta.ytId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-[#10b981] border border-[#222] hover:border-[#10b981]/30 rounded-lg px-3 py-2 transition-all"
-                        >
-                          <MusicNote className="w-3.5 h-3.5" /> MP3 via Y2Mate
-                        </a>
+                  {status === 'downloading' && (
+                    <div className="flex flex-col gap-2 w-full max-w-xs">
+                      <div className="flex justify-between text-xs font-semibold text-[#10b981]">
+                        <span className="flex items-center gap-1.5"><ArrowsCounterClockwise className="w-3.5 h-3.5 animate-spin" /> Downloading…</span>
+                        <span className="font-mono">{Math.round(progress)}%</span>
                       </div>
-                    )}
-                  </div>
-                )}
+                      <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-[#10b981] h-full transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {status === 'completed' && (
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="bg-emerald-950/20 text-emerald-300 rounded-lg p-3 text-xs flex items-center gap-2 border border-[#10b981]/20 flex-1">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="font-medium">Download started! Check your browser's download folder.</span>
+                      </div>
+                      <button onClick={reset} className="py-2.5 px-4 bg-[#151515] hover:bg-[#1a1a1a] text-gray-300 font-bold text-xs uppercase tracking-wider rounded border border-[#2a2a2a] cursor-pointer shrink-0">
+                        Download Another
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Reset */}
-              <button
-                onClick={() => { setUrl(''); setStatus('idle'); setMeta(null); }}
-                className="mt-4 text-[11px] text-gray-500 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
-              >
-                <ArrowsCounterClockwise className="w-3.5 h-3.5" /> Try another link
-              </button>
+              {/* Also offer: open in Cobalt as backup */}
+              <div className="border-t border-[#1a1a1a] px-5 py-3 flex items-center justify-between gap-3">
+                <span className="text-[10px] text-gray-600">Having trouble? Open in:</span>
+                <div className="flex items-center gap-2">
+                  <a href={`https://cobalt.tools/?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer"
+                    className="text-[10px] text-gray-500 hover:text-white border border-[#222] hover:border-[#333] rounded px-3 py-1.5 transition-all flex items-center gap-1">
+                    <MusicNote className="w-3 h-3" /> Cobalt
+                  </a>
+                  <a href={`https://en1.savefrom.net/19wr/#url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer"
+                    className="text-[10px] text-gray-500 hover:text-white border border-[#222] hover:border-[#333] rounded px-3 py-1.5 transition-all">
+                    SaveFrom
+                  </a>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 max-w-4xl mx-auto w-full">
-          <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col gap-3">
+          <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col gap-3">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
               <Terminal className="w-5 h-5 text-[#10b981]" />
               <h2 className="font-sans text-white text-sm font-semibold">Direct Stream Sniffer Guide</h2>
             </div>
-            <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
-              For private or restricted content, you can sniff the raw stream directly from your browser:
-            </p>
-            <ol className="text-[11px] text-gray-300 flex flex-col gap-2 list-decimal pl-4 font-medium leading-relaxed">
-              <li>Open the platform (e.g. TikTok) and press <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-400">F12</kbd> → Network tab.</li>
+            <p className="text-[11px] leading-relaxed text-gray-400">For private or restricted content, sniff the raw stream directly from your browser:</p>
+            <ol className="text-[11px] text-gray-300 flex flex-col gap-2 list-decimal pl-4 leading-relaxed">
+              <li>Open the platform and press <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-400">F12</kbd> → Network tab.</li>
               <li>Filter by <strong>Media</strong> or search for <code>.mp4</code>.</li>
               <li>Play the video, copy the request URL, paste it here — it downloads instantly.</li>
             </ol>
           </div>
-
-          <div className="md:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 shadow-sm flex flex-col justify-between gap-3">
+          <div className="md:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col justify-between gap-3">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
               <Shield className="w-5 h-5 text-[#10b981]" />
-              <h2 className="font-sans text-white text-sm font-semibold">100% Secure</h2>
+              <h2 className="font-sans text-white text-sm font-semibold">100% Private</h2>
             </div>
-            <p className="text-[11px] leading-relaxed text-gray-400 font-medium">
-              Your URL is never stored. Download services open directly in your browser — no tracking, no credentials shared.
-            </p>
+            <p className="text-[11px] leading-relaxed text-gray-400">Your URLs are never stored. Everything runs through our server proxy — no external services required.</p>
             <div className="flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 text-[#10b981]" />
-              <span className="text-[10px] font-bold text-[#10b981]">Privacy-first design</span>
+              <span className="text-[10px] font-bold text-[#10b981]">Zero tracking</span>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'GIF Converter & Maker',
     description: 'Convert MP4 videos or multiple static images into lightweight animated GIFs.',
     category: 'Video',
-    icon: 'Film',
+    icon: 'FilmStrip',
     color: 'border-blue-500/20 hover:border-blue-500/60 text-blue-400 bg-blue-500/5'
   },
   {
@@ -48,7 +48,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Video Audio Remover',
     description: 'Instantly strip audio tracks from video clips with one click before sharing.',
     category: 'Video',
-    icon: 'VolumeX',
+    icon: 'SpeakerSlash',
     color: 'border-purple-500/20 hover:border-purple-500/60 text-purple-400 bg-purple-500/5'
   },
   {
@@ -56,7 +56,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Video Compressor',
     description: 'Reduce MP4/WebM file sizes using localized client-side bitrate configurations.',
     category: 'Video',
-    icon: 'Minimize2',
+    icon: 'CornersIn',
     color: 'border-pink-500/20 hover:border-pink-500/60 text-pink-400 bg-pink-500/5'
   },
   {
@@ -64,7 +64,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Video Looper & Repeater',
     description: 'Chain a small video clip back-to-back to create infinite decorative loop segments.',
     category: 'Video',
-    icon: 'RefreshCw',
+    icon: 'ArrowsCounterClockwise',
     color: 'border-fuchsia-500/20 hover:border-fuchsia-500/60 text-fuchsia-400 bg-fuchsia-500/5'
   },
   {
@@ -72,7 +72,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Video Rotator',
     description: 'Rotate skewed video feeds 90, 180, or 270 degrees client-side.',
     category: 'Video',
-    icon: 'RotateCw',
+    icon: 'ArrowClockwise',
     color: 'border-rose-500/20 hover:border-rose-500/60 text-rose-400 bg-rose-500/5'
   },
   {
@@ -88,7 +88,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Video Watermark Adder',
     description: 'Overlay secure customized text or floating brand logo icons on video clips.',
     category: 'Video',
-    icon: 'Layers',
+    icon: 'Stack',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   },
   {
@@ -139,7 +139,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Aesthetic Meme Generator',
     description: 'Upload custom layouts and overlay multi-line bold impact text caps instantly.',
     category: 'Image',
-    icon: 'Smile',
+    icon: 'Smiley',
     color: 'border-pink-500/20 hover:border-pink-500/60 text-pink-400 bg-pink-500/5'
   },
   {
@@ -147,7 +147,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Interactive Pixel Art Maker',
     description: 'Design custom 8-bit visual artwork using a retro canvas board grid.',
     category: 'Image',
-    icon: 'Grid',
+    icon: 'SquaresFour',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -163,7 +163,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Favicon & App Icon Generator',
     description: 'Generate multi-size .ico files and Android/iOS apple-touch configuration icons.',
     category: 'Image',
-    icon: 'Zap',
+    icon: 'Lightning',
     color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
   },
   {
@@ -171,7 +171,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'SVG Optimizer & Beautifier',
     description: 'Clean up nested tags, optimize coordinates, and minify vector files.',
     category: 'Image',
-    icon: 'Sparkles',
+    icon: 'Sparkle',
     color: 'border-amber-500/20 hover:border-amber-500/60 text-amber-400 bg-amber-500/5'
   },
   {
@@ -187,7 +187,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Image Dimension Scaler',
     description: 'Scale width and height coordinates while preserving proportional aspect lock ratios.',
     category: 'Image',
-    icon: 'Maximize2',
+    icon: 'CornersOut',
     color: 'border-rose-500/20 hover:border-rose-500/60 text-rose-400 bg-rose-500/5'
   },
   {
@@ -222,7 +222,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'PDF to Text Extractor',
     description: 'Scan and extract raw strings or paragraphs out of structural PDF files offline.',
     category: 'Document',
-    icon: 'FileCheck',
+    icon: 'File',
     color: 'border-amber-500/20 hover:border-amber-500/60 text-amber-400 bg-amber-500/5'
   },
   {
@@ -230,7 +230,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Plain Text to PDF Maker',
     description: 'Format, style, and print raw TXT documents into clean, structured PDF reports.',
     category: 'Document',
-    icon: 'FileUp',
+    icon: 'FileArrowUp',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   },
   {
@@ -262,7 +262,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Excel to CSV Converter',
     description: 'Parse legacy and modern .xlsx files client-side and export them as standard CSV.',
     category: 'Document',
-    icon: 'FileSpreadsheet',
+    icon: 'FileCsv',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -278,7 +278,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'PDF Page Rotator',
     description: 'Correct skewed portrait or landscape orientations of PDF file pages.',
     category: 'Document',
-    icon: 'RotateCw',
+    icon: 'ArrowClockwise',
     color: 'border-pink-500/20 hover:border-pink-500/60 text-pink-400 bg-pink-500/5'
   },
   {
@@ -286,7 +286,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'JSON to CSV Converter',
     description: 'Flatten structured JSON arrays and nested logs into standard table-ready CSVs.',
     category: 'Document',
-    icon: 'List',
+    icon: 'ListBullets',
     color: 'border-violet-500/20 hover:border-violet-500/60 text-violet-400 bg-violet-500/5'
   },
   {
@@ -304,7 +304,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Audio Waveform Trimmer',
     description: 'Visualize waveforms, trim segments and encode custom WAV/MP3 clips.',
     category: 'Audio',
-    icon: 'Music',
+    icon: 'MusicNotes',
     color: 'border-purple-500/20 hover:border-purple-500/60 text-purple-400 bg-purple-500/5',
     badge: 'Popular'
   },
@@ -313,7 +313,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'AI Audio Transcriber',
     description: 'Transcribe voice notes, tracks, or audio clips with exact timestamp blocks using AI.',
     category: 'Audio',
-    icon: 'Sparkles',
+    icon: 'Sparkle',
     color: 'border-amber-500/20 hover:border-amber-500/60 text-amber-400 bg-amber-500/5',
     badge: 'New'
   },
@@ -322,7 +322,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'High-Fidelity Voice Recorder',
     description: 'Record high-quality vocal memos and sound feeds using customizable mic levels.',
     category: 'Audio',
-    icon: 'Mic',
+    icon: 'Microphone',
     color: 'border-red-500/20 hover:border-red-500/60 text-red-400 bg-red-500/5'
   },
   {
@@ -346,7 +346,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Vocal Splitter',
     description: 'Synthesize audio files to isolate clean vocals and instrumental karaoke tracks.',
     category: 'Audio',
-    icon: 'Volume2',
+    icon: 'SpeakerHigh',
     color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
   },
   {
@@ -354,7 +354,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Audio Silence Cutter',
     description: 'Analyze acoustic frequencies to strip long segments of dead silence automatically.',
     category: 'Audio',
-    icon: 'VolumeX',
+    icon: 'SpeakerSlash',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   },
   {
@@ -370,7 +370,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Tap Tempo & BPM Counter',
     description: 'Tap along to any music track beat to identify precise Beats Per Minute counts.',
     category: 'Audio',
-    icon: 'Activity',
+    icon: 'Pulse',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -396,7 +396,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Text Case Converter',
     description: 'Convert strings to UPPERCASE, lowercase, Title Case, camelCase, or snake_case.',
     category: 'Text & Writing',
-    icon: 'Type',
+    icon: 'TextT',
     color: 'border-orange-500/20 hover:border-orange-500/60 text-orange-400 bg-orange-500/5'
   },
   {
@@ -412,7 +412,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Lorem Ipsum Generator',
     description: 'Generate standard dummy placeholder strings, paragraphs, or lists for layout drafts.',
     category: 'Text & Writing',
-    icon: 'List',
+    icon: 'ListBullets',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   },
   {
@@ -436,7 +436,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Interactive RegEx Tester',
     description: 'Test, parse, and validate complex regular expression strings with matched highlighting.',
     category: 'Text & Writing',
-    icon: 'Sparkles',
+    icon: 'Sparkle',
     color: 'border-purple-500/20 hover:border-purple-500/60 text-purple-400 bg-purple-500/5'
   },
   {
@@ -444,7 +444,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'URL Slug & SEO Link Maker',
     description: 'Cleanse and convert raw article titles into search engine-friendly URL strings.',
     category: 'Text & Writing',
-    icon: 'Link2',
+    icon: 'Link',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -452,7 +452,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Alphabetical Line Sorter',
     description: 'Sort lists alphabetically, numerically, in reverse, or by string length with filters.',
     category: 'Text & Writing',
-    icon: 'List',
+    icon: 'ListBullets',
     color: 'border-violet-500/20 hover:border-violet-500/60 text-violet-400 bg-violet-500/5'
   },
   {
@@ -460,7 +460,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Find & Replace Text Engine',
     description: 'Find strings or matches and replace them globally with selective ignore-case rules.',
     category: 'Text & Writing',
-    icon: 'Search',
+    icon: 'MagnifyingGlass',
     color: 'border-sky-500/20 hover:border-sky-500/60 text-sky-400 bg-sky-500/5'
   },
   {
@@ -468,7 +468,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Morse Code Translator',
     description: 'Translate standard text to Morse code and play back the audio sound.',
     category: 'Text & Writing',
-    icon: 'Volume2',
+    icon: 'SpeakerHigh',
     color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
   },
   {
@@ -508,7 +508,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Text Reverser & Mirror',
     description: 'Instantly flip characters, complete words, or entire lists backward.',
     category: 'Text & Writing',
-    icon: 'RefreshCw',
+    icon: 'ArrowsCounterClockwise',
     color: 'border-stone-500/20 hover:border-stone-500/60 text-stone-400 bg-stone-500/5'
   },
   {
@@ -516,7 +516,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Duplicate Line Remover',
     description: 'Clean lists of strings by removing empty spaces and matching duplicate lines.',
     category: 'Text & Writing',
-    icon: 'Trash2',
+    icon: 'Trash',
     color: 'border-rose-500/20 hover:border-rose-500/60 text-rose-400 bg-rose-500/5'
   },
   {
@@ -524,7 +524,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Creative Prompt Generator',
     description: 'Generate random sentence prompts and vocabulary combinations for writing exercises.',
     category: 'Text & Writing',
-    icon: 'Sparkles',
+    icon: 'Sparkle',
     color: 'border-lime-500/20 hover:border-lime-500/60 text-lime-400 bg-lime-500/5'
   },
 
@@ -559,7 +559,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'UUID Batch Generator',
     description: 'Generate cryptographically secure RFC4122 Version 4 UUID strings in batches.',
     category: 'Developer Tools',
-    icon: 'Zap',
+    icon: 'Lightning',
     color: 'border-violet-500/20 hover:border-violet-500/60 text-violet-400 bg-violet-500/5'
   },
   {
@@ -607,7 +607,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Port Ingress Simulator',
     description: 'Safely test and audit local network connection port parameters inside the sandbox.',
     category: 'Developer Tools',
-    icon: 'Activity',
+    icon: 'Pulse',
     color: 'border-orange-500/20 hover:border-orange-500/60 text-orange-400 bg-orange-500/5'
   },
   {
@@ -697,7 +697,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Academic GPA Calculator',
     description: 'Add course names, grades, and credit hours to estimate cumulative indexes.',
     category: 'Math & Finance',
-    icon: 'Award',
+    icon: 'Trophy',
     color: 'border-amber-500/20 hover:border-amber-500/60 text-amber-400 bg-amber-500/5'
   },
   {
@@ -713,7 +713,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Amortization & Loan Planner',
     description: 'Estimate monthly interest payments and complete principal payoff timelines.',
     category: 'Math & Finance',
-    icon: 'TrendingUp',
+    icon: 'TrendUp',
     color: 'border-violet-500/20 hover:border-violet-500/60 text-violet-400 bg-violet-500/5'
   },
   {
@@ -721,7 +721,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Matrix Algebra Solver',
     description: 'Calculate determinants, matrix additions, transposes, and products instantly.',
     category: 'Math & Finance',
-    icon: 'Grid',
+    icon: 'SquaresFour',
     color: 'border-purple-500/20 hover:border-purple-500/60 text-purple-400 bg-purple-500/5'
   },
   {
@@ -737,7 +737,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Fibonacci Sequence Solver',
     description: 'Analyze sequence counts, golden ratios, and positional values instantly.',
     category: 'Math & Finance',
-    icon: 'Activity',
+    icon: 'Pulse',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   },
 
@@ -747,7 +747,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'BMI Healthy Weight Solver',
     description: 'Calculate Body Mass Index values with customized visual fitness feedback logs.',
     category: 'Health & Lifestyle',
-    icon: 'Activity',
+    icon: 'Pulse',
     color: 'border-rose-500/20 hover:border-rose-500/60 text-rose-400 bg-rose-500/5'
   },
   {
@@ -771,7 +771,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Sleep Aid Ambient Sounds',
     description: 'Synthesize custom relaxing brown noise, white noise, pink noise, or cozy rain sounds.',
     category: 'Health & Lifestyle',
-    icon: 'Volume2',
+    icon: 'SpeakerHigh',
     color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
   },
   {
@@ -795,7 +795,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Step & Cardio Estimator',
     description: 'Convert daily walking step counts into estimated miles, kilometers, and active calories.',
     category: 'Health & Lifestyle',
-    icon: 'Zap',
+    icon: 'Lightning',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -819,7 +819,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Daily Water Intake Logger',
     description: 'Log and monitor daily water targets with responsive fluid level metrics.',
     category: 'Health & Lifestyle',
-    icon: 'Droplet',
+    icon: 'Drop',
     color: 'border-sky-500/20 hover:border-sky-500/60 text-sky-400 bg-sky-500/5'
   },
   {
@@ -869,7 +869,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Tic-Tac-Toe Board',
     description: 'Play standard 3x3 tic-tac-toe grids with a responsive virtual opponent.',
     category: 'Fun & Games',
-    icon: 'Grid',
+    icon: 'SquaresFour',
     color: 'border-blue-500/20 hover:border-blue-500/60 text-blue-400 bg-blue-500/5'
   },
   {
@@ -877,7 +877,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Random Selector Wheel',
     description: 'Enter names or choices to spin a selection wheel and pick an absolute winner.',
     category: 'Fun & Games',
-    icon: 'RefreshCw',
+    icon: 'ArrowsCounterClockwise',
     color: 'border-fuchsia-500/20 hover:border-fuchsia-500/60 text-fuchsia-400 bg-fuchsia-500/5'
   },
   {
@@ -893,7 +893,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Offline General Trivia',
     description: 'Challenge your knowledge with built-in multichoice general knowledge trivia logs.',
     category: 'Fun & Games',
-    icon: 'HelpCircle',
+    icon: 'Question',
     color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
   },
   {
@@ -901,7 +901,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Reaction Time Tester',
     description: 'Measure your visual reflexes down to exact milliseconds during random screen color flashes.',
     category: 'Fun & Games',
-    icon: 'Zap',
+    icon: 'Lightning',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
@@ -909,7 +909,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Word Anagram Solver',
     description: 'Unscramble mixed characters and find valid high-scoring Scrabble words.',
     category: 'Fun & Games',
-    icon: 'Type',
+    icon: 'TextT',
     color: 'border-violet-500/20 hover:border-violet-500/60 text-violet-400 bg-violet-500/5'
   },
   {
@@ -917,7 +917,7 @@ export const TOOLS_LIST: ToolItem[] = [
     title: 'Mini Sudoku Board',
     description: 'Draft, solve, or play a 9x9 Sudoku grid with automatic constraint-checking guidelines.',
     category: 'Fun & Games',
-    icon: 'Grid',
+    icon: 'SquaresFour',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   }
 ];

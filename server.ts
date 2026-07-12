@@ -1,7 +1,11 @@
 import express from "express";
 import path from "path";
+import dns from "dns";
+import { promisify } from "util";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+
+const dnsLookup = promisify(dns.lookup);
 
 const PORT = 3000;
 
@@ -24,6 +28,62 @@ function getGeminiClient(): GoogleGenAI {
     });
   }
   return aiClient;
+}
+
+async function validateSafeUrl(urlStr: string): Promise<boolean> {
+  try {
+    const parsedUrl = new URL(urlStr);
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return false;
+    }
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname === "[::1]" ||
+      hostname.endsWith(".local")
+    ) {
+      return false;
+    }
+
+    const lookupResult = await dnsLookup(hostname);
+    const ip = lookupResult.address;
+
+    if (
+      ip.startsWith("127.") ||
+      ip.startsWith("10.") ||
+      ip.startsWith("192.168.") ||
+      ip.startsWith("169.254.") ||
+      ip === "0.0.0.0"
+    ) {
+      return false;
+    }
+    
+    if (ip.startsWith("172.")) {
+      const parts = ip.split(".");
+      if (parts.length >= 2) {
+        const secondOctet = parseInt(parts[1], 10);
+        if (secondOctet >= 16 && secondOctet <= 31) {
+          return false;
+        }
+      }
+    }
+
+    if (
+      ip === "::1" ||
+      ip.startsWith("fe80:") ||
+      ip.startsWith("fc") ||
+      ip.startsWith("fd")
+    ) {
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
 
 export async function bootstrap() {
@@ -71,6 +131,12 @@ export async function bootstrap() {
       const { url } = req.body;
       if (!url || typeof url !== "string") {
         res.status(400).json({ error: "Missing or invalid 'url' in request body." });
+        return;
+      }
+
+      const isSafe = await validateSafeUrl(url);
+      if (!isSafe) {
+        res.status(403).json({ error: "Access to private, loopback or local network resources is strictly prohibited." });
         return;
       }
 
@@ -210,31 +276,10 @@ export async function bootstrap() {
         return;
       }
 
-      // SECURITY AUDIT/SSRF MITIGATION:
-      // Prevent internal port scan requests or reading local host files (prevent accessing loopback IPs/domains)
       const parsedUrl = new URL(url);
-      if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-        res.status(403).json({ error: "Only http and https protocols are supported for media downloads." });
-        return;
-      }
-
-      const hostname = parsedUrl.hostname.toLowerCase();
-      const isPrivateIP = 
-        hostname === "localhost" || 
-        hostname === "127.0.0.1" || 
-        hostname === "0.0.0.0" ||
-        hostname.startsWith("10.") || 
-        hostname.startsWith("192.168.") || 
-        hostname.startsWith("172.16.") || 
-        hostname.startsWith("172.17.") || 
-        hostname.startsWith("172.18.") || 
-        hostname.startsWith("172.19.") || 
-        hostname.startsWith("172.2") || 
-        hostname.startsWith("172.3") || 
-        hostname.endsWith(".local");
-
-      if (isPrivateIP) {
-        res.status(403).json({ error: "Access to private or local network resources is strictly prohibited." });
+      const isSafe = await validateSafeUrl(url);
+      if (!isSafe) {
+        res.status(403).json({ error: "Access to private, loopback or local network resources is strictly prohibited." });
         return;
       }
 

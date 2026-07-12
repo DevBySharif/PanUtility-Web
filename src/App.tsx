@@ -426,7 +426,7 @@ function AppContent() {
 
   return (
     <div 
-      className={`min-h-screen bg-[#0a0a0b] text-[#e4e4e7] flex flex-col font-sans transition-all duration-300 ${theme === 'light' ? 'theme-light' : ''}`} 
+      className={`min-h-screen bg-[#07080a] text-[#f4f4f5] flex flex-col font-sans transition-all duration-300 ${theme === 'light' ? 'theme-light' : ''}`} 
       id="all-in-one-app"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -439,30 +439,34 @@ function AppContent() {
       />
       
       {/* Universal Top Nav */}
-      <header className="sticky top-0 bg-[#0c0c0e]/95 backdrop-blur-md border-b border-zinc-800/80 z-50">
+      <header className="sticky top-0 bg-[#07080a]/90 backdrop-blur-md border-b border-zinc-800/60 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => navigateToTool(null)}>
-            <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-sm hover:bg-indigo-500 transition-colors">
-              <Zap className="w-5 h-5 fill-current" />
+            <div className="bg-emerald-600/10 border border-emerald-500/30 p-2 rounded-lg text-emerald-400 shadow-sm hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" strokeDasharray="3 3" className="opacity-60" />
+                <path d="M12 2v20M2 12h20" className="opacity-40" />
+                <path d="M12 9l3 3-3 3-3-3 3-3z" fill="currentColor" fillOpacity="0.3" />
+              </svg>
             </div>
             <div>
-              <span className="font-extrabold text-lg text-white tracking-tight block font-sans">
-                PanUtility <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-wider ml-0.5 bg-indigo-950/40 border border-indigo-800/40 px-1.5 py-0.5 rounded">Core</span>
+              <span className="font-extrabold text-lg text-white tracking-tight block font-sans font-sans">
+                PanUtility <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider ml-0.5 bg-emerald-950/40 border border-emerald-800/40 px-1.5 py-0.5 rounded">Core</span>
               </span>
               <span className="text-[9px] text-zinc-500 font-mono block leading-none uppercase tracking-widest mt-1">Universal Utility Suite</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
-            <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-indigo-400" /> 100% Sandbox Secure</span>
+            <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> 100% Sandbox Secure</span>
             <span className="hidden md:inline opacity-30">&bull;</span>
-            <span className="hidden lg:flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-indigo-400" /> Zero Server Siphoning</span>
+            <span className="hidden lg:flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-emerald-400" /> Zero Server Siphoning</span>
             
             {/* Elegant Theme Selector */}
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] text-gray-300 py-1.5 px-3 rounded-lg transition-all cursor-pointer font-bold select-none text-[9px] uppercase tracking-widest"
-              title={theme === 'dark' ? 'Switch to Minimalist Light Theme' : 'Switch to Sophisticated Dark Theme'}
+              className="flex items-center gap-1.5 bg-[#0f1115] hover:bg-zinc-800/50 border border-zinc-800 text-zinc-300 py-1.5 px-3 rounded-lg transition-all cursor-pointer font-bold select-none text-[9px] uppercase tracking-widest"
+              title={theme === 'dark' ? 'Switch to Minimalist Light Theme' : 'Switch to Modern Dark Theme'}
             >
               {theme === 'dark' ? (
                 <>
@@ -471,8 +475,8 @@ function AppContent() {
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-[#b45309] fill-[#b45309]/10" />
-                  <span>Sophisticated Dark</span>
+                  <Moon className="w-3.5 h-3.5 text-zinc-400 fill-zinc-400/10" />
+                  <span>Modern Dark</span>
                 </>
               )}
             </button>
@@ -495,11 +499,11 @@ function AppContent() {
             >
               {/* Promo Banner / Hero greeting */}
               <div className="text-center max-w-2xl mx-auto py-6 flex flex-col gap-4">
-                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 px-2.5 py-1 rounded w-fit mx-auto uppercase tracking-wider font-mono select-none">
+                <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 px-2.5 py-1 rounded w-fit mx-auto uppercase tracking-wider font-mono select-none">
                   Universal Sandbox Tools
                 </span>
                 <h1 className="text-4xl font-extrabold text-white tracking-tight sm:text-5xl leading-tight font-sans">
-                  Universal Offline <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400 font-extrabold uppercase tracking-tight">Utility Suite</span>
+                  Universal Offline <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 font-extrabold uppercase tracking-tight">Utility Suite</span>
                 </h1>
                 <p className="text-zinc-400 text-sm leading-relaxed">
                   Fast, client-side, zero-telemetry utilities. Slice videos, compile PDF volumes, convert image formats, generate secure QR codes, and format data safely with zero server uploads.
@@ -510,14 +514,14 @@ function AppContent() {
               <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
                 {/* Search input field */}
                 <div className="relative group/search">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within/search:text-indigo-400 transition-colors" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within/search:text-emerald-400 transition-colors" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search tools by name, description, category... (Press / to focus)"
-                    className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-inner"
+                    className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-inner"
                   />
                   {searchQuery && (
                     <button
@@ -537,7 +541,7 @@ function AppContent() {
                       onClick={() => setSelectedCategory(cat)}
                       className={`py-1.5 px-3 rounded-lg text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
                         selectedCategory === cat
-                          ? 'bg-indigo-600 text-white font-bold'
+                          ? 'bg-emerald-600 text-white font-bold'
                           : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 bg-transparent'
                       }`}
                     >
@@ -579,14 +583,14 @@ function AppContent() {
                       };
                       input.click();
                     }}
-                    className="border border-dashed border-[#2a2a2a] hover:border-[#c5a368]/50 bg-[#0d0d0d] hover:bg-[#111111] rounded-xl p-6 transition-all duration-300 cursor-pointer text-center group relative overflow-hidden shadow-md"
+                    className="border border-dashed border-zinc-800 hover:border-emerald-500/50 bg-[#0f1115] hover:bg-zinc-800/20 rounded-xl p-6 transition-all duration-300 cursor-pointer text-center group relative overflow-hidden shadow-md"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="p-3 rounded-lg bg-[#151515] border border-[#222] text-gray-400 group-hover:text-[#c5a368] group-hover:border-[#c5a368]/30 transition-colors">
+                      <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-zinc-400 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
                         <Upload className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-white font-serif italic group-hover:text-[#c5a368] transition-colors">
+                        <p className="text-xs text-white font-sans group-hover:text-emerald-400 transition-colors">
                           Drag & drop or click to upload file for instant routing
                         </p>
                         <p className="text-[10px] text-gray-500 mt-1 leading-normal">
@@ -599,15 +603,15 @@ function AppContent() {
                   /* Pending File Active State with Thumbnail/Preview and Route Controls */
                   <div 
                     id="dashboard-drop-zone-active"
-                    className="border border-[#c5a368]/30 bg-[#0d0d0d] rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col gap-4 animate-in fade-in duration-300"
+                    className="border border-emerald-500/30 bg-[#0f1115] rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col gap-4 animate-in fade-in duration-300"
                   >
                     {/* Absolute Glow Background Accent */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#c5a368]/5 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
                     {/* Header with filename and clear button */}
                     <div className="flex items-center justify-between pb-3 border-b border-[#1c1c1c] relative z-10">
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] bg-[#c5a368]/10 text-[#c5a368] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-[9px] bg-emerald-950/40 text-emerald-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                           File Staged
                         </span>
                         <span className="text-[10px] text-gray-400 font-mono">
@@ -739,8 +743,8 @@ function AppContent() {
                     id="pinned-shelf-empty"
                     className={`border border-dashed rounded-xl p-5 text-center transition-all duration-300 ${
                       isPinDraggingOver 
-                        ? 'border-[#c5a368] bg-[#c5a368]/5 scale-[1.01]' 
-                        : 'border-[#1f1f1f] bg-[#0d0d0d]/40 hover:border-[#2a2a2a]'
+                        ? 'border-emerald-500 bg-emerald-500/5 scale-[1.01]' 
+                        : 'border-zinc-800 bg-[#0f1115]/40 hover:border-zinc-700'
                     }`}
                     onDragOver={(e) => {
                       e.preventDefault();
@@ -1133,12 +1137,12 @@ function AppContent() {
           }}
         >
           {/* Floating icon */}
-          <div className="p-5 rounded-full bg-[#c5a368]/10 border border-[#c5a368]/30 text-[#c5a368] animate-bounce mb-4 pointer-events-none">
+          <div className="p-5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 animate-bounce mb-4 pointer-events-none">
             <Upload className="w-10 h-10" />
           </div>
           
           <div className="pointer-events-none max-w-xl">
-            <h2 className="font-serif italic text-3xl text-white">
+            <h2 className="font-sans font-bold text-3xl text-white">
               {draggedFileType === 'image' && "Image File Detected!"}
               {draggedFileType === 'audio' && "Audio File Detected!"}
               {draggedFileType === 'video' && "Video File Detected!"}
@@ -1167,18 +1171,18 @@ function AppContent() {
                       handleRoute(e.dataTransfer.files[0], 'image-converter');
                     }
                   }}
-                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
+                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <FileImage className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">Image Converter</h3>
+                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Image Converter</h3>
                       <p className="text-gray-500 text-xs mt-1">Convert formats, compress, and resize</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                     Drop here to Convert
                   </div>
                 </div>
@@ -1194,18 +1198,18 @@ function AppContent() {
                       handleRoute(e.dataTransfer.files[0], 'pdf-compiler');
                     }
                   }}
-                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
+                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <FileText className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">PDF Compiler</h3>
+                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">PDF Compiler</h3>
                       <p className="text-gray-500 text-xs mt-1">Compile screenshots/images to PDF</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                     Drop here to Compile PDF
                   </div>
                 </div>
@@ -1221,18 +1225,18 @@ function AppContent() {
                       handleRoute(e.dataTransfer.files[0], 'color-extractor');
                     }
                   }}
-                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
+                  className="flex-1 min-w-[240px] max-w-[300px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <Palette className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">Color Extractor</h3>
+                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Color Extractor</h3>
                       <p className="text-gray-500 text-xs mt-1">Extract dominant HEX color palettes</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                     Drop here to Extract Colors
                   </div>
                 </div>
@@ -1252,18 +1256,18 @@ function AppContent() {
                       handleRoute(e.dataTransfer.files[0], 'audio-trimmer');
                     }
                   }}
-                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
+                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <Music className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">Audio Waveform Trimmer</h3>
+                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Audio Waveform Trimmer</h3>
                       <p className="text-gray-500 text-xs mt-1">Visualize waveforms, trim and clip</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                     Drop here to Trim Audio
                   </div>
                 </div>
@@ -1279,18 +1283,18 @@ function AppContent() {
                       handleRoute(e.dataTransfer.files[0], 'audio-transcriber');
                     }
                   }}
-                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
+                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
                 >
                   <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                       <Sparkles className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">AI Audio Transcriber</h3>
+                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">AI Audio Transcriber</h3>
                       <p className="text-gray-500 text-xs mt-1">Transcribe speech & timestamps with AI</p>
                     </div>
                   </div>
-                  <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                     Drop here to Transcribe
                   </div>
                 </div>
@@ -1309,30 +1313,30 @@ function AppContent() {
                     handleRoute(e.dataTransfer.files[0], 'video-splitter');
                   }
                 }}
-                className="min-w-[280px] max-w-[360px] bg-[#0d0d0d] border-2 border-dashed border-[#2a2a2a] hover:border-[#c5a368] hover:bg-[#151515] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group mx-auto"
+                className="min-w-[280px] max-w-[360px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group mx-auto"
               >
                 <div className="flex flex-col items-center gap-4">
-                  <div className="p-3 rounded-lg bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-all">
+                  <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                     <Scissors className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="font-serif italic text-lg text-white group-hover:text-[#c5a368] transition-colors">Video Splitting & Cutting</h3>
+                    <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Video Splitting & Cutting</h3>
                     <p className="text-gray-500 text-xs mt-1">Trim, segment and cut video tracks</p>
                   </div>
                 </div>
-                <div className="text-[10px] font-bold text-[#c5a368] uppercase tracking-wider mt-2 border border-[#c5a368]/20 px-2.5 py-1 rounded bg-[#c5a368]/5">
+                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
                   Drop here to Trim Video
                 </div>
               </div>
             )}
 
             {draggedFileType === 'other' && (
-              <div className="min-w-[280px] max-w-[360px] bg-[#0d0d0d]/50 border-2 border-dashed border-red-950 p-6 rounded-xl flex flex-col items-center gap-4 mx-auto">
-                <div className="p-3 rounded-lg bg-[#151515] border border-red-900/30 text-red-400">
+              <div className="min-w-[280px] max-w-[360px] bg-[#0f1115]/50 border-2 border-dashed border-red-950 p-6 rounded-xl flex flex-col items-center gap-4 mx-auto">
+                <div className="p-3 rounded-lg bg-[#111114] border border-red-900/30 text-red-400">
                   <X className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="font-serif italic text-lg text-white">Unsupported Format</h3>
+                  <h3 className="font-sans font-semibold text-base text-white">Unsupported Format</h3>
                   <p className="text-gray-500 text-xs mt-1">Please drop an image, audio, or video file.</p>
                 </div>
               </div>

@@ -160,68 +160,60 @@ export async function bootstrap() {
       let videoUrl = "";
       let duration = "00:00";
 
-      // ── Step 1: Try Cobalt instances (round-robin, both v10 POST / and v9 POST /api/json)
-      const cobaltInstances = [
-        "https://cobalt.api.red.velvet.ink",
-        "https://api.cobalt.tools",
-        "https://cobalt.catvibers.me",
-        "https://cobalt.drgns.space",
-        "https://api.cobalt.best",
-        "https://cobalt-api.lunes.host"
+      // ── Step 1: Race all Cobalt instances in parallel — fastest success wins
+      // Vercel has a 10s function timeout, so we race with a 6s deadline max.
+      const cobaltEndpoints = [
+        "https://cobalt.api.red.velvet.ink/",
+        "https://api.cobalt.tools/",
+        "https://cobalt.catvibers.me/",
+        "https://cobalt.drgns.space/",
+        "https://api.cobalt.best/",
+        "https://cobalt-api.lunes.host/",
+        // v9 fallbacks
+        "https://cobalt.api.red.velvet.ink/api/json",
+        "https://api.cobalt.tools/api/json",
       ];
 
-      for (const instance of cobaltInstances) {
-        if (videoUrl) break;
-        // Try v10 format (POST /)
-        for (const endpoint of [`${instance}/`, `${instance}/api/json`]) {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const cobaltBody = JSON.stringify({
+        url,
+        vQuality: "720",
+        videoQuality: "720",
+        filenameStyle: "classic",
+        isAudioOnly: false,
+        disableMetadata: false,
+      });
 
-            const cobaltRes = await fetch(endpoint, {
-              method: "POST",
-              headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                url: url,
-                vQuality: "720",
-                videoQuality: "720",
-                filenameStyle: "classic",
-                isAudioOnly: false,
-                disableMetadata: false
-              }),
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (cobaltRes.ok) {
-              const data = await cobaltRes.json();
-              console.log(`[Cobalt ${endpoint}] status=${data.status}`);
-              // v10 returns status: tunnel | redirect | picker | error
-              // v9  returns status: stream | redirect | picker | error
-              if (data.status === "stream" || data.status === "tunnel" || data.status === "redirect") {
-                videoUrl = data.url;
-                if (data.filename) {
-                  title = data.filename.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
-                }
-                break;
-              } else if (data.status === "picker" && data.picker && data.picker.length > 0) {
-                const item = data.picker[0];
-                videoUrl = item.url;
-                if (item.thumb) thumbnail = item.thumb;
-                break;
-              } else {
-                console.warn(`[Cobalt] Non-success status from ${endpoint}:`, data.status, data.error?.code || data.text || "");
-              }
-            } else {
-              console.warn(`[Cobalt] HTTP ${cobaltRes.status} from ${endpoint}`);
-            }
-          } catch (instanceErr: any) {
-            console.warn(`[Cobalt] ${endpoint} threw:`, instanceErr.message);
-          }
+      // Helper: attempt one endpoint, resolve with { videoUrl, title } or reject
+      const tryCobalt = async (endpoint: string): Promise<{ videoUrl: string; title: string; thumbnail?: string }> => {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Accept": "application/json", "Content-Type": "application/json" },
+          body: cobaltBody,
+          signal: AbortSignal.timeout(6000),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.status === "stream" || data.status === "tunnel" || data.status === "redirect") {
+          return {
+            videoUrl: data.url,
+            title: data.filename ? data.filename.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim() : "",
+            thumbnail: data.thumbnail || "",
+          };
         }
+        if (data.status === "picker" && data.picker?.length > 0) {
+          return { videoUrl: data.picker[0].url, title: "", thumbnail: data.picker[0].thumb || "" };
+        }
+        throw new Error(`Cobalt status: ${data.status} (${data.error?.code || data.text || ""})`);
+      };
+
+      try {
+        const result = await Promise.any(cobaltEndpoints.map(ep => tryCobalt(ep)));
+        videoUrl = result.videoUrl;
+        if (result.title) title = result.title;
+        if (result.thumbnail) thumbnail = result.thumbnail;
+        console.log("[Cobalt] Resolved:", videoUrl.slice(0, 60));
+      } catch (err: any) {
+        console.warn("[Cobalt] All instances failed:", err?.errors?.map((e: any) => e.message).join(" | ") || err.message);
       }
 
       // ── Step 2: YouTube oEmbed for metadata (title + thumbnail) if still missing

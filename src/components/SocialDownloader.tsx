@@ -131,48 +131,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     }
   };
 
-  const generateMetadata = (platformName: string, isDirect: boolean) => {
-    let resolvedTitle = 'Extracted Media Output';
-    let resolvedThumb = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60';
-    let resolvedDuration = '03:15';
-    let fallbackUrl = '';
 
-    if (isDirect) {
-      const fileName = url.substring(url.lastIndexOf('/') + 1) || 'direct_media_stream';
-      resolvedTitle = fileName.split('?')[0];
-      resolvedThumb = 'https://images.unsplash.com/photo-1516280440614-37939bbacd6a?w=500&auto=format&fit=crop&q=60';
-      resolvedDuration = 'External Source';
-      fallbackUrl = url;
-    } else {
-      if (platformName === 'YouTube') {
-        resolvedTitle = 'Ultimate Lofi Hip Hop Mix for Relaxing / Study Session';
-        resolvedThumb = 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&auto=format&fit=crop&q=60';
-        resolvedDuration = '12:45';
-        fallbackUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-      } else if (platformName === 'TikTok') {
-        resolvedTitle = 'Crazy stunt jumps on rooftops - Do NOT try at home!';
-        resolvedThumb = 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=60';
-        resolvedDuration = '00:45';
-        fallbackUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-      } else if (platformName === 'Instagram') {
-        resolvedTitle = 'Delicious creamy garlic butter pasta recipe inside';
-        resolvedThumb = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60';
-        resolvedDuration = '01:00';
-        fallbackUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4';
-      } else {
-        resolvedTitle = 'Shared viral clip of the week';
-        resolvedThumb = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=60';
-        resolvedDuration = '02:10';
-        fallbackUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4';
-      }
-    }
-
-    setTitle(resolvedTitle);
-    setThumbnail(resolvedThumb);
-    setDuration(resolvedDuration);
-    setResolvedVideoUrl(fallbackUrl);
-    setStatus('ready');
-  };
 
   // Triggers real secure server-proxied download to bypass CORS blocks and stream full HD video or audio track.
   const handleDownload = async (format: string, isAudio: boolean) => {

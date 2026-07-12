@@ -27,6 +27,7 @@ import AudioTranscriber from './components/AudioTranscriber';
 import GenericUtilityWorkspace from './components/GenericUtilityWorkspace';
 
 import { TOOLS_LIST, TOOL_SHORTCUTS } from './toolsData';
+import { SeoManager } from './components/SeoManager';
 
 function AppContent() {
   const toast = useToast();
@@ -44,6 +45,44 @@ function AppContent() {
   const [isPinDraggingOver, setIsPinDraggingOver] = useState(false);
   const [hoveredToolId, setHoveredToolId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Simple HTML5 Routing
+  useEffect(() => {
+    const handleUrlRouting = () => {
+      const path = window.location.pathname;
+      const match = path.match(/^\/tools\/([^/]+)/);
+      if (match) {
+        const toolId = match[1] as ToolId;
+        const toolExists = TOOLS_LIST.some(t => t.id === toolId) || [
+          'video-splitter', 'image-converter', 'pdf-compiler', 'social-downloader',
+          'audio-trimmer', 'audio-transcriber', 'qr-generator', 'color-extractor'
+        ].includes(toolId);
+        
+        if (toolExists) {
+          setActiveTool(toolId);
+        } else {
+          window.history.replaceState(null, '', '/');
+          setActiveTool(null);
+        }
+      } else {
+        setActiveTool(null);
+      }
+    };
+
+    handleUrlRouting();
+    window.addEventListener('popstate', handleUrlRouting);
+    return () => window.removeEventListener('popstate', handleUrlRouting);
+  }, []);
+
+  const navigateToTool = (toolId: ToolId | null) => {
+    if (toolId) {
+      window.history.pushState(null, '', `/tools/${toolId}`);
+      setActiveTool(toolId);
+    } else {
+      window.history.pushState(null, '', '/');
+      setActiveTool(null);
+    }
+  };
 
   const savePinnedTools = (newIds: string[]) => {
     setPinnedToolIds(newIds);
@@ -208,13 +247,13 @@ function AppContent() {
 
   const handleRoute = (file: File, toolId: ToolId) => {
     setDroppedFile(file);
-    setActiveTool(toolId);
+    navigateToTool(toolId);
     setDashboardPendingFile(null);
     toast.success('File Loaded', `Routing "${file.name}" into workspace.`);
   };
 
   const handleBack = () => {
-    setActiveTool(null);
+    navigateToTool(null);
     setDroppedFile(null);
   };
 
@@ -285,7 +324,7 @@ function AppContent() {
 
       if (targetToolId) {
         e.preventDefault();
-        setActiveTool(targetToolId);
+        navigateToTool(targetToolId);
         const toolItem = TOOLS_LIST.find(t => t.id === targetToolId);
         toast.success('Workspace Activated', `Launching "${toolItem?.title}" via hotkey.`);
       }
@@ -378,33 +417,46 @@ function AppContent() {
     return matchesCategory && matchesSearch;
   });
 
+  const activeToolObj = activeTool ? (TOOLS_LIST.find(t => t.id === activeTool) || {
+    id: activeTool,
+    title: activeTool.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    description: `Perform client-side ${activeTool.split('-').join(' ')} operations safely in your browser.`,
+    category: 'Media Tools'
+  }) : undefined;
+
   return (
     <div 
-      className={`min-h-screen bg-[#0a0a0a] text-[#e0e0e0] flex flex-col font-sans transition-all duration-300 ${theme === 'light' ? 'theme-light' : ''}`} 
+      className={`min-h-screen bg-[#0a0a0b] text-[#e4e4e7] flex flex-col font-sans transition-all duration-300 ${theme === 'light' ? 'theme-light' : ''}`} 
       id="all-in-one-app"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
     >
+      <SeoManager 
+        toolId={activeTool} 
+        toolTitle={activeToolObj?.title} 
+        toolDescription={activeToolObj?.description} 
+        category={activeToolObj?.category} 
+      />
       
       {/* Universal Top Nav */}
-      <header className="sticky top-0 bg-[#0d0d0d]/90 backdrop-blur-md border-b border-[#2a2a2a] z-50">
+      <header className="sticky top-0 bg-[#0c0c0e]/95 backdrop-blur-md border-b border-zinc-800/80 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTool(null)}>
-            <div className="bg-gradient-to-tr from-[#8a6d3b] to-[#c5a368] p-2 rounded-lg text-[#0a0a0a] shadow-md">
-              <Zap className="w-5 h-5 fill-current text-[#0a0a0a]" />
+          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => navigateToTool(null)}>
+            <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-sm hover:bg-indigo-500 transition-colors">
+              <Zap className="w-5 h-5 fill-current" />
             </div>
             <div>
-              <span className="font-serif italic text-lg text-white tracking-tight block">
-                PanUtility <span className="text-[#8a6d3b] not-italic text-xs font-sans font-bold uppercase tracking-widest ml-0.5">Workstation</span>
+              <span className="font-extrabold text-lg text-white tracking-tight block font-sans">
+                PanUtility <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-wider ml-0.5 bg-indigo-950/40 border border-indigo-800/40 px-1.5 py-0.5 rounded">Core</span>
               </span>
-              <span className="text-[9px] text-gray-400 font-bold block leading-none uppercase tracking-widest mt-0.5">Universal Format Hub</span>
+              <span className="text-[9px] text-zinc-500 font-mono block leading-none uppercase tracking-widest mt-1">Universal Utility Suite</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-            <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-[#c5a368]" /> 100% Sandbox Secure</span>
+          <div className="flex items-center gap-4 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+            <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-indigo-400" /> 100% Sandbox Secure</span>
             <span className="hidden md:inline opacity-30">&bull;</span>
-            <span className="hidden lg:flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-[#c5a368]" /> Zero Server Siphoning</span>
+            <span className="hidden lg:flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-indigo-400" /> Zero Server Siphoning</span>
             
             {/* Elegant Theme Selector */}
             <button
@@ -443,14 +495,14 @@ function AppContent() {
             >
               {/* Promo Banner / Hero greeting */}
               <div className="text-center max-w-2xl mx-auto py-6 flex flex-col gap-4">
-                <span className="text-[10px] font-bold text-[#c5a368] bg-[#151515] border border-[#2a2a2a] px-3 py-1 rounded w-fit mx-auto uppercase tracking-widest select-none">
-                  Aesthetic Offline Conversion Suite
+                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 px-2.5 py-1 rounded w-fit mx-auto uppercase tracking-wider font-mono select-none">
+                  Universal Sandbox Tools
                 </span>
-                <h1 className="text-4xl font-serif italic text-white tracking-tight sm:text-5xl leading-tight">
-                  The ultimate web <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8a6d3b] to-[#c5a368] not-italic font-sans font-extrabold uppercase tracking-tight">media workstation.</span>
+                <h1 className="text-4xl font-extrabold text-white tracking-tight sm:text-5xl leading-tight font-sans">
+                  Universal Offline <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400 font-extrabold uppercase tracking-tight">Utility Suite</span>
                 </h1>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Fast, client-side, zero-telemetry conversion. Slice videos, compile PDF volumes, convert image formats, generate secure QR codes, and harvest palette clusters.
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  Fast, client-side, zero-telemetry utilities. Slice videos, compile PDF volumes, convert image formats, generate secure QR codes, and format data safely with zero server uploads.
                 </p>
               </div>
 
@@ -458,19 +510,19 @@ function AppContent() {
               <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
                 {/* Search input field */}
                 <div className="relative group/search">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within/search:text-[#c5a368] transition-colors" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within/search:text-indigo-400 transition-colors" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search tools by name, description, category... (Press / to focus)"
-                    className="w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg pl-10 pr-10 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#c5a368]/60 focus:ring-1 focus:ring-[#c5a368]/30 transition-all shadow-inner"
+                    className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-inner"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer p-0.5"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer p-0.5"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -478,15 +530,15 @@ function AppContent() {
                 </div>
 
                 {/* Filters category bar */}
-                <div className="flex items-center justify-center gap-2 flex-wrap pb-2 border-b border-[#2a2a2a] w-full">
+                <div className="flex items-center justify-center gap-2 flex-wrap pb-2 border-b border-zinc-800/60 w-full">
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`py-1.5 px-3 rounded text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`py-1.5 px-3 rounded-lg text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
                         selectedCategory === cat
-                          ? 'bg-[#c5a368] text-[#0a0a0a] font-bold'
-                          : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a] bg-transparent'
+                          ? 'bg-indigo-600 text-white font-bold'
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 bg-transparent'
                       }`}
                     >
                       {cat}
@@ -597,14 +649,14 @@ function AppContent() {
                               disablePictureInPicture
                             />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <Scissors className="w-5 h-5 text-[#c5a368]" />
+                              <Scissors className="w-5 h-5 text-indigo-400" />
                             </div>
                           </div>
                         )}
 
                         {dashboardPendingFile.type.startsWith('audio/') && (
                           <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-gradient-to-b from-[#111] to-[#1a1a1a]">
-                            <Music className="w-6 h-6 text-[#c5a368] animate-pulse" />
+                            <Music className="w-6 h-6 text-indigo-400 animate-pulse" />
                             {dashboardPreviewUrl && (
                               <audio src={dashboardPreviewUrl} controls className="hidden" />
                             )}
@@ -612,23 +664,23 @@ function AppContent() {
                         )}
 
                         {!dashboardPendingFile.type.startsWith('image/') && !dashboardPendingFile.type.startsWith('video/') && !dashboardPendingFile.type.startsWith('audio/') && (
-                          <FileText className="w-8 h-8 text-gray-500" />
+                          <FileText className="w-8 h-8 text-zinc-500" />
                         )}
                       </div>
 
                       {/* File Info metadata & details */}
                       <div className="flex-grow text-center sm:text-left min-w-0">
-                        <h4 className="font-serif italic text-base text-white truncate pr-2" title={dashboardPendingFile.name}>
+                        <h4 className="font-sans font-semibold text-sm text-white truncate pr-2" title={dashboardPendingFile.name}>
                           {dashboardPendingFile.name}
                         </h4>
-                        <p className="text-[10px] text-gray-400 font-mono mt-1 truncate">
+                        <p className="text-[10px] text-zinc-500 font-mono mt-1 truncate">
                           Type: {dashboardPendingFile.type || 'Unknown Format'}
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5 justify-center sm:justify-start">
-                          <span className="text-[8px] bg-[#1a1a1a] border border-[#2a2a2a] text-gray-300 px-2 py-0.5 rounded font-mono uppercase">
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded font-mono uppercase">
                             {dashboardPendingFile.name.split('.').pop() || 'file'}
                           </span>
-                          <span className="text-[8px] bg-[#1a1a1a] border border-[#2a2a2a] text-gray-300 px-2 py-0.5 rounded font-mono uppercase">
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded font-mono uppercase">
                             Ready to process
                           </span>
                         </div>
@@ -637,7 +689,7 @@ function AppContent() {
 
                     {/* Suggested Workspaces / Destination Routing List */}
                     <div className="flex flex-col gap-2 relative z-10">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">
                         Select workspace destination:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -646,22 +698,22 @@ function AppContent() {
                             key={option.toolId}
                             id={`route-to-${option.toolId}`}
                             onClick={() => handleRoute(dashboardPendingFile, option.toolId)}
-                            className="flex items-center justify-between p-3 rounded-lg bg-[#111111] border border-[#222] hover:border-[#c5a368]/40 hover:bg-[#151515] transition-all text-left cursor-pointer group active:scale-98"
+                            className="flex items-center justify-between p-3 rounded-lg bg-[#111114] border border-zinc-800/80 hover:border-indigo-500/40 hover:bg-zinc-800/20 transition-all text-left cursor-pointer group active:scale-98"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="p-1.5 rounded bg-[#1a1a1a] text-[#c5a368] group-hover:bg-[#c5a368] group-hover:text-black transition-colors">
+                              <div className="p-1.5 rounded bg-zinc-900 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                 {getIcon(option.icon)}
                               </div>
                               <div>
-                                <h5 className="text-xs font-semibold text-white group-hover:text-[#c5a368] transition-colors">
+                                <h5 className="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors">
                                   {option.title}
                                 </h5>
-                                <p className="text-[9px] text-gray-500 mt-0.5">
+                                <p className="text-[9px] text-zinc-500 mt-0.5">
                                   {option.description}
                                 </p>
                               </div>
                             </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#c5a368] group-hover:translate-x-0.5 transition-all" />
+                            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
                           </button>
                         ))}
                       </div>
@@ -671,13 +723,13 @@ function AppContent() {
               </div>
 
               {/* Pinned Tools Area */}
-              <div className="max-w-xl md:max-w-none mx-auto w-full mb-2 bg-[#0a0a0a]" id="pinned-tools-shelf">
-                <div className="flex items-center justify-between mb-4 border-b border-[#2a2a2a] pb-2">
+              <div className="max-w-xl md:max-w-none mx-auto w-full mb-2 bg-[#0a0a0b]" id="pinned-tools-shelf">
+                <div className="flex items-center justify-between mb-4 border-b border-zinc-800/80 pb-2">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-[#c5a368] fill-[#c5a368]/20" />
-                    <h2 className="font-serif italic text-base text-white">Favorite Workspace Shelf</h2>
+                    <Star className="w-4 h-4 text-indigo-400 fill-indigo-400/20" />
+                    <h2 className="font-sans font-bold text-xs uppercase tracking-wider text-zinc-200">Favorite Workspaces</h2>
                   </div>
-                  <span className="text-[10px] text-gray-500 font-mono tracking-wider">
+                  <span className="text-[10px] text-zinc-500 font-mono tracking-wider">
                     {pinnedToolIds.length} tool{pinnedToolIds.length !== 1 ? 's' : ''} pinned
                   </span>
                 </div>
@@ -715,9 +767,9 @@ function AppContent() {
                       }
                     }}
                   >
-                    <Pin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-[#c5a368] animate-bounce' : 'text-gray-500'}`} />
-                    <p className="text-xs text-gray-400 font-serif italic">Your pinned workspaces shelf is empty</p>
-                    <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">Drag & drop any tool card from the grid below to pin it here for instant access.</p>
+                    <Pin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-indigo-400 animate-bounce' : 'text-zinc-500'}`} />
+                    <p className="text-xs text-zinc-300 font-sans font-semibold">Your pinned workspaces shelf is empty</p>
+                    <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Drag & drop any tool card from the grid below to pin it here for instant access.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="pinned-shelf-grid">
@@ -762,10 +814,10 @@ function AppContent() {
                               }
                             }
                           }}
-                          onClick={() => setActiveTool(tool.id as ToolId)}
+                          onClick={() => navigateToTool(tool.id as ToolId)}
                           onMouseEnter={() => setHoveredToolId(`pinned-${tool.id}`)}
                           onMouseLeave={() => setHoveredToolId(null)}
-                          className="border border-[#1f1f1f] bg-[#0d0d0d] rounded-lg p-3 hover:border-[#c5a368]/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-3 relative group active:scale-98 shadow-sm animate-in fade-in zoom-in duration-250"
+                          className="border border-zinc-800 bg-[#111114] rounded-lg p-3 hover:border-indigo-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-3 relative group active:scale-98 shadow-sm animate-in fade-in zoom-in duration-250"
                         >
                           {/* Interactive Subtle Tooltip system for Pinned Workspace */}
                           <AnimatePresence>
@@ -775,31 +827,31 @@ function AppContent() {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 4, scale: 0.95 }}
                                 transition={{ duration: 0.15, ease: 'easeOut' }}
-                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0c0c0c] border border-[#c5a368]/30 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
+                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
                               >
-                                <div className="flex items-center justify-between border-b border-[#222] pb-1.5 mb-2">
-                                  <span className="text-[9px] bg-[#c5a368]/10 text-[#c5a368] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
+                                  <span className="text-[9px] bg-indigo-950/40 text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                     Pro-Tip & Shortcut
                                   </span>
-                                  <div className="flex items-center gap-1 text-[10px] text-gray-400 font-mono">
-                                    <kbd className="px-1.5 py-0.5 bg-[#161616] border border-[#2d2d2d] rounded text-[#c5a368] font-bold">
+                                  <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
+                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
                                       {TOOL_SHORTCUTS[tool.id]?.key}
                                     </kbd>
-                                    <span className="text-gray-600">or</span>
-                                    <kbd className="px-1.5 py-0.5 bg-[#161616] border border-[#2d2d2d] rounded text-[#c5a368] font-bold">
+                                    <span className="text-zinc-650">or</span>
+                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
                                       {TOOL_SHORTCUTS[tool.id]?.label}
                                     </kbd>
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-gray-300 leading-relaxed font-serif italic mb-1.5">
+                                <p className="text-[11px] text-zinc-300 leading-relaxed font-sans mb-1.5">
                                   "{TOOL_SHORTCUTS[tool.id]?.tip}"
                                 </p>
-                                <div className="text-[8px] text-gray-500 font-mono flex items-center justify-between">
+                                <div className="text-[8px] text-zinc-500 font-mono flex items-center justify-between">
                                   <span>Hover card &bull; Press key to launch</span>
-                                  <span className="text-[#c5a368]">&bull; Favorite</span>
+                                  <span className="text-indigo-400">&bull; Favorite</span>
                                 </div>
                                 {/* Mini triangle arrow */}
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-[#c5a368]/30 w-0 h-0" />
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -817,14 +869,14 @@ function AppContent() {
                           </button>
 
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded bg-[#121212] border border-[#1f1f1f] text-[#c5a368] shrink-0">
+                            <div className="p-2 rounded bg-zinc-900 border border-zinc-800 text-indigo-400 shrink-0">
                               {getIcon(tool.icon)}
                             </div>
                             <div className="min-w-0">
-                              <h3 className="font-serif italic text-xs font-semibold text-white truncate group-hover:text-[#c5a368] transition-colors leading-tight">
+                              <h3 className="font-sans text-xs font-semibold text-white truncate group-hover:text-indigo-400 transition-colors leading-tight">
                                 {tool.title}
                               </h3>
-                              <span className="text-[8px] bg-[#1a1a1a] text-gray-400 border border-[#222] px-1.5 py-0.5 rounded uppercase tracking-wider font-mono inline-block mt-1">
+                              <span className="text-[8px] bg-zinc-800 text-zinc-400 border border-zinc-700/50 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono inline-block mt-1">
                                 {tool.category}
                               </span>
                             </div>
@@ -837,8 +889,8 @@ function AppContent() {
                     <div
                       className={`border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[58px] ${
                         isPinDraggingOver 
-                          ? 'border-[#c5a368] bg-[#c5a368]/5 scale-[1.01]' 
-                          : 'border-[#1f1f1f] bg-[#0d0d0d]/10 hover:border-gray-800'
+                          ? 'border-indigo-500 bg-indigo-500/5 scale-[1.01]' 
+                          : 'border-zinc-800 bg-[#111114]/10 hover:border-zinc-700'
                       }`}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -865,8 +917,8 @@ function AppContent() {
                         }
                       }}
                     >
-                      <Pin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-[#c5a368] animate-pulse' : 'text-gray-500'}`} />
-                      <span className="text-[9px] text-gray-500">Drop here to Pin</span>
+                      <Pin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-indigo-400 animate-pulse' : 'text-zinc-500'}`} />
+                      <span className="text-[9px] text-zinc-550">Drop here to Pin</span>
                     </div>
                   </div>
                 )}
@@ -881,7 +933,7 @@ function AppContent() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.04 }}
-                      onClick={() => setActiveTool(tool.id)}
+                      onClick={() => navigateToTool(tool.id as ToolId)}
                       draggable={true}
                       onDragStart={(e) => {
                         e.dataTransfer.setData('text/plain', tool.id);
@@ -890,7 +942,7 @@ function AppContent() {
                       }}
                       onMouseEnter={() => setHoveredToolId(tool.id)}
                       onMouseLeave={() => setHoveredToolId(null)}
-                      className="border border-[#1a1a1a] bg-[#0d0d0d] rounded-xl p-5 shadow-xl hover:border-[#c5a368]/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
+                      className="border border-zinc-800 bg-[#111114] rounded-xl p-5 shadow-xl hover:border-indigo-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
                       style={{ contentVisibility: 'auto' }}
                     >
                       {/* Interactive Subtle Tooltip system */}
@@ -901,31 +953,31 @@ function AppContent() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 4, scale: 0.95 }}
                             transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0c0c0c] border border-[#c5a368]/30 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
+                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
                           >
-                            <div className="flex items-center justify-between border-b border-[#222] pb-1.5 mb-2">
-                              <span className="text-[9px] bg-[#c5a368]/10 text-[#c5a368] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
+                              <span className="text-[9px] bg-indigo-950/40 text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                 Pro-Tip & Shortcut
                               </span>
-                              <div className="flex items-center gap-1 text-[10px] text-gray-400 font-mono">
-                                <kbd className="px-1.5 py-0.5 bg-[#161616] border border-[#2d2d2d] rounded text-[#c5a368] font-bold">
+                              <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
+                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
                                   {TOOL_SHORTCUTS[tool.id]?.key}
                                 </kbd>
-                                <span className="text-gray-600">or</span>
-                                <kbd className="px-1.5 py-0.5 bg-[#161616] border border-[#2d2d2d] rounded text-[#c5a368] font-bold">
+                                <span className="text-zinc-650">or</span>
+                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
                                   {TOOL_SHORTCUTS[tool.id]?.label}
                                 </kbd>
                               </div>
                             </div>
-                            <p className="text-[11px] text-gray-300 leading-relaxed font-serif italic mb-1.5">
+                            <p className="text-[11px] text-zinc-350 leading-relaxed font-sans mb-1.5">
                               "{TOOL_SHORTCUTS[tool.id]?.tip}"
                             </p>
-                            <div className="text-[8px] text-gray-500 font-mono flex items-center justify-between">
+                            <div className="text-[8px] text-zinc-500 font-mono flex items-center justify-between">
                               <span>Hover card &bull; Press key to launch</span>
-                              <span className="text-[#c5a368]">&bull; Sandbox Ready</span>
+                              <span className="text-indigo-400">&bull; Sandbox Ready</span>
                             </div>
                             {/* Mini triangle arrow */}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-[#c5a368]/30 w-0 h-0" />
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -936,56 +988,56 @@ function AppContent() {
                           e.stopPropagation();
                           togglePinTool(tool.id);
                         }}
-                        className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-gray-500 hover:text-[#c5a368] hover:bg-[#1a1a1a] transition-all cursor-pointer opacity-70 group-hover:opacity-100"
+                        className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-indigo-400 hover:bg-zinc-800 transition-all cursor-pointer opacity-70 group-hover:opacity-100"
                         title={pinnedToolIds.includes(tool.id) ? "Remove from favorite tools" : "Add to favorite tools"}
                       >
-                        <Star className={`w-4 h-4 ${pinnedToolIds.includes(tool.id) ? 'fill-[#c5a368] text-[#c5a368]' : ''}`} />
+                        <Star className={`w-4 h-4 ${pinnedToolIds.includes(tool.id) ? 'fill-indigo-400 text-indigo-400' : ''}`} />
                       </button>
 
                       {tool.badge && (
-                        <span className="absolute top-4 right-12 bg-[#c5a368] text-[#0a0a0a] font-bold text-[8px] px-2 py-0.5 rounded uppercase tracking-widest select-none">
+                        <span className="absolute top-4 right-12 bg-indigo-600 text-white font-bold text-[8px] px-2 py-0.5 rounded uppercase tracking-widest select-none">
                           {tool.badge}
                         </span>
                       )}
 
                       <div className="flex flex-col gap-4">
                         {/* Icon Container */}
-                        <div className="p-3 rounded-lg w-fit bg-[#151515] border border-[#2a2a2a] text-[#c5a368] group-hover:text-[#0a0a0a] group-hover:bg-[#c5a368] transition-colors">
+                        <div className="p-3 rounded-lg w-fit bg-zinc-900 border border-zinc-800 text-indigo-400 group-hover:text-white group-hover:bg-indigo-600 transition-colors">
                           {getIcon(tool.icon)}
                         </div>
 
                         {/* Text details */}
                         <div>
-                          <h3 className="font-serif italic text-lg text-white leading-tight group-hover:text-[#c5a368] transition-colors">
+                          <h3 className="font-sans font-semibold text-base text-white leading-tight group-hover:text-indigo-400 transition-colors">
                             {tool.title}
                           </h3>
-                          <p className="text-gray-400 text-xs mt-2 leading-relaxed">
+                          <p className="text-zinc-400 text-xs mt-2 leading-relaxed">
                             {tool.description}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-[#1a1a1a] text-[9px] font-bold uppercase tracking-widest text-[#c5a368] group-hover:translate-x-1 transition-transform w-fit">
+                      <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-indigo-400 group-hover:translate-x-1 transition-transform w-fit">
                         Launch Workspace &rarr;
                       </div>
                     </motion.div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-[#2a2a2a] rounded-xl bg-[#0d0d0d]/30 max-w-md mx-auto w-full gap-4 mt-4">
-                  <div className="p-3 rounded-full bg-[#151515] border border-[#2a2a2a] text-gray-500">
+                <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl bg-[#111114]/10 max-w-md mx-auto w-full gap-4 mt-4">
+                  <div className="p-3 rounded-full bg-zinc-900 border border-zinc-850 text-zinc-500">
                     <Search className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-serif italic text-lg text-white">No tools found</h3>
-                    <p className="text-gray-400 text-xs mt-1">We couldn't find any tools matching "{searchQuery}".</p>
+                    <h3 className="font-sans font-bold text-base text-white">No tools found</h3>
+                    <p className="text-zinc-450 text-xs mt-1">We couldn't find any tools matching "{searchQuery}".</p>
                   </div>
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       setSelectedCategory('All');
                     }}
-                    className="py-2 px-4 bg-[#c5a368] text-[#0a0a0a] font-bold text-xs rounded uppercase tracking-wider hover:bg-[#c5a368]/90 transition-all cursor-pointer"
+                    className="py-2 px-4 bg-indigo-600 text-white font-bold text-xs rounded uppercase tracking-wider hover:bg-indigo-500 transition-all cursor-pointer"
                   >
                     Reset Filters
                   </button>
@@ -1041,9 +1093,9 @@ function AppContent() {
       </main>
 
       {/* Aesthetic Footer */}
-      <footer className="bg-[#0d0d0d] border-t border-[#2a2a2a] py-6 mt-12">
+      <footer className="bg-[#0c0c0e] border-t border-zinc-800/80 py-6 mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-widest text-gray-500 select-none font-medium">
-          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-[#c5a368] fill-[#c5a368]" /> PanUtility Workstation Framework &bull; Release 2026</span>
+          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/20" /> PanUtility Workstation Framework &bull; Release 2026</span>
           <div className="flex gap-4">
             <span className="hover:text-white transition-colors">Offline Sandbox</span>
             <span>&bull;</span>

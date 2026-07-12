@@ -12,6 +12,15 @@ export const TOOLS_LIST: ToolItem[] = [
     badge: 'Popular'
   },
   {
+    id: 'social-downloader',
+    title: 'Social Video Downloader',
+    description: 'Download HD videos and extracts from YouTube, TikTok, Instagram, Facebook, and Twitter.',
+    category: 'Video',
+    icon: 'Download',
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5',
+    badge: 'Popular'
+  },
+  {
     id: 'gif-maker',
     title: 'GIF Converter & Maker',
     description: 'Convert MP4 videos or multiple static images into lightweight animated GIFs.',

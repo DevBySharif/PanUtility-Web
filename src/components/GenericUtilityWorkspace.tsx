@@ -1,14 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ArrowLeft, Copy, Check, RotateCcw, Play, Pause, Trash2, 
-  Dices, CheckCircle2, List, Search, Heart, Smile, Activity, Eye, 
-  Volume2, VolumeX, Terminal, Wind, Mic, Hash, ShieldCheck, Layout, 
-  Database, BookOpen, SlidersHorizontal, Compass, HelpCircle, Binary, 
-  RefreshCw, FileCode, Clock, Calculator, Percent, TrendingUp, Award, 
-  Calendar, Users, Droplet, Key, Circle, Shield, Sparkles, FileText,
-  Sliders, Maximize2, RotateCw, Crop, Layers, Shuffle, Link2, Link, Download
-} from 'lucide-react';
+import {
+  ArrowClockwise,
+  ArrowLeft,
+  ArrowsCounterClockwise,
+  Binary,
+  BookOpen,
+  Calculator,
+  Calendar,
+  Check,
+  CheckCircle,
+  Circle,
+  Clock,
+  Compass,
+  Copy,
+  CornersOut,
+  Crop,
+  Database,
+  DiceFive,
+  Download,
+  Drop,
+  Eye,
+  FileCode,
+  FileText,
+  Hash,
+  Heart,
+  Key,
+  Layout,
+  Link,
+  ListBullets,
+  MagnifyingGlass,
+  Microphone,
+  Pause,
+  Percent,
+  Play,
+  Pulse,
+  Question,
+  Shield,
+  ShieldCheck,
+  Shuffle,
+  Sliders,
+  SlidersHorizontal,
+  Smiley,
+  Sparkle,
+  SpeakerHigh,
+  SpeakerSlash,
+  Stack,
+  Terminal,
+  Trash,
+  TrendUp,
+  Trophy,
+  Users,
+  Wind
+} from '@phosphor-icons/react';
 import { ToolItem } from '../types';
 
 interface GenericUtilityWorkspaceProps {
@@ -525,8 +569,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     const gpa = totalPoints / totalCredits;
     let status = 'Satisfactory';
     if (gpa >= 3.8) status = 'Summa Cum Laude (High Honors)';
-    else if (gpa >= 3.5) status = 'High Honors List';
-    else if (gpa >= 3.0) status = 'Honors List';
+    else if (gpa >= 3.5) status = 'High Honors ListBullets';
+    else if (gpa >= 3.0) status = 'Honors ListBullets';
     else if (gpa < 2.0) status = 'Academic Probation';
 
     setOutputText(`Cumulative GPA Score: ${gpa.toFixed(2)} / 4.0\nAcademic Status: ${status}`);
@@ -637,7 +681,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           
           <div>
             <div className={`p-2.5 rounded-lg w-fit ${tool.color} mb-3.5`}>
-              <Sparkles className="w-5 h-5 text-[#10b981]" />
+              <Sparkle className="w-5 h-5 text-[#10b981]" />
             </div>
             <h1 className="font-sans text-2xl text-white tracking-tight">{tool.title}</h1>
             <span className="text-[9px] bg-[#1a1a1a] text-[#10b981] border border-[#2a2a2a] px-2 py-0.5 rounded font-mono uppercase tracking-wider inline-block mt-2 font-bold">
@@ -697,7 +741,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         runWordCount(e.target.value);
                       }
                     }}
-                    placeholder={`Type or paste your content here...`}
+                    placeholder={`TextT or paste your content here...`}
                     className="w-full min-h-[160px] bg-[#070707] border border-[#222] rounded-xl p-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#10b981]/40 focus:ring-1 focus:ring-[#10b981]/20 transition-all font-mono leading-relaxed shadow-inner"
                   />
                 </div>
@@ -752,7 +796,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     <button onClick={() => runMorseCode(false)} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Morse &rarr; Text</button>
                     {outputText && (
                       <button onClick={playMorseSound} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#151515] border border-cyan-500/30 text-cyan-400 hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">
-                        <Volume2 className="w-3.5 h-3.5" /> Hear Morse Sound
+                        <SpeakerHigh className="w-3.5 h-3.5" /> Hear Morse Sound
                       </button>
                     )}
                   </>
@@ -1109,7 +1153,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               {tool.id === 'gpa-calc' && (
                 <div className="flex flex-col gap-4 text-left">
                   <div className="flex justify-between items-center pb-2 border-b border-[#1f1f1f]">
-                    <span className="text-xs text-white font-mono block">Interactive Course Grades List:</span>
+                    <span className="text-xs text-white font-mono block">Interactive Course Grades ListBullets:</span>
                     <button
                       onClick={handleAddGpaCourse}
                       className="text-[9px] bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] text-[#10b981] px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors cursor-pointer"
@@ -1154,7 +1198,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             className="p-1 hover:bg-rose-950/20 text-rose-400 hover:text-rose-300 rounded transition-colors cursor-pointer shrink-0 border border-transparent"
                             title="Delete course"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))
@@ -1479,7 +1523,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         }`}
                       >
                         <span className={`text-xs ${h.done ? 'line-through' : ''}`}>{h.text}</span>
-                        {h.done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <div className="w-4 h-4 border border-gray-600 rounded" />}
+                        {h.done ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <div className="w-4 h-4 border border-gray-600 rounded" />}
                       </div>
                     ))}
                   </div>
@@ -1744,7 +1788,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       </div>
                     )}
 
-                    {/* Pixel Art Grid Drawer */}
+                    {/* Pixel Art SquaresFour Drawer */}
                     {tool.id === 'pixel-art' && (
                       <div className="flex flex-col items-center gap-3">
                         <div className="flex gap-2 mb-1.5">

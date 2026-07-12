@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Download, Globe, Video, Music, CheckCircle2, AlertCircle, 
-  Search, Link, Shield, Server, RefreshCw, HelpCircle, 
-  ArrowRight, FileVideo, Terminal, Play, Settings2 
-} from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Download,
+  FileVideo,
+  Globe,
+  HardDrive,
+  Link,
+  MagnifyingGlass,
+  MusicNotes,
+  Play,
+  Question,
+  Shield,
+  Sliders,
+  Terminal,
+  Video,
+  WarningCircle
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 
 interface SocialDownloaderProps {
@@ -71,7 +85,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
       const res = await fetch('/api/resolve-social', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-TextT': 'application/json',
         },
         body: JSON.stringify({ url }),
       });
@@ -256,7 +270,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
 
             <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1 rounded border border-[#2a2a2a] focus-within:border-[#10b981] transition-colors overflow-hidden flex items-center px-3.5 bg-[#151515]">
-                <Search className="w-4.5 h-4.5 text-gray-500 shrink-0 mr-2" />
+                <MagnifyingGlass className="w-4.5 h-4.5 text-gray-500 shrink-0 mr-2" />
                 <input
                   type="url"
                   placeholder="Paste YouTube, TikTok, Instagram, Twitter or Facebook URL..."
@@ -315,7 +329,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   exit={{ opacity: 0 }}
                   className="bg-[#070707] rounded p-4 border border-[#1a1a1a] flex items-center gap-3 shadow-inner"
                 >
-                  <RefreshCw className="w-5 h-5 text-[#10b981] animate-spin shrink-0" />
+                  <ArrowsCounterClockwise className="w-5 h-5 text-[#10b981] animate-spin shrink-0" />
                   <div className="font-mono text-xs">
                     <span className="text-gray-500 block font-bold uppercase tracking-wider">EXTRACTING METADATA</span>
                     <span className="text-[#10b981] mt-1 block font-medium">{parsingStep}</span>
@@ -380,14 +394,14 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                                 onClick={() => handleDownload('Audio Track 320kbps Studio Master', true)}
                                 className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (320kbps)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (320kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~8.5 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 192kbps High Quality', true)}
                                 className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (192kbps)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (192kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~4.2 MB</span>
                               </button>
                             </>
@@ -411,14 +425,14 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                                 onClick={() => handleDownload('Audio Track 128kbps Standard', true)}
                                 className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (128kbps)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> MP3 Audio (128kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~3.1 MB</span>
                               </button>
                               <button
                                 onClick={() => handleDownload('Audio Track 96kbps Compact', true)}
                                 className="p-2.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-left hover:bg-[#1a1a1a] transition-all cursor-pointer flex items-center justify-between text-xs text-white"
                               >
-                                <span className="font-semibold flex items-center gap-1.5"><Music className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (96kbps)</span>
+                                <span className="font-semibold flex items-center gap-1.5"><MusicNotes className="w-3.5 h-3.5 text-emerald-400" /> M4A Audio (96kbps)</span>
                                 <span className="text-[10px] text-gray-500 font-mono">~1.8 MB</span>
                               </button>
                             </>
@@ -431,7 +445,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                     {status === 'downloading' && (
                       <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col gap-2">
                         <div className="flex justify-between items-center text-xs font-semibold text-[#10b981]">
-                          <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Packaging {downloadFormat}...</span>
+                          <span className="flex items-center gap-1.5"><ArrowsCounterClockwise className="w-3.5 h-3.5 animate-spin" /> Packaging {downloadFormat}...</span>
                           <span>{downloadProgress}%</span>
                         </div>
                         <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
@@ -444,7 +458,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                     {status === 'completed' && (
                       <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col gap-3">
                         <div className="bg-emerald-950/20 text-emerald-300 rounded p-3 text-xs flex items-center gap-2 border border-emerald-900/40">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                           <span className="font-semibold">Media downloaded successfully! Ready in your local storage.</span>
                         </div>
                         <button

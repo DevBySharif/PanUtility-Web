@@ -1,10 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, Scissors, Play, Pause, Download, Trash2, 
-  Settings2, RefreshCw, CheckCircle2, Sliders, Film, 
-  HelpCircle, Clock, Volume2, Sparkles, AlertCircle, Plus, Eye
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Clock,
+  Download,
+  Eye,
+  FilmStrip,
+  Pause,
+  Play,
+  Plus,
+  Question,
+  Scissors,
+  Sliders,
+  Sparkle,
+  SpeakerHigh,
+  Trash,
+  Upload,
+  WarningCircle
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
 
@@ -470,7 +484,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
             className="hidden"
           />
           <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
-            <Film className="w-8 h-8" />
+            <FilmStrip className="w-8 h-8" />
           </div>
           <h3 className="text-white font-sans text-lg">Drag & drop your video</h3>
           <p className="text-gray-500 text-xs mt-1 mb-4">Supports MP4, WebM, MOV, OGG containers up to 150MB</p>
@@ -611,7 +625,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
 
                 {/* Volume slider */}
                 <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-gray-500" />
+                  <SpeakerHigh className="w-4 h-4 text-gray-500" />
                   <input
                     type="range"
                     min="0"
@@ -637,14 +651,14 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
               /* Single Trim Sidebar panel */
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-                  <Settings2 className="w-5 h-5 text-[#10b981]" />
+                  <Sliders className="w-5 h-5 text-[#10b981]" />
                   <h2 className="font-sans text-lg text-white">Cutting Options</h2>
                 </div>
 
                 {/* Method choice */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    Export Method <HelpCircle className="w-3 h-3 text-gray-500" title="Smart Record records the video stream perfectly. Byte Slice instantly splits the binary file." />
+                    Export Method <Question className="w-3 h-3 text-gray-500" title="Smart Record records the video stream perfectly. Byte Slice instantly splits the binary file." />
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <button
@@ -720,7 +734,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                     className="flex flex-col gap-2 pt-2 border-t border-[#2a2a2a] mt-2"
                   >
                     <div className="bg-emerald-950/20 text-emerald-300 rounded border border-emerald-900/40 p-3 text-xs flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold block uppercase tracking-wider text-[10px] text-emerald-200">Video Segment Trimmed!</span>
                         The file is compiled and ready to download.
@@ -775,7 +789,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                                 onClick={() => removeSegment(seg.id)}
                                 className="text-gray-500 hover:text-rose-400 cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash className="w-3.5 h-3.5" />
                               </button>
                             )}
                             {seg.status === 'completed' && (
@@ -801,7 +815,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
 
                         {seg.status === 'completed' && (
                           <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Ready for download
+                            <CheckCircle className="w-3.5 h-3.5" /> Ready for download
                           </span>
                         )}
                       </div>
@@ -819,7 +833,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                     >
                       {isBatchProcessing ? (
                         <>
-                          <RefreshCw className="w-4 h-4 animate-spin" /> Splitting Segments...
+                          <ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Splitting Segments...
                         </>
                       ) : (
                         <>

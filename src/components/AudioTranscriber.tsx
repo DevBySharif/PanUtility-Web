@@ -1,10 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, Music, Play, Pause, Download, Copy, Trash2, 
-  Sparkles, RefreshCw, CheckCircle2, Clock, FileText, 
-  Mic, MicOff, AlertCircle, Headphones
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Clock,
+  Copy,
+  Download,
+  FileText,
+  Headphones,
+  Microphone,
+  MicrophoneSlash,
+  MusicNotes,
+  Pause,
+  Play,
+  Sparkle,
+  Trash,
+  Upload,
+  WarningCircle
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
 
@@ -203,11 +216,11 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
       setProgressStep('Extracting audio buffer...');
       const base64Audio = await fileToBase64(audioFile);
       
-      setProgressStep('Uploading payload to Gemini Server...');
+      setProgressStep('Uploading payload to Gemini HardDrive...');
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-TextT': 'application/json',
         },
         body: JSON.stringify({
           audio: base64Audio,
@@ -217,7 +230,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error || 'Server transcription failed');
+        throw new Error(errData.error || 'HardDrive transcription failed');
       }
 
       setProgressStep('Gemini model generating high-fidelity transcript...');
@@ -360,7 +373,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
             &larr; Back to Dashboard
           </button>
           <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-[#10b981]" />
+            <Sparkle className="w-8 h-8 text-[#10b981]" />
             AI Audio Transcriber
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -379,7 +392,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
 
       {transcribeError && (
         <div className="mb-6 p-4 rounded-xl border border-rose-900/50 bg-rose-950/10 text-rose-300 text-xs flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <WarningCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold block uppercase tracking-wider mb-1 text-[10px]">Transcription Error</span>
             {transcribeError}
@@ -412,10 +425,10 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
             </span>
           </div>
 
-          {/* Live Mic Recorder Card */}
+          {/* Live Microphone Recorder Card */}
           <div className="border border-[#1a1a1a] bg-[#0d0d0d] rounded-xl p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
             <div className={`p-4 rounded-xl shadow-sm mb-4 transition-all ${isRecording ? 'bg-red-950/30 border border-red-900 text-red-500 animate-pulse' : 'bg-[#151515] border border-[#2a2a2a] text-[#10b981]'}`}>
-              {isRecording ? <Mic className="w-8 h-8 text-red-500" /> : <Mic className="w-8 h-8" />}
+              {isRecording ? <Microphone className="w-8 h-8 text-red-500" /> : <Microphone className="w-8 h-8" />}
             </div>
             <h3 className="text-white font-sans text-lg">{isRecording ? 'Recording Audio' : 'Record voice note'}</h3>
             <p className="text-gray-500 text-xs mt-1 mb-4">
@@ -426,14 +439,14 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                 onClick={stopRecording}
                 className="text-xs font-bold text-white bg-red-600 px-4 py-2 rounded uppercase tracking-wider hover:bg-red-700 transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                <MicOff className="w-3.5 h-3.5" /> Stop & Load Recording
+                <MicrophoneSlash className="w-3.5 h-3.5" /> Stop & Load Recording
               </button>
             ) : (
               <button
                 onClick={startRecording}
                 className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                <Mic className="w-3.5 h-3.5" /> Start Live Record
+                <Microphone className="w-3.5 h-3.5" /> Start Live Record
               </button>
             )}
           </div>
@@ -454,7 +467,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                     {audioFile.name}
                   </h3>
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">
-                    Type: {audioFile.type || 'audio/mp3'} &bull; {Math.round(audioFile.size / 1024 / 1024 * 100) / 100} MB
+                    TextT: {audioFile.type || 'audio/mp3'} &bull; {Math.round(audioFile.size / 1024 / 1024 * 100) / 100} MB
                   </p>
                 </div>
               </div>
@@ -495,12 +508,12 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                     onClick={handleTranscribe}
                     className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#059669] to-[#10b981] hover:shadow-lg text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <Sparkles className="w-4 h-4 fill-current text-[#0a0a0a]" /> Transcribe with AI
+                    <Sparkle className="w-4 h-4 fill-current text-[#0a0a0a]" /> Transcribe with AI
                   </button>
                 ) : (
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between text-xs font-semibold text-[#10b981]">
-                      <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> {progressStep}</span>
+                      <span className="flex items-center gap-1.5"><ArrowsCounterClockwise className="w-3.5 h-3.5 animate-spin" /> {progressStep}</span>
                     </div>
                     <div className="w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
                       <div className="bg-[#10b981] h-full w-2/3 animate-pulse" />
@@ -556,7 +569,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               <div className="flex-1 overflow-y-auto max-h-[380px] pr-1">
                 {isTranscribing ? (
                   <div className="h-full flex flex-col items-center justify-center text-center gap-3 py-16">
-                    <RefreshCw className="w-8 h-8 text-[#10b981] animate-spin" />
+                    <ArrowsCounterClockwise className="w-8 h-8 text-[#10b981] animate-spin" />
                     <p className="text-xs text-gray-400 font-mono">Gemini AI is parsing speech data... Please wait.</p>
                   </div>
                 ) : transcriptLines.length > 0 ? (
@@ -590,7 +603,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               {transcriptLines.length > 0 && (
                 <div className="border-t border-[#1a1a1a] pt-3 flex items-center justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wider font-mono">
                   <span className="flex items-center gap-1 text-emerald-400">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Compiled successfully
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> Compiled successfully
                   </span>
                   <span>{transcriptLines.length} Segments</span>
                 </div>

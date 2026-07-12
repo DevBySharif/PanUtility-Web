@@ -1,9 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, Image, RefreshCw, Download, Trash2, CheckCircle2, 
-  AlertCircle, Settings2, Sliders, FileImage, Sparkles 
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Download,
+  FileImage,
+  Image,
+  Sliders,
+  Sparkle,
+  Trash,
+  Upload,
+  WarningCircle
+} from '@phosphor-icons/react';
 import { ImageFile } from '../types';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
@@ -336,7 +344,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
         {/* Left Options Side - Configurations */}
         <div className="lg:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-6">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <Sliders className="w-5 h-5 text-[#10b981]" />
             <h2 className="font-sans text-lg text-white">Conversion Settings</h2>
           </div>
 
@@ -437,11 +445,11 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             >
               {isProcessingAll ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" /> Converting...
+                  <ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Converting...
                 </>
               ) : (
                 <>
-                  <RefreshCw className="w-4 h-4" /> Convert All Uploaded
+                  <ArrowsCounterClockwise className="w-4 h-4" /> Convert All Uploaded
                 </>
               )}
             </button>
@@ -456,7 +464,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
           </div>
         </div>
 
-        {/* Right Upload/List Area */}
+        {/* Right Upload/ListBullets Area */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           {/* Drag & Drop Area */}
           <div
@@ -488,7 +496,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             </span>
           </div>
 
-          {/* List of images */}
+          {/* ListBullets of images */}
           <div className="flex flex-col gap-3">
             {images.length > 0 && (
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 block">
@@ -538,7 +546,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                         className="p-1.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-gray-400 hover:text-[#10b981] transition-colors cursor-pointer"
                         title="Convert this image"
                       >
-                        <RefreshCw className="w-4 h-4" />
+                        <ArrowsCounterClockwise className="w-4 h-4" />
                       </button>
                     )}
 
@@ -550,7 +558,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                             style={{ width: `${img.progress}%` }}
                           />
                         </div>
-                        <RefreshCw className="w-3.5 h-3.5 text-[#10b981] animate-spin" />
+                        <ArrowsCounterClockwise className="w-3.5 h-3.5 text-[#10b981] animate-spin" />
                       </div>
                     )}
 
@@ -558,7 +566,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                       <div className="flex items-center gap-4 bg-emerald-950/20 border border-emerald-900/30 rounded-xl px-3 py-1.5">
                         <div className="text-right">
                           <div className="text-[10px] font-bold text-emerald-300 flex items-center justify-end gap-1 uppercase tracking-wider">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                            <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
                             {getFormatLabel(globalFormat)}
                           </div>
                           {img.convertedSize && (
@@ -582,7 +590,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
 
                     {img.status === 'failed' && (
                       <div className="flex items-center gap-1 text-red-400 text-xs font-semibold" title="Conversion failed">
-                        <AlertCircle className="w-4 h-4" /> Failed
+                        <WarningCircle className="w-4 h-4" /> Failed
                       </div>
                     )}
 
@@ -592,7 +600,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                       className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer"
                       title="Remove from queue"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash className="w-4 h-4" />
                     </button>
                   </div>
                 </motion.div>

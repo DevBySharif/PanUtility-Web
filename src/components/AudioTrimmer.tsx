@@ -1,10 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, Scissors, Play, Pause, Download, Trash2, 
-  Settings2, RefreshCw, CheckCircle2, Volume2, Music, 
-  Clock, AlertCircle, Sparkles, Sliders, Plus
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Clock,
+  Download,
+  MusicNotes,
+  Pause,
+  Play,
+  Plus,
+  Scissors,
+  Sliders,
+  Sparkle,
+  SpeakerHigh,
+  Trash,
+  Upload,
+  WarningCircle
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
 
@@ -457,7 +469,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
             &larr; Back to Dashboard
           </button>
           <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
-            <Music className="w-8 h-8 text-[#10b981]" />
+            <MusicNotes className="w-8 h-8 text-[#10b981]" />
             Audio Cutter & Trimmer
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -488,7 +500,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
             className="hidden"
           />
           <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
-            <Music className="w-8 h-8" />
+            <MusicNotes className="w-8 h-8" />
           </div>
           <h3 className="text-white font-sans text-base">Drag & drop your audio track</h3>
           <p className="text-gray-500 text-xs mt-1 mb-4">Supports MP3, WAV, M4A, OGG, AAC up to 50MB</p>
@@ -627,7 +639,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
 
                 {/* Volume slider */}
                 <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-gray-500" />
+                  <SpeakerHigh className="w-4 h-4 text-gray-500" />
                   <input
                     type="range"
                     min="0"
@@ -649,7 +661,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
               /* Single Trim Sidebar panel */
               <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-                  <Settings2 className="w-5 h-5 text-[#10b981]" />
+                  <Sliders className="w-5 h-5 text-[#10b981]" />
                   <h2 className="font-sans text-white text-lg">Audio Export</h2>
                 </div>
 
@@ -692,7 +704,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
                     className="flex flex-col gap-2 mt-2 pt-2 border-t border-[#2a2a2a]"
                   >
                     <div className="bg-emerald-950/20 text-emerald-300 rounded p-3 text-xs flex items-center gap-2 border border-emerald-900/40">
-                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                      <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
                       <span className="font-semibold">Track Cut Completed successfully!</span>
                     </div>
                     <a
@@ -744,7 +756,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
                                 onClick={() => removeSegment(seg.id)}
                                 className="text-gray-500 hover:text-rose-400 cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash className="w-3.5 h-3.5" />
                               </button>
                             )}
                             {seg.status === 'completed' && (
@@ -770,7 +782,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
 
                         {seg.status === 'completed' && (
                           <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Ready for download
+                            <CheckCircle className="w-3.5 h-3.5" /> Ready for download
                           </span>
                         )}
                       </div>
@@ -788,7 +800,7 @@ export default function AudioTrimmer({ onBack, initialFile }: AudioTrimmerProps)
                     >
                       {isBatchProcessing ? (
                         <>
-                          <RefreshCw className="w-4 h-4 animate-spin" /> Compiling...
+                          <ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Compiling...
                         </>
                       ) : (
                         <>

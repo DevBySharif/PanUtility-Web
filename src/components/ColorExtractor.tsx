@@ -1,9 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, Palette, Clipboard, CheckCircle2, Trash2, 
-  Settings2, Copy, Sparkles, Image, RefreshCw 
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Clipboard,
+  Copy,
+  Image,
+  Palette,
+  Sliders,
+  Sparkle,
+  Trash,
+  Upload
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
 
@@ -207,7 +215,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
               />
               {isExtracting && (
                 <div className="absolute inset-0 bg-[#0a0a0a]/80 flex flex-col items-center justify-center gap-2">
-                  <RefreshCw className="w-5 h-5 text-[#10b981] animate-spin" />
+                  <ArrowsCounterClockwise className="w-5 h-5 text-[#10b981] animate-spin" />
                   <span className="text-xs font-bold text-[#10b981] animate-pulse">Extracting spectrum...</span>
                 </div>
               )}
@@ -220,7 +228,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
           {/* Extracted Swatches */}
           <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Sparkles className="w-5 h-5 text-[#10b981]" />
+              <Sparkle className="w-5 h-5 text-[#10b981]" />
               <h2 className="font-sans text-white text-lg">Extracted Palette Swatches</h2>
             </div>
 
@@ -251,7 +259,7 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
                     {/* Copy Accent Button */}
                     <div className="p-1.5 rounded bg-[#0d0d0d] group-hover:bg-[#10b981]/10 text-gray-400 group-hover:text-[#10b981] transition-colors">
                       {copiedColor === swatch.hex ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle className="w-4 h-4 text-emerald-400" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}

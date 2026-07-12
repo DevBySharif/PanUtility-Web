@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import {
+  CheckCircle,
+  Info,
+  Warning,
+  WarningCircle,
+  X
+} from '@phosphor-icons/react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -114,7 +120,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
           bg: 'bg-[#0a1410]/95 border-emerald-900/50',
           textColor: 'text-emerald-300',
           descColor: 'text-emerald-400/80',
-          icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />,
+          icon: <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />,
           progressBg: 'bg-emerald-500'
         };
       case 'error':
@@ -122,7 +128,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
           bg: 'bg-[#180a0a]/95 border-rose-950/50',
           textColor: 'text-rose-300',
           descColor: 'text-rose-400/80',
-          icon: <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />,
+          icon: <WarningCircle className="w-5 h-5 text-rose-400 shrink-0" />,
           progressBg: 'bg-rose-500'
         };
       case 'warning':
@@ -130,7 +136,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
           bg: 'bg-[#181105]/95 border-amber-950/50',
           textColor: 'text-amber-300',
           descColor: 'text-amber-400/80',
-          icon: <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />,
+          icon: <Warning className="w-5 h-5 text-amber-400 shrink-0" />,
           progressBg: 'bg-amber-500'
         };
       case 'info':

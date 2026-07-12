@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { 
-  Download, QrCode, Clipboard, Link, Palette, 
-  Settings2, Copy, Sparkles, Sliders, RefreshCw 
-} from 'lucide-react';
+import {
+  ArrowsCounterClockwise,
+  Clipboard,
+  Copy,
+  Download,
+  Link,
+  Palette,
+  QrCode,
+  Sliders,
+  Sparkle
+} from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
 
@@ -96,7 +103,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
         {/* Left Side: Setup Controls */}
         <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
           <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <Sliders className="w-5 h-5 text-[#10b981]" />
             <h2 className="font-sans text-lg text-white">QR Code Content & Style</h2>
           </div>
 
@@ -209,7 +216,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
             className="w-full py-3.5 px-4 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             {isDownloading ? (
-              <><RefreshCw className="w-4 h-4 animate-spin" /> Fetching...</>
+              <><ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Fetching...</>
             ) : (
               <><Download className="w-4 h-4" /> Download QR Code</>
             )}

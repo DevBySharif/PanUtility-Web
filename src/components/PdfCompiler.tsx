@@ -1,10 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Upload, FileText, ArrowUp, ArrowDown, Trash2, 
-  Settings2, FileCode, CheckCircle2, RefreshCw, 
-  Sparkles, Download, LayoutTemplate, HelpCircle 
-} from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowsCounterClockwise,
+  CheckCircle,
+  Download,
+  FileCode,
+  FileText,
+  Question,
+  Sliders,
+  Sparkle,
+  SquaresFour,
+  Trash,
+  Upload
+} from '@phosphor-icons/react';
 import { PDFImageItem } from '../types';
 import { jsPDF } from 'jspdf';
 import confetti from 'canvas-confetti';
@@ -307,7 +317,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         {/* Left Side Options */}
         <div className="lg:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 shadow-sm flex flex-col gap-5">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2a2a2a]">
-            <Settings2 className="w-5 h-5 text-[#10b981]" />
+            <Sliders className="w-5 h-5 text-[#10b981]" />
             <h2 className="font-sans text-lg text-white">PDF Configuration</h2>
           </div>
 
@@ -418,11 +428,11 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
               >
                 {isCompiling ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Compiling...
+                    <ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Compiling...
                   </>
                 ) : (
                   <>
-                    <LayoutTemplate className="w-4 h-4" /> Compile into PDF
+                    <SquaresFour className="w-4 h-4" /> Compile into PDF
                   </>
                 )}
               </button>
@@ -438,7 +448,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   onClick={() => setCompiledUrl(null)}
                   className="w-full py-2 px-4 border border-rose-900/40 hover:bg-rose-950/20 text-rose-400 rounded font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" /> Re-compile / Make Changes
+                  <ArrowsCounterClockwise className="w-3.5 h-3.5" /> Re-compile / Make Changes
                 </button>
               </div>
             )}
@@ -477,7 +487,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
             </span>
           </div>
 
-          {/* List of images */}
+          {/* ListBullets of images */}
           <div className="flex flex-col gap-3">
             {items.length > 0 && (
               <div className="flex justify-between items-center mb-1 select-none">
@@ -485,7 +495,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                   Pages Layout ({items.length} pages)
                 </span>
                 <span className="text-[10px] text-gray-500 font-semibold flex items-center gap-1">
-                  <HelpCircle className="w-3.5 h-3.5 text-gray-600" /> Use arrows to order pages
+                  <Question className="w-3.5 h-3.5 text-gray-600" /> Use arrows to order pages
                 </span>
               </div>
             )}
@@ -547,7 +557,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                       className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer ml-1"
                       title="Delete Page"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash className="w-4 h-4" />
                     </button>
                   </div>
                 </motion.div>

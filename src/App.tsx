@@ -1,17 +1,79 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Scissors, FileImage, FileText, Download, Music, QrCode, Palette,
-  Grid, Sparkles, Zap, ShieldCheck, HeartHandshake, Eye, Star,
-  Sun, Moon, Search, X, Upload, ArrowRight, Play, Volume2,
-  Pin, PinOff, GripVertical, Film, Radio, Camera, Gauge, VolumeX,
-  Minimize2, RefreshCw, RotateCw, Crop, Layers, Maximize2, Terminal,
-  FileCheck, FileUp, BookOpen, Binary, FileSpreadsheet, FilePlus,
-  List, Code, Mic, Activity, Timer, Shuffle, Type, Link2, Link,
-  Trash2, FileCode, Hash, Layout, Database, Clock, Calculator,
-  Percent, Users, Award, Calendar, TrendingUp, Heart, Wind, Droplet,
-  Key, Dices, Circle, Shield, HelpCircle
-} from 'lucide-react';
+import {
+  IconContext,
+  ArrowClockwise,
+  ArrowRight,
+  ArrowsCounterClockwise,
+  Binary,
+  BookOpen,
+  Calculator,
+  Calendar,
+  Camera,
+  Circle,
+  Clock,
+  Code,
+  CornersIn,
+  CornersOut,
+  Crop,
+  Database,
+  DiceFive,
+  DotsSixVertical,
+  Download,
+  Drop,
+  Eye,
+  File,
+  FileArrowUp,
+  FileCode,
+  FileCsv,
+  FileImage,
+  FilePlus,
+  FileText,
+  FilmStrip,
+  Gauge,
+  Handshake,
+  Hash,
+  Heart,
+  Key,
+  Layout,
+  Lightning,
+  Link,
+  ListBullets,
+  MagnifyingGlass,
+  Microphone,
+  Moon,
+  MusicNotes,
+  Palette,
+  Percent,
+  Play,
+  Pulse,
+  PushPin,
+  PushPinSlash,
+  QrCode,
+  Question,
+  Radio,
+  Scissors,
+  Shield,
+  ShieldCheck,
+  Shuffle,
+  Sparkle,
+  SpeakerHigh,
+  SpeakerSlash,
+  SquaresFour,
+  Stack,
+  Star,
+  Sun,
+  Terminal,
+  TextT,
+  Timer,
+  Trash,
+  TrendUp,
+  Trophy,
+  Upload,
+  Users,
+  Wind,
+  X
+} from '@phosphor-icons/react';
 import { ToolId, ToolItem } from './types';
 import { ToastProvider, useToast } from './components/Toast';
 
@@ -163,13 +225,13 @@ function AppContent() {
           toolId: 'audio-trimmer' as ToolId,
           title: 'Audio Trimmer',
           description: 'Slice & clip visual audio waveforms',
-          icon: 'Music'
+          icon: 'MusicNotes'
         },
         {
           toolId: 'audio-transcriber' as ToolId,
           title: 'AI Audio Transcriber',
           description: 'Convert spoken speech to text',
-          icon: 'Sparkles'
+          icon: 'Sparkle'
         }
       ];
     } else if (type.startsWith('video/')) {
@@ -348,38 +410,38 @@ function AppContent() {
       FileImage: <FileImage className="w-5 h-5" />,
       FileText: <FileText className="w-5 h-5" />,
       Download: <Download className="w-5 h-5" />,
-      Music: <Music className="w-5 h-5" />,
+      MusicNotes: <MusicNotes className="w-5 h-5" />,
       QrCode: <QrCode className="w-5 h-5" />,
       Palette: <Palette className="w-5 h-5" />,
-      Sparkles: <Sparkles className="w-5 h-5" />,
-      Film: <Film className="w-5 h-5" />,
+      Sparkle: <Sparkle className="w-5 h-5" />,
+      FilmStrip: <FilmStrip className="w-5 h-5" />,
       Radio: <Radio className="w-5 h-5" />,
       Camera: <Camera className="w-5 h-5" />,
       Gauge: <Gauge className="w-5 h-5" />,
-      VolumeX: <VolumeX className="w-5 h-5" />,
-      Minimize2: <Minimize2 className="w-5 h-5" />,
-      RefreshCw: <RefreshCw className="w-5 h-5" />,
-      RotateCw: <RotateCw className="w-5 h-5" />,
+      SpeakerSlash: <SpeakerSlash className="w-5 h-5" />,
+      CornersIn: <CornersIn className="w-5 h-5" />,
+      ArrowsCounterClockwise: <ArrowsCounterClockwise className="w-5 h-5" />,
+      ArrowClockwise: <ArrowClockwise className="w-5 h-5" />,
       Crop: <Crop className="w-5 h-5" />,
-      Layers: <Layers className="w-5 h-5" />,
-      Maximize2: <Maximize2 className="w-5 h-5" />,
+      Stack: <Stack className="w-5 h-5" />,
+      CornersOut: <CornersOut className="w-5 h-5" />,
       Terminal: <Terminal className="w-5 h-5" />,
-      FileCheck: <FileCheck className="w-5 h-5" />,
-      FileUp: <FileUp className="w-5 h-5" />,
+      File: <File className="w-5 h-5" />,
+      FileArrowUp: <FileArrowUp className="w-5 h-5" />,
       BookOpen: <BookOpen className="w-5 h-5" />,
       Binary: <Binary className="w-5 h-5" />,
-      FileSpreadsheet: <FileSpreadsheet className="w-5 h-5" />,
+      FileCsv: <FileCsv className="w-5 h-5" />,
       FilePlus: <FilePlus className="w-5 h-5" />,
-      List: <List className="w-5 h-5" />,
+      ListBullets: <ListBullets className="w-5 h-5" />,
       Code: <Code className="w-5 h-5" />,
-      Mic: <Mic className="w-5 h-5" />,
-      Activity: <Activity className="w-5 h-5" />,
+      Microphone: <Microphone className="w-5 h-5" />,
+      Pulse: <Pulse className="w-5 h-5" />,
       Timer: <Timer className="w-5 h-5" />,
       Shuffle: <Shuffle className="w-5 h-5" />,
-      Type: <Type className="w-5 h-5" />,
-      Link2: <Link2 className="w-5 h-5" />,
+      TextT: <TextT className="w-5 h-5" />,
       Link: <Link className="w-5 h-5" />,
-      Trash2: <Trash2 className="w-5 h-5" />,
+      Link2: <Link className="w-5 h-5" />,
+      Trash: <Trash className="w-5 h-5" />,
       FileCode: <FileCode className="w-5 h-5" />,
       Hash: <Hash className="w-5 h-5" />,
       Layout: <Layout className="w-5 h-5" />,
@@ -388,19 +450,19 @@ function AppContent() {
       Calculator: <Calculator className="w-5 h-5" />,
       Percent: <Percent className="w-5 h-5" />,
       Users: <Users className="w-5 h-5" />,
-      Award: <Award className="w-5 h-5" />,
+      Trophy: <Trophy className="w-5 h-5" />,
       Calendar: <Calendar className="w-5 h-5" />,
-      TrendingUp: <TrendingUp className="w-5 h-5" />,
+      TrendUp: <TrendUp className="w-5 h-5" />,
       Heart: <Heart className="w-5 h-5" />,
       Wind: <Wind className="w-5 h-5" />,
-      Droplet: <Droplet className="w-5 h-5" />,
+      Drop: <Drop className="w-5 h-5" />,
       Key: <Key className="w-5 h-5" />,
-      Dices: <Dices className="w-5 h-5" />,
+      DiceFive: <DiceFive className="w-5 h-5" />,
       Circle: <Circle className="w-5 h-5" />,
       Shield: <Shield className="w-5 h-5" />,
-      HelpCircle: <HelpCircle className="w-5 h-5" />,
+      Question: <Question className="w-5 h-5" />,
     };
-    return iconMap[name] || <Grid className="w-5 h-5" />;
+    return iconMap[name] || <SquaresFour className="w-5 h-5" />;
   };
 
   const getPremiumIcon = (name: string, category: string) => {
@@ -516,7 +578,7 @@ function AppContent() {
           <div className="flex items-center gap-4 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
             <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> 100% Sandbox Secure</span>
             <span className="hidden md:inline opacity-30">&bull;</span>
-            <span className="hidden lg:flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-emerald-400" /> Zero Server Siphoning</span>
+            <span className="hidden lg:flex items-center gap-1.5"><Handshake className="w-4 h-4 text-emerald-400" /> Zero HardDrive Siphoning</span>
             
             {/* Elegant Theme Selector */}
             <button
@@ -566,17 +628,17 @@ function AppContent() {
                 </p>
               </div>
 
-              {/* Search & Filters block */}
+              {/* MagnifyingGlass & Filters block */}
               <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
-                {/* Search input field */}
+                {/* MagnifyingGlass input field */}
                 <div className="relative group/search">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within/search:text-emerald-400 transition-colors" />
+                  <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within/search:text-emerald-400 transition-colors" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tools by name, description, category... (Press / to focus)"
+                    placeholder="MagnifyingGlass tools by name, description, category... (Press / to focus)"
                     className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-inner"
                   />
                   {searchQuery && (
@@ -716,7 +778,7 @@ function AppContent() {
 
                         {dashboardPendingFile.type.startsWith('audio/') && (
                           <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-gradient-to-b from-[#111] to-[#1a1a1a]">
-                            <Music className="w-6 h-6 text-emerald-400 animate-pulse" />
+                            <MusicNotes className="w-6 h-6 text-emerald-400 animate-pulse" />
                             {dashboardPreviewUrl && (
                               <audio src={dashboardPreviewUrl} controls className="hidden" />
                             )}
@@ -734,7 +796,7 @@ function AppContent() {
                           {dashboardPendingFile.name}
                         </h4>
                         <p className="text-[10px] text-zinc-500 font-mono mt-1 truncate">
-                          Type: {dashboardPendingFile.type || 'Unknown Format'}
+                          TextT: {dashboardPendingFile.type || 'Unknown Format'}
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5 justify-center sm:justify-start">
                           <span className="text-[8px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded font-mono uppercase">
@@ -747,7 +809,7 @@ function AppContent() {
                       </div>
                     </div>
 
-                    {/* Suggested Workspaces / Destination Routing List */}
+                    {/* Suggested Workspaces / Destination Routing ListBullets */}
                     <div className="flex flex-col gap-2 relative z-10">
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">
                         Select workspace destination:
@@ -827,7 +889,7 @@ function AppContent() {
                       }
                     }}
                   >
-                    <Pin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-emerald-400 animate-bounce' : 'text-zinc-500'}`} />
+                    <PushPin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-emerald-400 animate-bounce' : 'text-zinc-500'}`} />
                     <p className="text-xs text-zinc-300 font-sans font-semibold">Your pinned workspaces shelf is empty</p>
                     <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Drag & drop any tool card from the grid below to pin it here for instant access.</p>
                   </div>
@@ -925,7 +987,7 @@ function AppContent() {
                             className="absolute top-2.5 right-2.5 z-10 p-1 rounded hover:text-red-400 hover:bg-[#151515] text-gray-500 transition-colors cursor-pointer"
                             title="Unpin tool"
                           >
-                            <PinOff className="w-3.5 h-3.5" />
+                            <PushPinSlash className="w-3.5 h-3.5" />
                           </button>
 
                           <div className="flex items-center gap-3">
@@ -977,14 +1039,14 @@ function AppContent() {
                         }
                       }}
                     >
-                      <Pin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-emerald-400 animate-pulse' : 'text-zinc-500'}`} />
-                      <span className="text-[9px] text-zinc-550">Drop here to Pin</span>
+                      <PushPin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-emerald-400 animate-pulse' : 'text-zinc-500'}`} />
+                      <span className="text-[9px] text-zinc-550">Drop here to PushPin</span>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Grid Layout or Empty State */}
+              {/* SquaresFour Layout or Empty State */}
               {filteredTools.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                   {filteredTools.map((tool, index) => (
@@ -1042,7 +1104,7 @@ function AppContent() {
                         )}
                       </AnimatePresence>
 
-                      {/* Favorite/Pin Button */}
+                      {/* Favorite/PushPin Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1086,7 +1148,7 @@ function AppContent() {
               ) : (
                 <div className="text-center py-12 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl bg-[#111114]/10 max-w-md mx-auto w-full gap-4 mt-4">
                   <div className="p-3 rounded-full bg-zinc-900 border border-zinc-850 text-zinc-500">
-                    <Search className="w-6 h-6" />
+                    <MagnifyingGlass className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="font-sans font-bold text-base text-white">No tools found</h3>
@@ -1187,7 +1249,7 @@ function AppContent() {
               } else if (file.type.startsWith('video/')) {
                 handleRoute(file, 'video-splitter');
               } else {
-                toast.error('Unsupported File Type', 'No suitable tools found for this file.');
+                toast.error('Unsupported File TextT', 'No suitable tools found for this file.');
               }
             }
           }}
@@ -1316,7 +1378,7 @@ function AppContent() {
                 >
                   <div className="flex flex-col items-center gap-4">
                     <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <Music className="w-8 h-8" />
+                      <MusicNotes className="w-8 h-8" />
                     </div>
                     <div>
                       <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Audio Waveform Trimmer</h3>
@@ -1343,7 +1405,7 @@ function AppContent() {
                 >
                   <div className="flex flex-col items-center gap-4">
                     <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <Sparkles className="w-8 h-8" />
+                      <Sparkle className="w-8 h-8" />
                     </div>
                     <div>
                       <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">AI Audio Transcriber</h3>
@@ -1411,7 +1473,9 @@ function AppContent() {
 export default function App() {
   return (
     <ToastProvider>
-      <AppContent />
+      <IconContext.Provider value={{ weight: "duotone" }}>
+        <AppContent />
+      </IconContext.Provider>
     </ToastProvider>
   );
 }

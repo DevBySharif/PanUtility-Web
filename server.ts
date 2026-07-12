@@ -154,143 +154,144 @@ export async function bootstrap() {
         platform = "Twitter/X";
       }
 
-      // Default high-fidelity stock elements
-      let title = "Extracted Media Stream";
-      let thumbnail = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60";
+      // Default elements
+      let title = "";
+      let thumbnail = "";
       let videoUrl = "";
-      let duration = "03:15";
+      let duration = "00:00";
 
-      // 1. Resolve video stream using Cobalt round-robin public endpoints
+      // ── Step 1: Try Cobalt instances (round-robin, both v10 POST / and v9 POST /api/json)
       const cobaltInstances = [
         "https://cobalt.api.red.velvet.ink",
         "https://api.cobalt.tools",
+        "https://cobalt.catvibers.me",
+        "https://cobalt.drgns.space",
         "https://api.cobalt.best",
         "https://cobalt-api.lunes.host"
       ];
 
       for (const instance of cobaltInstances) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s timeout per instance
+        if (videoUrl) break;
+        // Try v10 format (POST /)
+        for (const endpoint of [`${instance}/`, `${instance}/api/json`]) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-          const cobaltRes = await fetch(`${instance}/api/json`, {
-            method: "POST",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json",
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            },
-            body: JSON.stringify({
-              url: url,
-              videoQuality: "720",
-              filenameStyle: "classic"
-            }),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
+            const cobaltRes = await fetch(endpoint, {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                url: url,
+                vQuality: "720",
+                videoQuality: "720",
+                filenameStyle: "classic",
+                isAudioOnly: false,
+                disableMetadata: false
+              }),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
 
-          if (cobaltRes.ok) {
-            const data = await cobaltRes.json();
-            if (data.status === "stream" || data.status === "redirect") {
-              videoUrl = data.url;
-              if (data.filename) {
-                title = data.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").trim();
+            if (cobaltRes.ok) {
+              const data = await cobaltRes.json();
+              console.log(`[Cobalt ${endpoint}] status=${data.status}`);
+              // v10 returns status: tunnel | redirect | picker | error
+              // v9  returns status: stream | redirect | picker | error
+              if (data.status === "stream" || data.status === "tunnel" || data.status === "redirect") {
+                videoUrl = data.url;
+                if (data.filename) {
+                  title = data.filename.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim();
+                }
+                break;
+              } else if (data.status === "picker" && data.picker && data.picker.length > 0) {
+                const item = data.picker[0];
+                videoUrl = item.url;
+                if (item.thumb) thumbnail = item.thumb;
+                break;
+              } else {
+                console.warn(`[Cobalt] Non-success status from ${endpoint}:`, data.status, data.error?.code || data.text || "");
               }
-              break;
-            } else if (data.status === "picker" && data.picker && data.picker.length > 0) {
-              videoUrl = data.picker[0].url;
-              break;
+            } else {
+              console.warn(`[Cobalt] HTTP ${cobaltRes.status} from ${endpoint}`);
             }
+          } catch (instanceErr: any) {
+            console.warn(`[Cobalt] ${endpoint} threw:`, instanceErr.message);
           }
-        } catch (instanceErr) {
-          console.warn(`Cobalt instance ${instance} failed:`, instanceErr);
         }
       }
 
-      // 2. If Cobalt failed to fetch stream or filename, fallback to light HTML metadata scraping
-      if (!videoUrl || title === "Extracted Media Stream") {
+      // ── Step 2: YouTube oEmbed for metadata (title + thumbnail) if still missing
+      if (platform === "YouTube" && (!title || !thumbnail)) {
+        try {
+          const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+          if (ytId) {
+            const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`;
+            const oembed = await fetch(oembedUrl, { signal: AbortSignal.timeout(3000) });
+            if (oembed.ok) {
+              const od = await oembed.json();
+              if (!title && od.title) title = od.title;
+              if (!thumbnail && od.thumbnail_url) thumbnail = od.thumbnail_url;
+              if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+            }
+          }
+        } catch (oeErr) {
+          console.warn("[oEmbed] YouTube oEmbed failed:", oeErr);
+        }
+      }
+
+      // ── Step 3: Lightweight HTML Open Graph scrape (title + thumbnail) for non-YouTube
+      if (!title || !thumbnail) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3500);
-          
           const response = await fetch(url, {
             headers: {
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-              "Accept-Language": "en-US,en;q=0.5"
+              "User-Agent": "Mozilla/5.0 (compatible; facebookexternalhit/1.1)",
+              "Accept": "text/html,application/xhtml+xml"
             },
             signal: controller.signal
           });
           clearTimeout(timeoutId);
-
           if (response.ok) {
             const html = await response.text();
-
-            // Extract title
-            const titleMatch = html.match(/<title>([^<]+)<\/title>/i) || 
-                               html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
-                               html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/i);
-            if (titleMatch && title === "Extracted Media Stream") {
-              title = titleMatch[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+            if (!title) {
+              const m = html.match(/<meta\s+(?:property=["']og:title["']|name=["']twitter:title["'])\s+content=["']([^"']+)["']/i)
+                     || html.match(/<title>([^<]+)<\/title>/i);
+              if (m) title = m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
             }
-
-            // Extract thumbnail
-            const thumbMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-                                html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i);
-            if (thumbMatch) {
-              thumbnail = thumbMatch[1];
+            if (!thumbnail) {
+              const m = html.match(/<meta\s+(?:property=["']og:image["']|name=["']twitter:image["'])\s+content=["']([^"']+)["']/i);
+              if (m) thumbnail = m[1];
             }
           }
         } catch (scrapeErr) {
-          console.warn("Failed to scrape live HTML fallback metadata:", scrapeErr);
+          console.warn("[Scrape] HTML metadata failed:", scrapeErr);
         }
       }
 
-      // Set high-fidelity fallback titles and placeholders based on platform if the scrape was blocked or returned empty fields
-      if (title === "Extracted Media Stream" || !title) {
-        if (platform === "YouTube") {
-          title = "Inspirational Ambient Music Mix (1080p HD Edition)";
-          thumbnail = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=60";
-          duration = "10:00";
-        } else if (platform === "TikTok") {
-          title = "Epic Creative Visual Transitions Compilation (Full HD)";
-          thumbnail = "https://images.unsplash.com/photo-1516280440614-37939bbacd6a?w=600&auto=format&fit=crop&q=60";
-          duration = "00:58";
-        } else if (platform === "Instagram") {
-          title = "Gourmet Culinary Arts Showreel (High Definition)";
-          thumbnail = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=60";
-          duration = "01:30";
-        } else if (platform === "Twitter/X") {
-          title = "Global News Breakthrough Broadcast (HD Stream)";
-          thumbnail = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop&q=60";
-          duration = "02:15";
-        } else if (platform === "Facebook") {
-          title = "Ultimate Nature & Wildlife cinematic (Ultra HD)";
-          thumbnail = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&auto=format&fit=crop&q=60";
-          duration = "04:20";
-        } else {
-          title = "Extracted High-Fidelity Custom Stream File";
-          thumbnail = "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60";
-          duration = "03:00";
-        }
-      }
-
-      // If we didn't extract a video URL, we can provide a high-quality, ultra-crisp, beautiful direct HD file as a robust fallback stream.
-      // Let's use direct CDN URLs to standard HD stock videos for stunning quality and functional downloading!
+      // ── Step 4: Bail with 422 if we couldn't resolve a real download URL
       if (!videoUrl) {
-        if (platform === "YouTube") {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"; // beautiful high-quality 1080p sample
-        } else if (platform === "TikTok") {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-        } else if (platform === "Instagram") {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
-        } else if (platform === "Twitter/X") {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
-        } else if (platform === "Facebook") {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
-        } else {
-          videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4";
-        }
+        res.status(422).json({
+          error: "Could not resolve a direct download stream for this URL. The platform may be blocking extraction, or the URL may be private/invalid. Try pasting a direct .mp4 URL or use the DevTools Network sniffer method below."
+        });
+        return;
+      }
+
+      // Finalize display metadata (use sensible defaults if scraping also failed)
+      if (!title) title = `${platform} Video`;
+      if (!thumbnail) {
+        const platformThumbs: Record<string, string> = {
+          "YouTube": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60",
+          "TikTok": "https://images.unsplash.com/photo-1516280440614-37939bbacd6a?w=600&auto=format&fit=crop&q=60",
+          "Instagram": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=60",
+          "Twitter/X": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&auto=format&fit=crop&q=60",
+          "Facebook": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&auto=format&fit=crop&q=60",
+        };
+        thumbnail = platformThumbs[platform] || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60";
       }
 
       res.json({

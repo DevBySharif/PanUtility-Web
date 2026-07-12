@@ -95,35 +95,39 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
       const res = await fetch('/api/resolve-social', {
         method: 'POST',
         headers: {
-          'Content-TextT': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url }),
       });
 
+      clearInterval(interval);
+
+      if (res.status === 422) {
+        // Could not resolve a real stream — show a proper error to the user
+        const errData = await res.json();
+        setParsingStep(errData.error || 'Could not resolve stream.');
+        setStatus('error');
+        return;
+      }
+
       if (!res.ok) {
-        throw new Error('Failed to resolve URL metadata');
+        setParsingStep('Server error. Please try again or use a direct .mp4 URL.');
+        setStatus('error');
+        return;
       }
 
       const data = await res.json();
-      
-      setTimeout(() => {
-        clearInterval(interval);
-        setTitle(data.title || 'Extracted Media Clip');
-        setThumbnail(data.thumbnail || 'https://images.unsplash.com/photo-1516280440614-37939bbacd6a?w=500&auto=format&fit=crop&q=60');
-        setDuration(data.duration || '02:30');
-        setResolvedVideoUrl(data.videoUrl || '');
-        if (data.platform) {
-          setDetectedPlatform(data.platform);
-        }
-        setStatus('ready');
-      }, 1500);
+      setTitle(data.title || 'Extracted Media Clip');
+      setThumbnail(data.thumbnail || 'https://images.unsplash.com/photo-1516280440614-37939bbacd6a?w=500&auto=format&fit=crop&q=60');
+      setDuration(data.duration || '00:00');
+      setResolvedVideoUrl(data.videoUrl || '');
+      if (data.platform) setDetectedPlatform(data.platform);
+      setStatus('ready');
 
     } catch (err) {
-      console.warn('Backend resolution failed, using secure local metadata resolver fallback:', err);
-      setTimeout(() => {
-        clearInterval(interval);
-        generateMetadata(name, isDirect);
-      }, 1500);
+      clearInterval(interval);
+      setParsingStep('Network error. Check your connection and try again.');
+      setStatus('error');
     }
   };
 
@@ -341,6 +345,25 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   <span className="text-gray-500 block font-bold uppercase tracking-wider">EXTRACTING STREAM DATA</span>
                   <span className="text-[#10b981] mt-1 block font-medium">{parsingStep}</span>
                 </div>
+              </motion.div>
+            )}
+            {status === 'error' && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="bg-red-950/20 rounded-lg p-4 border border-red-900/40 flex flex-col gap-2 text-left mt-2"
+              >
+                <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-widest">
+                  <WarningCircle className="w-4 h-4 shrink-0" /> Could Not Resolve Stream
+                </div>
+                <p className="text-[11px] text-red-300/80 leading-relaxed">{parsingStep}</p>
+                <button
+                  onClick={() => { setStatus('idle'); setUrl(''); }}
+                  className="mt-1 self-start text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-white border border-[#2a2a2a] rounded px-3 py-1.5 cursor-pointer transition-colors"
+                >
+                  Try Another Link
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

@@ -194,6 +194,23 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
       }
 
+      // If it's a direct resolved Cobalt stream link, trigger direct browser download
+      // to avoid Vercel gateway timeout errors and payload limit constraints!
+      if (targetMediaUrl.includes("red.velvet.ink") || targetMediaUrl.includes("cobalt") || targetMediaUrl.includes("lunes.host")) {
+        const a = document.createElement('a');
+        a.href = targetMediaUrl;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        clearInterval(progressInterval);
+        setDownloadProgress(100);
+        setStatus('completed');
+        confetti({ particleCount: 120, spread: 90 });
+        return;
+      }
+
       // Build our secure server-side download proxy URL to completely bypass standard CORS limitations
       const proxyDownloadUrl = `/api/media-proxy?url=${encodeURIComponent(targetMediaUrl)}`;
       

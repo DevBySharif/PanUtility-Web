@@ -160,50 +160,90 @@ export async function bootstrap() {
       let videoUrl = "";
       let duration = "03:15";
 
-      try {
-        // Fetch with timeout and custom headers to avoid bot detection
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        
-        const response = await fetch(url, {
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5"
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
+      // 1. Resolve video stream using Cobalt round-robin public endpoints
+      const cobaltInstances = [
+        "https://cobalt.api.red.velvet.ink",
+        "https://api.cobalt.tools",
+        "https://api.cobalt.best",
+        "https://cobalt-api.lunes.host"
+      ];
 
-        if (response.ok) {
-          const html = await response.text();
+      for (const instance of cobaltInstances) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s timeout per instance
 
-          // Extract title
-          const titleMatch = html.match(/<title>([^<]+)<\/title>/i) || 
-                             html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
-                             html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/i);
-          if (titleMatch) {
-            title = titleMatch[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+          const cobaltRes = await fetch(`${instance}/api/json`, {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            body: JSON.stringify({
+              url: url,
+              videoQuality: "720",
+              filenameStyle: "classic"
+            }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (cobaltRes.ok) {
+            const data = await cobaltRes.json();
+            if (data.status === "stream" || data.status === "redirect") {
+              videoUrl = data.url;
+              if (data.filename) {
+                title = data.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").trim();
+              }
+              break;
+            } else if (data.status === "picker" && data.picker && data.picker.length > 0) {
+              videoUrl = data.picker[0].url;
+              break;
+            }
           }
-
-          // Extract thumbnail
-          const thumbMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-                              html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i);
-          if (thumbMatch) {
-            thumbnail = thumbMatch[1];
-          }
-
-          // Extract video URL if public
-          const videoMatch = html.match(/<meta\s+property=["']og:video["']\s+content=["']([^"']+)["']/i) ||
-                             html.match(/<meta\s+property=["']og:video:secure_url["']\s+content=["']([^"']+)["']/i) ||
-                             html.match(/<meta\s+name=["']twitter:player:stream["']\s+content=["']([^"']+)["']/i) ||
-                             html.match(/<source\s+src=["']([^"']+\.mp4[^"']*)["']/i);
-          if (videoMatch) {
-            videoUrl = videoMatch[1];
-          }
+        } catch (instanceErr) {
+          console.warn(`Cobalt instance ${instance} failed:`, instanceErr);
         }
-      } catch (scrapeErr) {
-        console.warn("Failed to scrape live HTML metadata:", scrapeErr);
+      }
+
+      // 2. If Cobalt failed to fetch stream or filename, fallback to light HTML metadata scraping
+      if (!videoUrl || title === "Extracted Media Stream") {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+          
+          const response = await fetch(url, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+              "Accept-Language": "en-US,en;q=0.5"
+            },
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const html = await response.text();
+
+            // Extract title
+            const titleMatch = html.match(/<title>([^<]+)<\/title>/i) || 
+                               html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+                               html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/i);
+            if (titleMatch && title === "Extracted Media Stream") {
+              title = titleMatch[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+            }
+
+            // Extract thumbnail
+            const thumbMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+                                html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i);
+            if (thumbMatch) {
+              thumbnail = thumbMatch[1];
+            }
+          }
+        } catch (scrapeErr) {
+          console.warn("Failed to scrape live HTML fallback metadata:", scrapeErr);
+        }
       }
 
       // Set high-fidelity fallback titles and placeholders based on platform if the scrape was blocked or returned empty fields

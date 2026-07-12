@@ -8,7 +8,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Trim, segment and extract ranges from MP4 and WebM files client-side.',
     category: 'Video',
     icon: 'Scissors',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5',
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5',
     badge: 'Popular'
   },
   {
@@ -148,7 +148,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Design custom 8-bit visual artwork using a retro canvas board grid.',
     category: 'Image',
     icon: 'Grid',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'exif-viewer',
@@ -247,7 +247,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Convert standard reflowable ePUB files into highly readable fixed PDF pages.',
     category: 'Document',
     icon: 'BookOpen',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'csv-to-json',
@@ -331,7 +331,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Seamlessly glue and combine multiple audio feeds (WAV/MP3) into one solid track.',
     category: 'Audio',
     icon: 'FilePlus',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'voice-changer',
@@ -445,7 +445,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Cleanse and convert raw article titles into search engine-friendly URL strings.',
     category: 'Text & Writing',
     icon: 'Link2',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'text-sorter',
@@ -576,7 +576,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Pretty print, re-align, and format dense nested XML documents.',
     category: 'Developer Tools',
     icon: 'Layout',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'jwt-debugger',
@@ -682,7 +682,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Resolve percent gains, margin discounts, fraction densities, and ratios instantly.',
     category: 'Math & Finance',
     icon: 'Percent',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'tip-calc',
@@ -812,7 +812,7 @@ export const TOOLS_LIST: ToolItem[] = [
     description: 'Log positive actions, unlock milestones, and keep a visual calendar of streaks.',
     category: 'Health & Lifestyle',
     icon: 'CheckSquare',
-    color: 'border-indigo-500/20 hover:border-indigo-500/60 text-indigo-400 bg-indigo-500/5'
+    color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
   },
   {
     id: 'water-tracker',

@@ -653,14 +653,14 @@ function AppContent() {
                               disablePictureInPicture
                             />
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <Scissors className="w-5 h-5 text-indigo-400" />
+                              <Scissors className="w-5 h-5 text-emerald-400" />
                             </div>
                           </div>
                         )}
 
                         {dashboardPendingFile.type.startsWith('audio/') && (
                           <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-gradient-to-b from-[#111] to-[#1a1a1a]">
-                            <Music className="w-6 h-6 text-indigo-400 animate-pulse" />
+                            <Music className="w-6 h-6 text-emerald-400 animate-pulse" />
                             {dashboardPreviewUrl && (
                               <audio src={dashboardPreviewUrl} controls className="hidden" />
                             )}
@@ -702,14 +702,14 @@ function AppContent() {
                             key={option.toolId}
                             id={`route-to-${option.toolId}`}
                             onClick={() => handleRoute(dashboardPendingFile, option.toolId)}
-                            className="flex items-center justify-between p-3 rounded-lg bg-[#111114] border border-zinc-800/80 hover:border-indigo-500/40 hover:bg-zinc-800/20 transition-all text-left cursor-pointer group active:scale-98"
+                            className="flex items-center justify-between p-3 rounded-lg bg-[#111114] border border-zinc-800/80 hover:border-emerald-500/40 hover:bg-zinc-800/20 transition-all text-left cursor-pointer group active:scale-98"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="p-1.5 rounded bg-zinc-900 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                              <div className="p-1.5 rounded bg-zinc-900 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                                 {getIcon(option.icon)}
                               </div>
                               <div>
-                                <h5 className="text-xs font-semibold text-white group-hover:text-indigo-400 transition-colors">
+                                <h5 className="text-xs font-semibold text-white group-hover:text-emerald-400 transition-colors">
                                   {option.title}
                                 </h5>
                                 <p className="text-[9px] text-zinc-500 mt-0.5">
@@ -717,7 +717,7 @@ function AppContent() {
                                 </p>
                               </div>
                             </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+                            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                           </button>
                         ))}
                       </div>
@@ -730,7 +730,7 @@ function AppContent() {
               <div className="max-w-xl md:max-w-none mx-auto w-full mb-2 bg-[#0a0a0b]" id="pinned-tools-shelf">
                 <div className="flex items-center justify-between mb-4 border-b border-zinc-800/80 pb-2">
                   <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-indigo-400 fill-indigo-400/20" />
+                    <Star className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
                     <h2 className="font-sans font-bold text-xs uppercase tracking-wider text-zinc-200">Favorite Workspaces</h2>
                   </div>
                   <span className="text-[10px] text-zinc-500 font-mono tracking-wider">
@@ -771,7 +771,7 @@ function AppContent() {
                       }
                     }}
                   >
-                    <Pin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-indigo-400 animate-bounce' : 'text-zinc-500'}`} />
+                    <Pin className={`w-5 h-5 mx-auto mb-2 transition-colors ${isPinDraggingOver ? 'text-emerald-400 animate-bounce' : 'text-zinc-500'}`} />
                     <p className="text-xs text-zinc-300 font-sans font-semibold">Your pinned workspaces shelf is empty</p>
                     <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Drag & drop any tool card from the grid below to pin it here for instant access.</p>
                   </div>
@@ -821,7 +821,7 @@ function AppContent() {
                           onClick={() => navigateToTool(tool.id as ToolId)}
                           onMouseEnter={() => setHoveredToolId(`pinned-${tool.id}`)}
                           onMouseLeave={() => setHoveredToolId(null)}
-                          className="border border-zinc-800 bg-[#111114] rounded-lg p-3 hover:border-indigo-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-3 relative group active:scale-98 shadow-sm animate-in fade-in zoom-in duration-250"
+                          className="border border-zinc-800 bg-[#111114] rounded-lg p-3 hover:border-emerald-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-3 relative group active:scale-98 shadow-sm animate-in fade-in zoom-in duration-250"
                         >
                           {/* Interactive Subtle Tooltip system for Pinned Workspace */}
                           <AnimatePresence>
@@ -834,15 +834,15 @@ function AppContent() {
                                 className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
                               >
                                 <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
-                                  <span className="text-[9px] bg-indigo-950/40 text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                  <span className="text-[9px] bg-emerald-950/40 text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                     Pro-Tip & Shortcut
                                   </span>
                                   <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
-                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
+                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-emerald-400 font-bold">
                                       {TOOL_SHORTCUTS[tool.id]?.key}
                                     </kbd>
                                     <span className="text-zinc-650">or</span>
-                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
+                                    <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-emerald-400 font-bold">
                                       {TOOL_SHORTCUTS[tool.id]?.label}
                                     </kbd>
                                   </div>
@@ -852,7 +852,7 @@ function AppContent() {
                                 </p>
                                 <div className="text-[8px] text-zinc-500 font-mono flex items-center justify-between">
                                   <span>Hover card &bull; Press key to launch</span>
-                                  <span className="text-indigo-400">&bull; Favorite</span>
+                                  <span className="text-emerald-400">&bull; Favorite</span>
                                 </div>
                                 {/* Mini triangle arrow */}
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
@@ -873,11 +873,11 @@ function AppContent() {
                           </button>
 
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded bg-zinc-900 border border-zinc-800 text-indigo-400 shrink-0">
+                            <div className="p-2 rounded bg-zinc-900 border border-zinc-800 text-emerald-400 shrink-0">
                               {getIcon(tool.icon)}
                             </div>
                             <div className="min-w-0">
-                              <h3 className="font-sans text-xs font-semibold text-white truncate group-hover:text-indigo-400 transition-colors leading-tight">
+                              <h3 className="font-sans text-xs font-semibold text-white truncate group-hover:text-emerald-400 transition-colors leading-tight">
                                 {tool.title}
                               </h3>
                               <span className="text-[8px] bg-zinc-800 text-zinc-400 border border-zinc-700/50 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono inline-block mt-1">
@@ -893,7 +893,7 @@ function AppContent() {
                     <div
                       className={`border border-dashed rounded-lg p-3.5 flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[58px] ${
                         isPinDraggingOver 
-                          ? 'border-indigo-500 bg-indigo-500/5 scale-[1.01]' 
+                          ? 'border-emerald-500 bg-emerald-500/5 scale-[1.01]' 
                           : 'border-zinc-800 bg-[#111114]/10 hover:border-zinc-700'
                       }`}
                       onDragOver={(e) => {
@@ -921,7 +921,7 @@ function AppContent() {
                         }
                       }}
                     >
-                      <Pin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-indigo-400 animate-pulse' : 'text-zinc-500'}`} />
+                      <Pin className={`w-3.5 h-3.5 mb-1 ${isPinDraggingOver ? 'text-emerald-400 animate-pulse' : 'text-zinc-500'}`} />
                       <span className="text-[9px] text-zinc-550">Drop here to Pin</span>
                     </div>
                   </div>
@@ -946,7 +946,7 @@ function AppContent() {
                       }}
                       onMouseEnter={() => setHoveredToolId(tool.id)}
                       onMouseLeave={() => setHoveredToolId(null)}
-                      className="border border-zinc-800 bg-[#111114] rounded-xl p-5 shadow-xl hover:border-indigo-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
+                      className="border border-zinc-800 bg-[#111114] rounded-xl p-5 shadow-xl hover:border-emerald-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
                       style={{ contentVisibility: 'auto' }}
                     >
                       {/* Interactive Subtle Tooltip system */}
@@ -960,15 +960,15 @@ function AppContent() {
                             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
                           >
                             <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
-                              <span className="text-[9px] bg-indigo-950/40 text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              <span className="text-[9px] bg-emerald-950/40 text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                 Pro-Tip & Shortcut
                               </span>
                               <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
-                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
+                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-emerald-400 font-bold">
                                   {TOOL_SHORTCUTS[tool.id]?.key}
                                 </kbd>
                                 <span className="text-zinc-650">or</span>
-                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-indigo-400 font-bold">
+                                <kbd className="px-1.5 py-0.5 bg-[#161619] border border-zinc-800 rounded text-emerald-400 font-bold">
                                   {TOOL_SHORTCUTS[tool.id]?.label}
                                 </kbd>
                               </div>
@@ -978,7 +978,7 @@ function AppContent() {
                             </p>
                             <div className="text-[8px] text-zinc-500 font-mono flex items-center justify-between">
                               <span>Hover card &bull; Press key to launch</span>
-                              <span className="text-indigo-400">&bull; Sandbox Ready</span>
+                              <span className="text-emerald-400">&bull; Sandbox Ready</span>
                             </div>
                             {/* Mini triangle arrow */}
                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
@@ -992,27 +992,27 @@ function AppContent() {
                           e.stopPropagation();
                           togglePinTool(tool.id);
                         }}
-                        className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-indigo-400 hover:bg-zinc-800 transition-all cursor-pointer opacity-70 group-hover:opacity-100"
+                        className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800 transition-all cursor-pointer opacity-70 group-hover:opacity-100"
                         title={pinnedToolIds.includes(tool.id) ? "Remove from favorite tools" : "Add to favorite tools"}
                       >
-                        <Star className={`w-4 h-4 ${pinnedToolIds.includes(tool.id) ? 'fill-indigo-400 text-indigo-400' : ''}`} />
+                        <Star className={`w-4 h-4 ${pinnedToolIds.includes(tool.id) ? 'fill-emerald-400 text-emerald-400' : ''}`} />
                       </button>
 
                       {tool.badge && (
-                        <span className="absolute top-4 right-12 bg-indigo-600 text-white font-bold text-[8px] px-2 py-0.5 rounded uppercase tracking-widest select-none">
+                        <span className="absolute top-4 right-12 bg-emerald-600 text-white font-bold text-[8px] px-2 py-0.5 rounded uppercase tracking-widest select-none">
                           {tool.badge}
                         </span>
                       )}
 
                       <div className="flex flex-col gap-4">
                         {/* Icon Container */}
-                        <div className="p-3 rounded-lg w-fit bg-zinc-900 border border-zinc-800 text-indigo-400 group-hover:text-white group-hover:bg-indigo-600 transition-colors">
+                        <div className="p-3 rounded-lg w-fit bg-zinc-900 border border-zinc-800 text-emerald-400 group-hover:text-white group-hover:bg-emerald-600 transition-colors">
                           {getIcon(tool.icon)}
                         </div>
 
                         {/* Text details */}
                         <div>
-                          <h3 className="font-sans font-semibold text-base text-white leading-tight group-hover:text-indigo-400 transition-colors">
+                          <h3 className="font-sans font-semibold text-base text-white leading-tight group-hover:text-emerald-400 transition-colors">
                             {tool.title}
                           </h3>
                           <p className="text-zinc-400 text-xs mt-2 leading-relaxed">
@@ -1021,7 +1021,7 @@ function AppContent() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-indigo-400 group-hover:translate-x-1 transition-transform w-fit">
+                      <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:translate-x-1 transition-transform w-fit">
                         Launch Workspace &rarr;
                       </div>
                     </motion.div>
@@ -1041,7 +1041,7 @@ function AppContent() {
                       setSearchQuery('');
                       setSelectedCategory('All');
                     }}
-                    className="py-2 px-4 bg-indigo-600 text-white font-bold text-xs rounded uppercase tracking-wider hover:bg-indigo-500 transition-all cursor-pointer"
+                    className="py-2 px-4 bg-emerald-600 text-white font-bold text-xs rounded uppercase tracking-wider hover:bg-emerald-500 transition-all cursor-pointer"
                   >
                     Reset Filters
                   </button>
@@ -1099,7 +1099,7 @@ function AppContent() {
       {/* Aesthetic Footer */}
       <footer className="bg-[#0c0c0e] border-t border-zinc-800/80 py-6 mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-widest text-gray-500 select-none font-medium">
-          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/20" /> PanUtility Workstation Framework &bull; Release 2026</span>
+          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" /> PanUtility Workstation Framework &bull; Release 2026</span>
           <div className="flex gap-4">
             <span className="hover:text-white transition-colors">Offline Sandbox</span>
             <span>&bull;</span>

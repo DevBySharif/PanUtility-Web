@@ -1475,11 +1475,11 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           addLog(`Toggled habit "${h.text}"`);
                         }}
                         className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
-                          h.done ? 'bg-indigo-500/5 border-indigo-500/30 text-indigo-400' : 'bg-black border-[#222] text-gray-400 hover:border-gray-800'
+                          h.done ? 'bg-emerald-500/5 border-emerald-500/30 text-emerald-400' : 'bg-black border-[#222] text-gray-400 hover:border-gray-800'
                         }`}
                       >
                         <span className={`text-xs ${h.done ? 'line-through' : ''}`}>{h.text}</span>
-                        {h.done ? <CheckCircle2 className="w-4 h-4 text-indigo-400" /> : <div className="w-4 h-4 border border-gray-600 rounded" />}
+                        {h.done ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <div className="w-4 h-4 border border-gray-600 rounded" />}
                       </div>
                     ))}
                   </div>

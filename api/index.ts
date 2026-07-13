@@ -1,11 +1,11 @@
-import { bootstrap } from "../server";
+import { createApp } from "../app";
 
 let appPromise: any = null;
 
 export default async (req: any, res: any) => {
   try {
     if (!appPromise) {
-      appPromise = bootstrap();
+      appPromise = Promise.resolve(createApp());
     }
     const app = await appPromise;
     app(req, res);

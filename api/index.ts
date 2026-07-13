@@ -1,12 +1,18 @@
+import { bootstrap } from "../server";
+
+let appPromise: any = null;
+
 export default async (req: any, res: any) => {
   try {
-    const { bootstrap } = await import("../server");
-    const app = await bootstrap();
+    if (!appPromise) {
+      appPromise = bootstrap();
+    }
+    const app = await appPromise;
     app(req, res);
   } catch (err: any) {
-    console.error("Vercel Cold Start Crash:", err);
+    console.error("Vercel Bootstrapping Crash:", err);
     res.status(500).json({
-      error: `Vercel Cold Start Crash: ${err.message}`,
+      error: `Vercel Bootstrapping Crash: ${err.message}`,
       stack: err.stack || "No stack trace available."
     });
   }

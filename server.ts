@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import dns from "dns";
 import { promisify } from "util";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
 const dnsLookup = promisify(dns.lookup);
@@ -371,6 +370,7 @@ export async function bootstrap() {
   // Integration of Vite Dev Server in development / serve static files in production
   if (process.env.NODE_ENV !== "production") {
     console.log("Starting in development mode with Vite middleware...");
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

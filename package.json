@@ -12,8 +12,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@bochilteam/scraper": "^5.0.1",
-    "@bochilteam/scraper-savefrom": "^5.0.0",
     "@distube/ytdl-core": "^4.16.12",
     "@google/genai": "^2.4.0",
     "@phosphor-icons/react": "^2.1.10",

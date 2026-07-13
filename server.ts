@@ -3,7 +3,8 @@ import path from "path";
 import dns from "dns";
 import { promisify } from "util";
 import { GoogleGenAI } from "@google/genai";
-import { savefrom } from "@bochilteam/scraper-savefrom";
+import crypto from "crypto";
+import vm from "vm";
 
 const dnsLookup = promisify(dns.lookup);
 
@@ -125,6 +126,85 @@ export async function bootstrap() {
     }
   });
 
+
+
+  // Helper to generate SaveFrom signature
+  function getSaveFromHash(url: string, ts: number): string {
+    const salt = "b7944d7a59c9cb654228624880e7de59a53842c2d912b449fdf11febcf81cb21";
+    return crypto.createHash("sha256").update(url + ts + salt).digest("hex");
+  }
+
+  // Self-contained SaveFrom API scraper
+  async function resolveSaveFrom(url: string): Promise<any> {
+    const ts = Date.now();
+    const form = new URLSearchParams({
+      sf_url: url,
+      sf_submit: '',
+      new: '2',
+      lang: 'en',
+      app: '',
+      country: 'en',
+      os: 'Windows',
+      browser: 'Chrome',
+      channel: 'main',
+      'sf-nomad': '1',
+      url,
+      ts: String(ts),
+      _ts: '1720433117117',
+      _tsc: '0',
+      _s: getSaveFromHash(url, ts),
+      _x: '1'
+    });
+
+    const r = await fetch('https://worker.savefrom.net/savefrom.php', {
+      method: 'POST',
+      headers: {
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Origin': 'https://en.savefrom.net',
+        'Referer': 'https://en.savefrom.net/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
+      },
+      body: form.toString()
+    });
+
+    const data = await r.text();
+    const context: any = {
+      results: null,
+      parent: { document: { location: {} } },
+      frameElement: {},
+      atob: (b: string) => Buffer.from(b, 'base64').toString(),
+      _decodeURIComponent: (uri: string) => {
+        const decoded = decodeURIComponent(uri);
+        if (/showResult/.test(decoded)) {
+          context.results = decoded;
+          return "true";
+        }
+        return decoded;
+      }
+    };
+    vm.createContext(context);
+    new vm.Script(`decodeURIComponent=_decodeURIComponent;${data}`).runInContext(context);
+
+    const executed = context.results?.split('window.parent.sf.videoResult.show(')?.[1]
+      || context.results?.split('window.parent.sf.videoResult.showRows(')?.[1];
+
+    if (!executed) {
+      throw new Error('SaveFrom returned empty result.');
+    }
+
+    let json = null;
+    if (context.results.includes('showRows')) {
+      const splits = executed.split('],"');
+      const lastIndex = splits.findIndex((v: any) => v.includes('window.parent.sf.enableElement'));
+      json = JSON.parse(splits.slice(0, lastIndex).join('],"') + ']');
+    } else {
+      json = [JSON.parse(executed.split(');')[0])];
+    }
+    return json;
+  }
+
   // Helper functions to decrypt Snapsave obfuscated responses
   function decodeSnapSave(h: string, u: number, n: string, t: number, e: number, r: any): string {
     function decode(d: string, e: number, f: number): string {
@@ -193,10 +273,10 @@ export async function bootstrap() {
 
       let title = "", thumbnail = "", videoUrl = "", duration = "00:00";
 
-      // ── 1. YouTube: Use SaveFrom Scraper Package
+      // ── 1. YouTube: Use SaveFrom Scraper (Self-contained)
       if (isYT) {
         try {
-          const result = await savefrom(url);
+          const result = await resolveSaveFrom(url);
           if (result && result.length > 0) {
             const item = result[0];
             title = item.meta?.title || "";
@@ -204,9 +284,9 @@ export async function bootstrap() {
             duration = item.meta?.duration || "00:00";
             
             // Filter progressive MP4 formats (both video and audio)
-            const mp4s = item.url.filter(f => f.url && f.ext === 'mp4' && !f.name.includes('no audio'));
+            const mp4s = item.url.filter((f: any) => f.url && f.ext === 'mp4' && !f.name.includes('no audio'));
             // Prefer googlevideo CDN URLs directly if present
-            const preferred = mp4s.find(f => f.url.includes('googlevideo.com')) || mp4s[0] || item.url[0];
+            const preferred = mp4s.find((f: any) => f.url.includes('googlevideo.com')) || mp4s[0] || item.url[0];
             if (preferred?.url) {
               videoUrl = preferred.url;
               console.log("[SaveFrom-YT] Resolved:", title.slice(0, 40), "→", preferred.name);

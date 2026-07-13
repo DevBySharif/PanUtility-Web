@@ -1,68 +1,87 @@
-import ytdl from "@distube/ytdl-core";
-
 export default async (req: any, res: any) => {
-  const videoUrl = 'https://youtu.be/G6OCJa1jBdY';
-  const results: any = { videoUrl };
+  const videoId = 'G6OCJa1jBdY';
+  const results: any = {};
 
-  // Test 1: SaveFrom
-  try {
-    const ts = Date.now();
-    const crypto = await import("crypto");
-    const salt = "b7944d7a59c9cb654228624880e7de59a53842c2d912b449fdf11febcf81cb21";
-    const hash = crypto.default.createHash("sha256").update(videoUrl + ts + salt).digest("hex");
-    const form = new URLSearchParams({
-      sf_url: videoUrl, sf_submit: '', new: '2', lang: 'en',
-      app: '', country: 'en', os: 'Windows', browser: 'Chrome',
-      channel: 'main', 'sf-nomad': '1', url: videoUrl,
-      ts: String(ts), _ts: '1720433117117', _tsc: '0', _s: hash, _x: '1'
-    });
-    const r = await fetch('https://worker.savefrom.net/savefrom.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Origin': 'https://en.savefrom.net',
-        'Referer': 'https://en.savefrom.net/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      body: form.toString()
-    });
-    results.savefrom = { status: r.status, contentType: r.headers.get('content-type') };
-    const text = await r.text();
-    results.savefrom.responsePreview = text.slice(0, 300);
-  } catch (e: any) {
-    results.savefrom = { error: e.message };
-  }
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+  };
 
-  // Test 2: ytdl.getInfo
-  try {
-    const info = await ytdl.getInfo(videoUrl);
-    results.ytdl = {
-      title: info.videoDetails.title,
-      formatsCount: info.formats.length,
-      playerUrl: info.html5player,
-    };
-  } catch (e: any) {
-    results.ytdl = { error: e.message, stack: e.stack?.slice(0, 500) };
-  }
+  // Test multiple Invidious instances
+  const invidiousInstances = [
+    'https://invidious.privacydev.net',
+    'https://yewtu.be',
+    'https://iv.ggtyler.dev',
+    'https://invidious.flokinet.to',
+    'https://yt.cdaut.de',
+    'https://invidious.nerdvpn.de',
+  ];
 
-  // Test 3: Invidious public API
-  try {
-    const videoId = 'G6OCJa1jBdY';
-    const r = await fetch(`https://inv.nadeko.net/api/v1/videos/${videoId}?fields=title,adaptiveFormats,formatStreams`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-    results.invidious = { status: r.status };
-    if (r.ok) {
-      const data: any = await r.json();
-      results.invidious.title = data.title;
-      results.invidious.formatsCount = (data.formatStreams || []).length + (data.adaptiveFormats || []).length;
-      const mp4 = (data.formatStreams || []).find((f: any) => f.container === 'mp4');
-      results.invidious.sampleUrl = mp4?.url?.slice(0, 100);
-    } else {
-      results.invidious.body = (await r.text()).slice(0, 200);
+  results.invidious = {};
+  await Promise.all(invidiousInstances.map(async (base) => {
+    try {
+      const r = await fetch(`${base}/api/v1/videos/${videoId}?fields=title,formatStreams`, {
+        headers,
+        signal: AbortSignal.timeout(5000),
+      });
+      if (r.ok) {
+        const data: any = await r.json();
+        const mp4 = (data.formatStreams || []).find((f: any) => f.container === 'mp4');
+        results.invidious[base] = {
+          ok: true,
+          title: data.title,
+          mp4Quality: mp4?.quality,
+          mp4UrlPreview: mp4?.url?.slice(0, 80),
+        };
+      } else {
+        const body = await r.text();
+        results.invidious[base] = { ok: false, status: r.status, body: body.slice(0, 100) };
+      }
+    } catch (e: any) {
+      results.invidious[base] = { ok: false, error: e.message };
     }
+  }));
+
+  // Test y2mate API
+  try {
+    const r = await fetch('https://www.y2mate.com/mates/analyzeV2/ajax', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ k_query: `https://youtube.com/watch?v=${videoId}`, k_page: 'home', hl: 'en', q_auto: '0' }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const data: any = await r.json();
+    results.y2mate = { status: r.status, title: data?.title, hasLinks: !!data?.links };
   } catch (e: any) {
-    results.invidious = { error: e.message };
+    results.y2mate = { error: e.message };
+  }
+
+  // Test yt5s API
+  try {
+    const r = await fetch('https://yt5s.io/api/ajaxSearch', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ q: `https://youtube.com/watch?v=${videoId}`, vt: 'home' }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const text = await r.text();
+    results.yt5s = { status: r.status, preview: text.slice(0, 300) };
+  } catch (e: any) {
+    results.yt5s = { error: e.message };
+  }
+
+  // Test cobalt API (public instance)
+  try {
+    const r = await fetch('https://api.cobalt.tools/', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ url: `https://youtube.com/watch?v=${videoId}`, videoQuality: '720' }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const data: any = await r.json();
+    results.cobalt = { status: r.status, type: data?.status, urlPreview: data?.url?.slice(0, 80) };
+  } catch (e: any) {
+    results.cobalt = { error: e.message };
   }
 
   res.json(results);

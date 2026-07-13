@@ -447,9 +447,10 @@ export async function bootstrap() {
   });
 
   // Integration of Vite Dev Server in development / serve static files in production
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production") {
     console.log("Starting in development mode with Vite middleware...");
-    const { createServer: createViteServer } = await import("vite");
+    const viteModuleName = "vite";
+    const { createServer: createViteServer } = await import(viteModuleName);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

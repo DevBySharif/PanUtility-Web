@@ -1,13 +1,19 @@
-import { GoogleGenAI } from "@google/genai";
+import path from "path";
+import dns from "dns";
+import { promisify } from "util";
+import crypto from "crypto";
+import vm from "vm";
+
+const dnsLookup = promisify(dns.lookup);
 
 export default async (req: any, res: any) => {
   try {
-    const ai = new GoogleGenAI({ apiKey: "test" });
-    res.json({ success: true, message: "Statically imported @google/genai and created client!" });
+    const ip = await dnsLookup("google.com");
+    res.json({ success: true, message: `Statically imported node modules! DNS worked: ${ip.address}` });
   } catch (err: any) {
     res.status(500).json({
       success: false,
-      error: `Static GoogleGenAI Load Crash: ${err.message}`,
+      error: `Static Node Modules Load Crash: ${err.message}`,
       stack: err.stack || "No stack trace available."
     });
   }

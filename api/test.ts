@@ -1,17 +1,13 @@
+import express from "express";
+
 export default async (req: any, res: any) => {
-  const log: string[] = [];
   try {
-    log.push("Dynamic import of ./index...");
-    const mod = await import("./index");
-    log.push("Import success! Instantiating app...");
-    mod.createApp();
-    log.push("createApp success!");
-    res.json({ success: true, log });
+    const app = express();
+    res.json({ success: true, message: "Statically imported express and created app!" });
   } catch (err: any) {
     res.status(500).json({
       success: false,
-      log,
-      error: err.message,
+      error: `Static Express Load Crash: ${err.message}`,
       stack: err.stack || "No stack trace available."
     });
   }

@@ -3,6 +3,7 @@ import path from "path";
 import dns from "dns";
 import { promisify } from "util";
 import { GoogleGenAI } from "@google/genai";
+import { savefrom } from "@bochilteam/scraper-savefrom";
 
 const dnsLookup = promisify(dns.lookup);
 
@@ -124,6 +125,48 @@ export async function bootstrap() {
     }
   });
 
+  // Helper functions to decrypt Snapsave obfuscated responses
+  function decodeSnapSave(h: string, u: number, n: string, t: number, e: number, r: any): string {
+    function decode(d: string, e: number, f: number): string {
+      const g = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/'.split('');
+      let h = g.slice(0, e);
+      let i = g.slice(0, f);
+      let j = d.split('').reverse().reduce(function (a: number, b: string, c: number) {
+        if (h.indexOf(b) !== -1)
+          return a += h.indexOf(b) * (Math.pow(e, c));
+        return a;
+      }, 0);
+      let k = '';
+      while (j > 0) {
+        k = i[j % f] + k;
+        j = (j - (j % f)) / f;
+      }
+      return k || '0';
+    }
+    r = '';
+    for (let i = 0, len = h.length; i < len; i++) {
+      let s = "";
+      while (h[i] !== n[e]) {
+        s += h[i];
+        i++;
+      }
+      for (let j = 0; j < n.length; j++)
+        s = s.replace(new RegExp(n[j], "g"), j.toString());
+      r += String.fromCharCode(Number(decode(s, e, 10)) - t);
+    }
+    return decodeURIComponent(encodeURIComponent(r));
+  }
+
+  function decryptSnapSave(data: string): string {
+    const parts = data.split('decodeURIComponent(escape(r))}(')[1].split('))')[0].split(',');
+    const args: any[] = parts.map(v => v.replace(/"/g, '').trim());
+    const decoded = decodeSnapSave(args[0], parseInt(args[1], 10), args[2], parseInt(args[3], 10), parseInt(args[4], 10), args[5]);
+    const html = decoded.split('getElementById("download-section").innerHTML = "')[1]
+        .split('"; document.getElementById("inputData").remove(); ')[0]
+        .replace(/\\(\\)?/g, '');
+    return html;
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // API: Resolve social media video URL → title, thumbnail, duration, stream
   // ─────────────────────────────────────────────────────────────────────────
@@ -150,142 +193,98 @@ export async function bootstrap() {
 
       let title = "", thumbnail = "", videoUrl = "", duration = "00:00";
 
-      // ── 1. YouTube: use InnerTube ANDROID client (returns direct, non-encrypted stream URLs)
+      // ── 1. YouTube: Use SaveFrom Scraper Package
       if (isYT) {
-        const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
-        if (ytId) {
-          const ctrl = new AbortController();
-          const to = setTimeout(() => ctrl.abort(), 12000);
-          try {
-            const pr = await fetch("https://www.youtube.com/youtubei/v1/player", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip",
-                "X-Goog-Api-Format-Version": "2",
-                "Accept-Language": "en-US,en;q=0.9",
-              },
-              body: JSON.stringify({
-                videoId: ytId,
-                context: {
-                  client: {
-                    clientName: "ANDROID",
-                    clientVersion: "17.31.35",
-                    androidSdkVersion: 30,
-                    hl: "en",
-                    gl: "US",
-                    utcOffsetMinutes: 0,
-                  },
-                },
-              }),
-              signal: ctrl.signal,
-            });
-            clearTimeout(to);
-
-            if (pr.ok) {
-              const pd = await pr.json();
-              const vd = pd.videoDetails;
-              if (vd?.title) title = vd.title;
-              if (vd?.thumbnail?.thumbnails?.length) {
-                const thumbs = vd.thumbnail.thumbnails;
-                thumbnail = thumbs[thumbs.length - 1].url;
-              }
-              if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-              const secs = parseInt(vd?.lengthSeconds || "0", 10);
-              if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
-
-              // formats = combined video+audio (ANDROID client returns direct url, no cipher)
-              const formats: any[] = pd.streamingData?.formats || [];
-              // Sort: prefer 720p, then highest quality
-              const sorted = [...formats].sort((a, b) => (b.height || 0) - (a.height || 0));
-              const best = sorted.find(f => f.url && (f.height || 999) <= 720) || sorted.find(f => f.url);
-              if (best?.url) {
-                videoUrl = best.url;
-                console.log("[InnerTube] Resolved:", title.slice(0, 50), "→", best.qualityLabel);
-              } else {
-                console.warn("[InnerTube] No direct URL in formats. playabilityStatus:", pd.playabilityStatus?.status);
-              }
-            }
-          } catch (e: any) {
-            console.warn("[InnerTube] Error:", e.message);
-          } finally {
-            clearTimeout(to);
-          }
-        }
-      }
-
-      // ── 2. Cobalt race for all platforms (including YouTube fallback)
-      if (!videoUrl) {
-        const cobaltEndpoints = [
-          "https://cobalt.api.red.velvet.ink/",
-          "https://api.cobalt.tools/",
-          "https://cobalt.catvibers.me/",
-          "https://api.cobalt.best/",
-          "https://cobalt.api.red.velvet.ink/api/json",
-          "https://api.cobalt.tools/api/json",
-        ];
-        const cobaltBody = JSON.stringify({ url, vQuality: "720", videoQuality: "720", filenameStyle: "classic" });
-        const tryCobalt = async (ep: string) => {
-          const ctrl = new AbortController();
-          const t = setTimeout(() => ctrl.abort(), 6000);
-          try {
-            const r = await fetch(ep, {
-              method: "POST",
-              headers: { Accept: "application/json", "Content-Type": "application/json" },
-              body: cobaltBody,
-              signal: ctrl.signal,
-            });
-            clearTimeout(t);
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            const d = await r.json();
-            if (["stream", "tunnel", "redirect"].includes(d.status)) {
-              return { videoUrl: d.url as string, title: (d.filename || "").replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ").trim(), thumbnail: d.thumbnail || "" };
-            }
-            if (d.status === "picker" && d.picker?.length) {
-              return { videoUrl: d.picker[0].url as string, title: "", thumbnail: d.picker[0].thumb || "" };
-            }
-            throw new Error(`status=${d.status}`);
-          } finally { clearTimeout(t); }
-        };
         try {
-          const r = await Promise.any(cobaltEndpoints.map(ep => tryCobalt(ep)));
-          videoUrl = r.videoUrl;
-          if (!title && r.title) title = r.title;
-          if (!thumbnail && r.thumbnail) thumbnail = r.thumbnail;
-          console.log("[Cobalt] Resolved:", videoUrl.slice(0, 60));
-        } catch { console.warn("[Cobalt] All instances failed."); }
+          const result = await savefrom(url);
+          if (result && result.length > 0) {
+            const item = result[0];
+            title = item.meta?.title || "";
+            thumbnail = item.thumb || "";
+            duration = item.meta?.duration || "00:00";
+            
+            // Filter progressive MP4 formats (both video and audio)
+            const mp4s = item.url.filter(f => f.url && f.ext === 'mp4' && !f.name.includes('no audio'));
+            // Prefer googlevideo CDN URLs directly if present
+            const preferred = mp4s.find(f => f.url.includes('googlevideo.com')) || mp4s[0] || item.url[0];
+            if (preferred?.url) {
+              videoUrl = preferred.url;
+              console.log("[SaveFrom-YT] Resolved:", title.slice(0, 40), "→", preferred.name);
+            }
+          }
+        } catch (e: any) {
+          console.warn("[SaveFrom-YT] Error:", e.message);
+        }
       }
 
-      // ── 3. Metadata fallback: YouTube oEmbed or OG scrape
-      if (!title || !thumbnail) {
-        if (isYT) {
-          const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
-          if (ytId) {
-            try {
-              const oe = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);
-              if (oe.ok) { const od = await oe.json(); if (!title) title = od.title; if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`; }
-            } catch { /**/ }
-          }
-        } else {
-          try {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), 3000);
-            const r = await fetch(url, { headers: { "User-Agent": "facebookexternalhit/1.1" }, signal: ctrl.signal });
-            clearTimeout(t);
-            if (r.ok) {
-              const html = await r.text();
-              if (!title) { const m = html.match(/property=["']og:title["'][^>]*content=["']([^"']+)["']/i) || html.match(/<title>([^<]+)<\/title>/i); if (m) title = m[1].replace(/&amp;/g, "&").trim(); }
-              if (!thumbnail) { const m = html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i); if (m) thumbnail = m[1]; }
+      // ── 2. TikTok, Facebook, Instagram, Twitter: Use Snapsave Scraper Action
+      if (!videoUrl && (isTT || isFB || isIG || isTW)) {
+        try {
+          const snapsaveResponse = await fetch('https://snapsave.app/action.php?lang=en', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Origin': 'https://snapsave.app',
+              'Referer': 'https://snapsave.app/en',
+            },
+            body: new URLSearchParams({ url })
+          });
+
+          if (snapsaveResponse.ok) {
+            const code = await snapsaveResponse.text();
+            const decodedHtml = decryptSnapSave(code);
+
+            // Extract links from resolved HTML
+            const links: string[] = [];
+            const linkRegex = /href=\\"([^\\"]+)\\"/g;
+            let match;
+            while ((match = linkRegex.exec(decodedHtml)) !== null) {
+              let cleanUrl = match[1].replace(/\\/g, '');
+              if (cleanUrl.startsWith('/')) {
+                cleanUrl = 'https://snapsave.app' + cleanUrl;
+              }
+              links.push(cleanUrl);
             }
-          } catch { /**/ }
+
+            if (links.length > 0) {
+              videoUrl = links[0]; // Choose first/best resolution link
+              
+              // Extract description/title if possible
+              const titleMatch = decodedHtml.match(/<strong>(.*?)<\/strong>/);
+              if (titleMatch) title = titleMatch[1];
+              
+              const thumbMatch = decodedHtml.match(/src=\\"([^\\"]+)\\"/);
+              if (thumbMatch) thumbnail = thumbMatch[1].replace(/\\/g, '');
+              
+              console.log(`[Snapsave-${platform}] Resolved stream link!`);
+            }
+          }
+        } catch (e: any) {
+          console.warn(`[Snapsave-${platform}] Error:`, e.message);
         }
+      }
+
+      // ── 3. Metadata Scrape Fallback if title/thumb missing
+      if (!title || !thumbnail) {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 3000);
+          const r = await fetch(url, { headers: { "User-Agent": "facebookexternalhit/1.1" }, signal: ctrl.signal });
+          clearTimeout(t);
+          if (r.ok) {
+            const html = await r.text();
+            if (!title) { const m = html.match(/property=["']og:title["'][^>]*content=["']([^"']+)["']/i) || html.match(/<title>([^<]+)<\/title>/i); if (m) title = m[1].replace(/&amp;/g, "&").trim(); }
+            if (!thumbnail) { const m = html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i); if (m) thumbnail = m[1]; }
+          }
+        } catch { /**/ }
       }
 
       // ── 4. No video URL → 422
       if (!videoUrl) {
         res.status(422).json({ error: isYT
-          ? "YouTube blocked the extraction. The video may be age-restricted or region-locked. Try another video."
-          : "Could not extract a stream URL for this link. The platform may require login or has blocked automated access." });
+          ? "YouTube blocked the extraction. Please try another video or check your link."
+          : `Could not extract download stream for this ${platform} link. The video might be private or restricted.` });
         return;
       }
 

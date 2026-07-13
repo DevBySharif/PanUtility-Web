@@ -1,8 +1,9 @@
+import { createApp } from "../app";
+
 export default async (req: any, res: any) => {
   try {
-    const { createApp } = await import("../app");
     createApp();
-    res.json({ success: true, message: "Successfully imported and called createApp!" });
+    res.json({ success: true, message: "Statically imported and called createApp!" });
   } catch (err: any) {
     res.status(500).json({
       success: false,

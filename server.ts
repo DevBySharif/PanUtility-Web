@@ -301,8 +301,11 @@ export async function bootstrap() {
 
       res.json({ success: true, title, thumbnail, videoUrl, duration, platform });
     } catch (err: any) {
-      console.error("[resolve-social] Crash:", err.message);
-      res.status(500).json({ error: err.message || "Internal server error." });
+      console.error("[resolve-social] Crash:", err);
+      res.status(500).json({
+        error: `Server Crash: ${err.message}`,
+        stack: err.stack || "No stack trace available."
+      });
     }
   });
 

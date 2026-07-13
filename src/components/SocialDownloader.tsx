@@ -91,7 +91,14 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
         return;
       }
       if (!r.ok) {
-        setErrorMsg(`Server error (${r.status}). Please try again.`);
+        let errMsg = `Server error (${r.status}).`;
+        try {
+          const e = await r.json();
+          if (e.error) {
+            errMsg = `${e.error}\n\n${e.stack || ""}`;
+          }
+        } catch {}
+        setErrorMsg(errMsg);
         setStatus('error');
         return;
       }

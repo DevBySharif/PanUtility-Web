@@ -1,7 +1,7 @@
 export default async (req: any, res: any) => {
   try {
-    console.log("Fetching instances.cobalt.best home page...");
-    const r = await fetch('https://instances.cobalt.best/', {
+    console.log("Fetching cobalt.directory home page...");
+    const r = await fetch('https://cobalt.directory/', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
@@ -10,7 +10,6 @@ export default async (req: any, res: any) => {
     
     // Find script tags or links
     const links = html.match(/https?:\/\/[^\s'"()<>]+/g) || [];
-    const jsonMatches = html.match(/\{[\s\S]+?\}/g) || [];
     
     res.json({
       success: true,
@@ -23,6 +22,7 @@ export default async (req: any, res: any) => {
     res.status(500).json({
       success: false,
       error: e.message,
+      cause: e.cause ? { message: e.cause.message, code: e.cause.code } : null,
       stack: e.stack
     });
   }

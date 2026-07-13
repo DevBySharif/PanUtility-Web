@@ -144,7 +144,18 @@ async function resolveSaveFrom(url: string): Promise<any> {
 }
 
 async function resolveYouTubeHybrid(urlStr: string): Promise<any> {
-  const info = await ytdl.getInfo(urlStr);
+  const cookie = process.env.YOUTUBE_COOKIE;
+  const cookieHeaders = cookie ? { cookie } : {};
+
+  const info = await ytdl.getInfo(urlStr, {
+    requestOptions: {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        ...cookieHeaders,
+      }
+    }
+  });
   const title = info.videoDetails.title || "";
   const thumbnail = info.videoDetails.thumbnails?.[0]?.url || "";
   const seconds = parseInt(info.videoDetails.lengthSeconds || "0", 10);
@@ -152,7 +163,7 @@ async function resolveYouTubeHybrid(urlStr: string): Promise<any> {
 
   // Fetch and run player JS to decipher/deobfuscate parameters
   const playerUrl = info.html5player.startsWith('http') ? info.html5player : 'https://www.youtube.com' + info.html5player;
-  const jsResp = await fetch(playerUrl);
+  const jsResp = await fetch(playerUrl, { headers: { 'User-Agent': 'Mozilla/5.0', ...cookieHeaders } });
   const body = await jsResp.text();
 
   // Parse decipher functions

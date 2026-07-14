@@ -9,7 +9,8 @@ function httpsGetJson(urlStr: string): Promise<any> {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9'
       },
       timeout: 5000
     };
@@ -41,20 +42,20 @@ export default async (req: any, res: any) => {
   const results: any = {};
 
   const instances = [
-    'https://api.piped.yt',
-    'https://pipedapi.kavin.rocks',
-    'https://pipedapi.privacydev.net',
-    'https://pipedapi.tokhmi.xyz',
-    'https://piped-api.lunar.icu',
-    'https://pipedapi.hostux.net',
-    'https://pipedapi.mha.fi'
+    'https://invidious.no-logs.com',
+    'https://invidious.slipfox.xyz',
+    'https://invidious.privacydev.net',
+    'https://yewtu.be',
+    'https://iv.melmac.space',
+    'https://invidious.esmailelbob.xyz',
+    'https://invidious.perennialte.ch'
   ];
 
   await Promise.all(instances.map(async (base) => {
     try {
-      const url = `${base}/streams/${videoId}`;
+      const url = `${base}/api/v1/videos/${videoId}?fields=title,formatStreams`;
       const data = await httpsGetJson(url);
-      const mp4 = (data.videoStreams || []).find((s: any) => s.mimeType?.includes('video/mp4') && !s.videoOnly);
+      const mp4 = (data.formatStreams || []).find((f: any) => f.container === 'mp4');
       results[base] = {
         ok: true,
         title: data.title,

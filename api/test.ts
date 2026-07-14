@@ -55,12 +55,11 @@ export default async (req: any, res: any) => {
 
   try {
     console.log('Fetching public Invidious instances list...');
-    // We fetch instances list directly from Vercel where api.invidious.io resolves
     const list = await httpsGetJson('https://api.invidious.io/instances.json');
     
     const activeInstances: string[] = [];
     for (const [name, info] of list) {
-      if (info.type === 'https' && info.monitor && info.monitor.status === 1) {
+      if (info.type === 'https' && info.monitor && !info.monitor.down && info.monitor.last_status === 200) {
         activeInstances.push(`https://${name}`);
       }
     }
@@ -68,7 +67,7 @@ export default async (req: any, res: any) => {
     results.total_active_instances = activeInstances.length;
     results.first_10_instances = activeInstances.slice(0, 10);
 
-    // Let's test the first 10 instances in parallel to find a working one
+    // Test the first 10 instances in parallel to find a working one
     const testPromises = activeInstances.slice(0, 10).map(async (base) => {
       try {
         const url = `${base}/api/v1/videos/${videoId}?fields=title,formatStreams`;

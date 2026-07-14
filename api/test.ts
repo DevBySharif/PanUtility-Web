@@ -3,11 +3,27 @@ import ytdl from "@distube/ytdl-core";
 export default async (req: any, res: any) => {
   const videoId = 'dQw4w9WgXcQ';
   const cookie = process.env.YOUTUBE_COOKIE;
-  const results: any = { videoId, cookie_set: !!cookie };
+  
+  let cleanCookie = cookie ? cookie.trim() : '';
+  // Strip surrounding quotes if present
+  if (cleanCookie.startsWith('"') && cleanCookie.endsWith('"')) {
+    cleanCookie = cleanCookie.slice(1, -1).trim();
+  }
+  if (cleanCookie.startsWith("'") && cleanCookie.endsWith("'")) {
+    cleanCookie = cleanCookie.slice(1, -1).trim();
+  }
+
+  const results: any = {
+    videoId,
+    cookie_set: !!cookie,
+    cookie_length: cleanCookie.length,
+    cookie_start: cleanCookie.slice(0, 20),
+    cookie_end: cleanCookie.slice(-20),
+  };
 
   let agent: any = undefined;
-  if (cookie) {
-    const parts = cookie.split(';').map(p => p.trim());
+  if (cleanCookie) {
+    const parts = cleanCookie.split(';').map(p => p.trim());
     const cookies = parts.map(part => {
       const eqIdx = part.indexOf('=');
       if (eqIdx === -1) return null;
@@ -24,7 +40,6 @@ export default async (req: any, res: any) => {
   }
 
   try {
-    console.log("Calling ytdl.getBasicInfo...");
     const info = await ytdl.getBasicInfo(`https://youtu.be/${videoId}`, { agent });
     results.basic_info = {
       ok: true,
@@ -32,15 +47,9 @@ export default async (req: any, res: any) => {
       playabilityStatus: info.playabilityStatus?.status,
       formatsCount: info.formats?.length || 0,
       hasStreamingData: !!info.streamingData,
-      rawFormats: (info.formats || []).map((f: any) => ({
-        itag: f.itag,
-        mimeType: f.mimeType,
-        hasUrl: !!f.url,
-        hasCipher: !!f.signatureCipher
-      }))
     };
   } catch (e: any) {
-    results.basic_info = { ok: false, error: e.message, stack: e.stack?.slice(0, 500) };
+    results.basic_info = { ok: false, error: e.message };
   }
 
   res.json(results);

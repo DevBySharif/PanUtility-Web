@@ -1,68 +1,60 @@
-import ytdl from "@distube/ytdl-core";
-
-export default async (req: any, res: any) => {
-  const videoId = 'dQw4w9WgXcQ';
-  const cookie = process.env.YOUTUBE_COOKIE;
+async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
+  const instances = [
+    'https://cobaltapi.cjs.nz',
+    'https://rue-cobalt.xenon.zone'
+  ];
   
-  let cleanCookie = cookie ? cookie.trim() : '';
-  if (cleanCookie.startsWith('"') && cleanCookie.endsWith('"')) {
-    cleanCookie = cleanCookie.slice(1, -1).trim();
-  }
-  if (cleanCookie.startsWith("'") && cleanCookie.endsWith("'")) {
-    cleanCookie = cleanCookie.slice(1, -1).trim();
-  }
-
-  const results: any = {
-    videoId,
-    cookie_set: !!cookie,
-    cookie_length: cleanCookie.length,
-  };
-
-  // Test 1: Direct Cookie header in requestOptions
-  try {
-    const info = await ytdl.getBasicInfo(`https://youtu.be/${videoId}`, {
-      requestOptions: {
+  for (const api of instances) {
+    try {
+      console.log(`Trying Cobalt instance: ${api}`);
+      const r = await fetch(api, {
+        method: 'POST',
         headers: {
-          'Cookie': cleanCookie,
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        },
+        body: JSON.stringify({
+          url: urlStr,
+          videoQuality: '720'
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+      if (r.ok) {
+        const data: any = await r.json();
+        if (data.url) {
+          return {
+            instance: api,
+            title: data.filename || 'YouTube Video',
+            videoUrl: data.url,
+          };
         }
       }
-    });
-    results.direct_cookie = {
-      ok: true,
-      title: info.videoDetails?.title,
-      formatsCount: info.formats?.length || 0,
-      hasStreamingData: !!info.streamingData,
-    };
+    } catch (e: any) {
+      console.warn(`Cobalt instance ${api} failed:`, e.message);
+    }
+  }
+  throw new Error('All Cobalt instances failed to resolve YouTube stream.');
+}
+
+export default async (req: any, res: any) => {
+  const videoId1 = 'dQw4w9WgXcQ'; // Rick Astley
+  const videoId2 = 'G6OCJa1jBdY'; // User's video
+
+  const results: any = {};
+
+  try {
+    const r1 = await resolveYouTubeCobalt(`https://youtu.be/${videoId1}`);
+    results.rick_astley = { ok: true, ...r1 };
   } catch (e: any) {
-    results.direct_cookie = { ok: false, error: e.message };
+    results.rick_astley = { ok: false, error: e.message };
   }
 
-  // Test 2: ytdl.createAgent with multiple domains
   try {
-    const parts = cleanCookie.split(';').map(p => p.trim());
-    const cookies: any[] = [];
-    parts.forEach(part => {
-      const eqIdx = part.indexOf('=');
-      if (eqIdx === -1) return;
-      const name = part.substring(0, eqIdx).trim();
-      const value = part.substring(eqIdx + 1).trim();
-      // Add cookies for all possible domains to ensure match
-      cookies.push({ name, value, domain: '.youtube.com', path: '/' });
-      cookies.push({ name, value, domain: 'youtube.com', path: '/' });
-      cookies.push({ name, value, domain: 'www.youtube.com', path: '/' });
-    });
-    
-    const agent = ytdl.createAgent(cookies);
-    const info = await ytdl.getBasicInfo(`https://youtu.be/${videoId}`, { agent });
-    results.agent_cookie = {
-      ok: true,
-      title: info.videoDetails?.title,
-      formatsCount: info.formats?.length || 0,
-      hasStreamingData: !!info.streamingData,
-    };
+    const r2 = await resolveYouTubeCobalt(`https://youtu.be/${videoId2}`);
+    results.user_video = { ok: true, ...r2 };
   } catch (e: any) {
-    results.agent_cookie = { ok: false, error: e.message };
+    results.user_video = { ok: false, error: e.message };
   }
 
   res.json(results);

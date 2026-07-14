@@ -86,14 +86,14 @@ export default async (req: any, res: any) => {
     // Test WEB_CREATOR client with cookie
     tryInnerTube('web_creator', 'WEB_CREATOR', '1.20231219.00.00', '62',
       'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',
-      {}, {},
+      {},
       { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' }
     ),
 
     // Test MWEB client with cookie
     tryInnerTube('mweb', 'MWEB', '2.20231219.04.00', '2',
       'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',
-      {}, {},
+      {},
       { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
     ),
   ]);

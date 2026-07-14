@@ -265,8 +265,8 @@ globalThis._deobfuscateN = (urlStr) => {
   const resolvedFormats = [];
   for (const f of info.formats) {
     let finalUrl = f.url;
-    if (f.signatureCipher) {
-      const cipherData = Object.fromEntries(new URLSearchParams(f.signatureCipher));
+    if ((f as any).signatureCipher) {
+      const cipherData = Object.fromEntries(new URLSearchParams((f as any).signatureCipher));
       const s = decodeURIComponent(cipherData.s || '');
       const urlStr = decodeURIComponent(cipherData.url || '');
       const sp = cipherData.sp || 'sig';

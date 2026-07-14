@@ -315,21 +315,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   )}
                 </div>
               </div>
-
-              {/* Also offer: open in Cobalt as backup */}
-              <div className="border-t border-[#1a1a1a] px-5 py-3 flex items-center justify-between gap-3">
-                <span className="text-[10px] text-gray-600">Having trouble? Open in:</span>
-                <div className="flex items-center gap-2">
-                  <a href={`https://cobalt.tools/?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer"
-                    className="text-[10px] text-gray-500 hover:text-white border border-[#222] hover:border-[#333] rounded px-3 py-1.5 transition-all flex items-center gap-1">
-                    <MusicNote className="w-3 h-3" /> Cobalt
-                  </a>
-                  <a href={`https://en1.savefrom.net/19wr/#url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer"
-                    className="text-[10px] text-gray-500 hover:text-white border border-[#222] hover:border-[#333] rounded px-3 py-1.5 transition-all">
-                    SaveFrom
-                  </a>
-                </div>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>

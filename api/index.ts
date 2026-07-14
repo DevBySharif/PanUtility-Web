@@ -311,6 +311,19 @@ async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
     'https://cobaltapi.kittycat.boo'
   ];
   
+  let ytId: string | null = null;
+  try {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = urlStr.match(regExp);
+    if (match && match[2].length === 11) {
+      ytId = match[2];
+    }
+  } catch { /**/ }
+
+  const thumbnail = ytId
+    ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
+    : 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60';
+  
   for (const api of instances) {
     try {
       console.log(`[Cobalt-YT] Trying instance: ${api}`);
@@ -331,10 +344,17 @@ async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
         const data: any = await r.json();
         if (data.url) {
           console.log(`[Cobalt-YT] Resolved successfully via ${api}`);
+          
+          let title = data.filename || 'YouTube Video';
+          title = title
+            .replace(/\s*-\s*[^(-]+?\s*\(\d+p,\s*[^)]+\)\.mp4$/i, '')
+            .replace(/\.mp4$/i, '')
+            .trim();
+
           return {
-            title: data.filename || 'YouTube Video',
+            title,
             videoUrl: data.url,
-            thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60',
+            thumbnail,
             duration: '00:00'
           };
         }

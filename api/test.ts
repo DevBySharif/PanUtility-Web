@@ -2,13 +2,32 @@ import ytdl from "@distube/ytdl-core";
 import vm from "vm";
 
 async function resolveYouTubeHybrid(urlStr: string, cookie?: string): Promise<any> {
-  const cookieHeaders = cookie ? { cookie } : {};
+  let agent: any = undefined;
+  let cookieHeaders: any = {};
+  if (cookie) {
+    const parts = cookie.split(';').map(p => p.trim());
+    const cookies = parts.map(part => {
+      const eqIdx = part.indexOf('=');
+      if (eqIdx === -1) return null;
+      const name = part.substring(0, eqIdx).trim();
+      const value = part.substring(eqIdx + 1).trim();
+      return { name, value, domain: '.youtube.com', path: '/' };
+    }).filter((c): c is any => c !== null);
+    
+    try {
+      agent = ytdl.createAgent(cookies);
+    } catch (e: any) {
+      console.error('Failed to create ytdl-core agent:', e.message);
+    }
+    cookieHeaders = { cookie };
+  }
+
   const info = await ytdl.getInfo(urlStr, {
+    agent,
     requestOptions: {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
-        ...cookieHeaders,
       }
     }
   });

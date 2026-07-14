@@ -1,6 +1,9 @@
 import https from 'https';
 
-function httpsGetJson(urlStr: string): Promise<any> {
+function httpsGetJson(urlStr: string, redirectsCount = 0): Promise<any> {
+  if (redirectsCount > 5) {
+    return Promise.reject(new Error('Too many redirects'));
+  }
   return new Promise((resolve, reject) => {
     const parsed = new URL(urlStr);
     const options = {
@@ -16,6 +19,15 @@ function httpsGetJson(urlStr: string): Promise<any> {
     };
 
     const req = https.request(options, (res) => {
+      if (res.statusCode && (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308)) {
+        const location = res.headers.location;
+        if (location) {
+          const redirectUrl = location.startsWith('http') ? location : new URL(location, urlStr).toString();
+          resolve(httpsGetJson(redirectUrl, redirectsCount + 1));
+          return;
+        }
+      }
+
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
@@ -44,10 +56,7 @@ export default async (req: any, res: any) => {
   const instances = [
     'https://invidious.no-logs.com',
     'https://invidious.slipfox.xyz',
-    'https://invidious.privacydev.net',
     'https://yewtu.be',
-    'https://iv.melmac.space',
-    'https://invidious.esmailelbob.xyz',
     'https://invidious.perennialte.ch'
   ];
 

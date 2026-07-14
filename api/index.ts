@@ -305,6 +305,46 @@ globalThis._deobfuscateN = (urlStr) => {
     duration
   };
 }
+async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
+  const instances = [
+    'https://api.cobalt.liubquanti.click',
+    'https://cobaltapi.kittycat.boo'
+  ];
+  
+  for (const api of instances) {
+    try {
+      console.log(`[Cobalt-YT] Trying instance: ${api}`);
+      const r = await fetch(api, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        },
+        body: JSON.stringify({
+          url: urlStr,
+          videoQuality: '720'
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+      if (r.ok) {
+        const data: any = await r.json();
+        if (data.url) {
+          console.log(`[Cobalt-YT] Resolved successfully via ${api}`);
+          return {
+            title: data.filename || 'YouTube Video',
+            videoUrl: data.url,
+            thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60',
+            duration: '00:00'
+          };
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[Cobalt-YT] Instance ${api} failed:`, e.message);
+    }
+  }
+  throw new Error('All Cobalt instances failed to resolve YouTube stream.');
+}
 
 // Helper functions to decrypt Snapsave obfuscated responses
 function decodeSnapSave(h: string, u: number, n: string, t: number, e: number, r: any): string {
@@ -441,7 +481,22 @@ export function createApp() {
           console.warn("[SaveFrom-YT] Error:", e.message);
         }
 
-        // Fallback to hybrid scraper if SaveFrom failed
+        // Fallback to Cobalt instances first if SaveFrom failed
+        if (!videoUrl) {
+          try {
+            console.log("[Cobalt-YT] Resolving stream via community instances...");
+            const res = await resolveYouTubeCobalt(url);
+            title = res.title;
+            thumbnail = res.thumbnail;
+            videoUrl = res.videoUrl;
+            duration = res.duration;
+            console.log("[Cobalt-YT] Resolved successfully:", title.slice(0, 40));
+          } catch (e: any) {
+            console.error("[Cobalt-YT] Error:", e.message);
+          }
+        }
+
+        // Fallback to hybrid scraper if Cobalt also failed
         if (!videoUrl) {
           try {
             console.log("[Hybrid-YT] Resolving stream via ytdl-core + VM decipher...");

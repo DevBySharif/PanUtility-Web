@@ -51,29 +51,49 @@ function httpsGetJson(urlStr: string, redirectsCount = 0): Promise<any> {
 
 export default async (req: any, res: any) => {
   const videoId = 'G6OCJa1jBdY'; // User's music video
-  const results: any = {};
+  const results: any = { videoId };
 
-  const instances = [
-    'https://invidious.no-logs.com',
-    'https://invidious.slipfox.xyz',
-    'https://yewtu.be',
-    'https://invidious.perennialte.ch'
-  ];
-
-  await Promise.all(instances.map(async (base) => {
-    try {
-      const url = `${base}/api/v1/videos/${videoId}?fields=title,formatStreams`;
-      const data = await httpsGetJson(url);
-      const mp4 = (data.formatStreams || []).find((f: any) => f.container === 'mp4');
-      results[base] = {
-        ok: true,
-        title: data.title,
-        mp4Url: mp4?.url ? mp4.url.slice(0, 100) : null
-      };
-    } catch (e: any) {
-      results[base] = { ok: false, error: e.message };
+  try {
+    console.log('Fetching public Invidious instances list...');
+    // We fetch instances list directly from Vercel where api.invidious.io resolves
+    const list = await httpsGetJson('https://api.invidious.io/instances.json');
+    
+    const activeInstances: string[] = [];
+    for (const [name, info] of list) {
+      if (info.type === 'https' && info.monitor && info.monitor.status === 1) {
+        activeInstances.push(`https://${name}`);
+      }
     }
-  }));
+    
+    results.total_active_instances = activeInstances.length;
+    results.first_10_instances = activeInstances.slice(0, 10);
+
+    // Let's test the first 10 instances in parallel to find a working one
+    const testPromises = activeInstances.slice(0, 10).map(async (base) => {
+      try {
+        const url = `${base}/api/v1/videos/${videoId}?fields=title,formatStreams`;
+        const data = await httpsGetJson(url);
+        const mp4 = (data.formatStreams || []).find((f: any) => f.container === 'mp4');
+        return {
+          instance: base,
+          ok: true,
+          title: data.title,
+          mp4Url: mp4?.url ? mp4.url.slice(0, 100) : null
+        };
+      } catch (e: any) {
+        return {
+          instance: base,
+          ok: false,
+          error: e.message
+        };
+      }
+    });
+
+    results.test_results = await Promise.all(testPromises);
+
+  } catch (e: any) {
+    results.error = e.message;
+  }
 
   res.json(results);
 };

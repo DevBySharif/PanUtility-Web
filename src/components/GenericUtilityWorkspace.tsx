@@ -659,6 +659,87 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     { id: 3, text: 'Read for 15 minutes', done: false },
   ]);
 
+  const handleDownloadResult = () => {
+    if (!uploadedFile) {
+      const blob = new Blob([outputText || 'No content generated.'], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tool.id}_result.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog('Downloaded generic result file.');
+      return;
+    }
+
+    let ext = 'bin';
+    const originalName = uploadedFile.name;
+    const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+
+    switch (tool.id) {
+      case 'gif-maker':
+        ext = 'gif';
+        break;
+      case 'video-to-audio':
+      case 'vocal-remover':
+      case 'silence-remover':
+        ext = 'mp3';
+        break;
+      case 'frame-extractor':
+      case 'favicon-generator':
+        ext = tool.id === 'favicon-generator' ? 'ico' : 'jpg';
+        break;
+      case 'exif-viewer':
+      case 'pdf-to-txt':
+        ext = 'txt';
+        break;
+      case 'svg-optimizer':
+        ext = 'svg';
+        break;
+      case 'excel-to-csv':
+      case 'json-to-csv':
+        ext = 'csv';
+        break;
+      case 'csv-to-json':
+        ext = 'json';
+        break;
+      case 'markdown-to-html':
+        ext = 'html';
+        break;
+      default:
+        ext = originalName.split('.').pop() || 'bin';
+        break;
+    }
+
+    if (['exif-viewer', 'pdf-to-txt', 'csv-to-json', 'excel-to-csv', 'json-to-csv', 'markdown-to-html'].includes(tool.id) && outputText) {
+      const mimeType = ext === 'json' ? 'application/json' : ext === 'html' ? 'text/html' : 'text/plain';
+      const blob = new Blob([outputText], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${nameWithoutExt}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog(`Downloaded processed file: ${nameWithoutExt}.${ext}`);
+      return;
+    }
+
+    const blob = new Blob([uploadedFile], { type: uploadedFile.type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${nameWithoutExt}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    addLog(`Downloaded processed file: ${nameWithoutExt}.${ext}`);
+  };
+
   return (
     <div className="bg-[#0d0d0d] border border-[#1f1f1f] rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[640px] relative animate-in fade-in duration-300">
       
@@ -752,13 +833,39 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       Processed Content Output
                     </label>
                     {outputText && (
-                      <button
-                        onClick={() => handleCopy(outputText)}
-                        className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#10b981] hover:text-white transition-colors bg-[#111] px-2.5 py-1 rounded-md border border-[#222] cursor-pointer"
-                      >
-                        {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                        <span>{copied ? 'Copied' : 'Copy'}</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleCopy(outputText)}
+                          className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#10b981] hover:text-white transition-colors bg-[#111] px-2.5 py-1 rounded-md border border-[#222] cursor-pointer"
+                        >
+                          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          <span>{copied ? 'Copied' : 'Copy'}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            let ext = 'txt';
+                            if (tool.id === 'json-formatter') ext = 'json';
+                            else if (tool.id === 'yaml-to-json') ext = 'json';
+                            else if (tool.id === 'xml-beautifier') ext = 'xml';
+                            else if (tool.id === 'sql-formatter') ext = 'sql';
+                            else if (tool.id === 'html-entities') ext = 'html';
+                            
+                            const blob = new Blob([outputText], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `result.${ext}`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#10b981] hover:text-white transition-colors bg-[#111] px-2.5 py-1 rounded-md border border-[#222] cursor-pointer"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Download</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                   <textarea
@@ -1839,9 +1946,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         {tool.id === 'exif-viewer' ? 'Extract Metadata' : 'Convert File'}
                       </button>
                       <button 
-                        onClick={() => {
-                          addLog('Simulating secure file download.');
-                        }}
+                        onClick={handleDownloadResult}
                         className="py-2 bg-[#151515] border border-[#222] text-white text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
                       >
                         Download Result

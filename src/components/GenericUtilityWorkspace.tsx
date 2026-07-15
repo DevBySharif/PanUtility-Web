@@ -54,6 +54,7 @@ import {
   Wind
 } from '@phosphor-icons/react';
 import { ToolItem } from '../types';
+import gifshot from 'gifshot';
 
 interface GenericUtilityWorkspaceProps {
   tool: ToolItem;
@@ -763,27 +764,10 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     addLog(`Downloaded processed file: ${nameWithoutExt}.${ext}`);
   };
 
-  const loadGifshot = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      if ((window as any).gifshot) {
-        resolve((window as any).gifshot);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js';
-      script.onload = () => resolve((window as any).gifshot);
-      script.onerror = () => reject(new Error('Failed to load gifshot engine.'));
-      document.head.appendChild(script);
-    });
-  };
-
-  const handleCreateGif = async () => {
+  const handleCreateGif = () => {
     if (!uploadedFile || !filePreview) return;
-    addLog('Loading GIF engine...');
+    addLog('Extracting frames & compiling animated GIF...');
     try {
-      const gifshot = await loadGifshot();
-      addLog('Extracting frames & compiling animated GIF...');
-      
       gifshot.createGIF({
         video: [filePreview],
         gifWidth: 400,

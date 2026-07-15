@@ -48,17 +48,21 @@ async function validateSafeUrl(urlStr: string): Promise<boolean> {
       return false;
     }
 
-    const lookupResult = await dnsLookup(hostname);
-    const ip = lookupResult.address;
+    try {
+      const lookupResult = await dnsLookup(hostname);
+      const ip = lookupResult.address;
 
-    if (
-      ip.startsWith("127.") ||
-      ip.startsWith("10.") ||
-      ip.startsWith("192.168.") ||
-      ip.startsWith("169.254.") ||
-      ip === "0.0.0.0"
-    ) {
-      return false;
+      if (
+        ip.startsWith("127.") ||
+        ip.startsWith("10.") ||
+        ip.startsWith("192.168.") ||
+        ip.startsWith("169.254.") ||
+        ip === "0.0.0.0"
+      ) {
+        return false;
+      }
+    } catch (dnsErr: any) {
+      console.warn("[validateSafeUrl] DNS lookup failed, allowing URL anyway:", hostname, dnsErr.message);
     }
     return true;
   } catch {
@@ -305,7 +309,7 @@ globalThis._deobfuscateN = (urlStr) => {
     duration
   };
 }
-async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
+async function resolveCobalt(urlStr: string, quality: string = 'max'): Promise<any> {
   const instances = [
     'https://api.cobalt.liubquanti.click',
     'https://cobaltapi.kittycat.boo'
@@ -324,9 +328,22 @@ async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
     ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
     : 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60';
   
+  const isAudio = quality === 'mp3';
+  
   for (const api of instances) {
     try {
-      console.log(`[Cobalt-YT] Trying instance: ${api}`);
+      console.log(`[Cobalt] Trying instance: ${api} for quality ${quality}`);
+      const payload: any = {
+        url: urlStr,
+        filenameStyle: 'basic'
+      };
+      if (isAudio) {
+        payload.downloadMode = 'audio';
+      } else {
+        const qVal = quality.replace('p', '');
+        payload.videoQuality = qVal;
+      }
+
       const r = await fetch(api, {
         method: 'POST',
         headers: {
@@ -334,16 +351,13 @@ async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
           'Content-Type': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         },
-        body: JSON.stringify({
-          url: urlStr,
-          videoQuality: '720'
-        }),
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(6000)
       });
       if (r.ok) {
         const data: any = await r.json();
         if (data.url) {
-          console.log(`[Cobalt-YT] Resolved successfully via ${api}`);
+          console.log(`[Cobalt] Resolved successfully via ${api}`);
           
           let title = data.filename || 'YouTube Video';
           title = title
@@ -360,7 +374,7 @@ async function resolveYouTubeCobalt(urlStr: string): Promise<any> {
         }
       }
     } catch (e: any) {
-      console.warn(`[Cobalt-YT] Instance ${api} failed:`, e.message);
+      console.warn(`[Cobalt] Instance ${api} failed:`, e.message);
     }
   }
   throw new Error('All Cobalt instances failed to resolve YouTube stream.');
@@ -410,28 +424,41 @@ function decryptSnapSave(data: string): string {
 
 export function createApp() {
   const app = express();
-  app.use(express.json());
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // API: Audio Transcription via Gemini API
   app.post("/api/transcribe", async (req, res) => {
     try {
-      const { fileUrl } = req.body;
-      if (!fileUrl) {
-        res.status(400).json({ error: "Missing fileUrl" });
+      const { fileUrl, audio, mimeType: bodyMimeType } = req.body;
+      if (!fileUrl && !audio) {
+        res.status(400).json({ error: "Missing 'fileUrl' or 'audio' base64 data." });
         return;
       }
 
-      const ai = getGeminiClient();
-      console.log("Downloading audio file for transcription:", fileUrl);
-      const audioResponse = await fetch(fileUrl);
-      if (!audioResponse.ok) {
-        throw new Error(`Failed to download audio file: ${audioResponse.statusText}`);
+      let base64Data = "";
+      let mimeType = "audio/mp3";
+
+      if (audio) {
+        base64Data = audio;
+        mimeType = bodyMimeType || "audio/mp3";
+      } else if (fileUrl) {
+        const isSafe = await validateSafeUrl(fileUrl);
+        if (!isSafe) {
+          res.status(403).json({ error: "Blocked: private/loopback URL." });
+          return;
+        }
+        console.log("Downloading audio file for transcription:", fileUrl);
+        const audioResponse = await fetch(fileUrl);
+        if (!audioResponse.ok) {
+          throw new Error(`Failed to download audio file: ${audioResponse.statusText}`);
+        }
+        const arrayBuffer = await audioResponse.arrayBuffer();
+        base64Data = Buffer.from(arrayBuffer).toString("base64");
+        mimeType = audioResponse.headers.get("content-type") || bodyMimeType || "audio/mp3";
       }
 
-      const arrayBuffer = await audioResponse.arrayBuffer();
-      const base64Data = Buffer.from(arrayBuffer).toString("base64");
-      const mimeType = audioResponse.headers.get("content-type") || "audio/mp3";
-
+      const ai = getGeminiClient();
       console.log("Sending transcription request to Gemini API...");
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -457,7 +484,7 @@ export function createApp() {
   // API: Resolve social media video URL
   app.post("/api/resolve-social", async (req, res) => {
     try {
-      const { url } = req.body;
+      const { url, quality } = req.body;
       if (!url || typeof url !== "string") {
         res.status(400).json({ error: "Missing 'url'." });
         return;
@@ -478,34 +505,16 @@ export function createApp() {
 
       let title = "", thumbnail = "", videoUrl = "", duration = "00:00";
 
-      // ── 1. YouTube: Use SaveFrom Scraper (Self-contained)
+      // ── 1. YouTube: Use SaveFrom Scraper (Self-contained) or Cobalt
       if (isYT) {
-        try {
-          const result = await resolveSaveFrom(url);
-          if (result && result.length > 0) {
-            const item = result[0];
-            title = item.meta?.title || "";
-            thumbnail = item.thumb || "";
-            duration = item.meta?.duration || "00:00";
-            
-            // Filter progressive MP4 formats (both video and audio)
-            const mp4s = item.url.filter((f: any) => f.url && f.ext === 'mp4' && !f.name.includes('no audio'));
-            // Prefer googlevideo CDN URLs directly if present
-            const preferred = mp4s.find((f: any) => f.url.includes('googlevideo.com')) || mp4s[0] || item.url[0];
-            if (preferred?.url) {
-              videoUrl = preferred.url;
-              console.log("[SaveFrom-YT] Resolved:", title.slice(0, 40), "→", preferred.name);
-            }
-          }
-        } catch (e: any) {
-          console.warn("[SaveFrom-YT] Error:", e.message);
-        }
+        const isAudio = quality === 'mp3';
+        const isHighRes = quality === 'max' || quality === '1080p' || quality === '1440p' || quality === '2160p';
 
-        // Fallback to Cobalt instances first if SaveFrom failed
-        if (!videoUrl) {
+        // For audio or high-res, try Cobalt first!
+        if (isAudio || isHighRes) {
           try {
-            console.log("[Cobalt-YT] Resolving stream via community instances...");
-            const res = await resolveYouTubeCobalt(url);
+            console.log(`[Cobalt-YT] Resolving audio/high-res stream (${quality}) via community instances...`);
+            const res = await resolveCobalt(url, quality);
             title = res.title;
             thumbnail = res.thumbnail;
             videoUrl = res.videoUrl;
@@ -516,8 +525,47 @@ export function createApp() {
           }
         }
 
-        // Fallback to hybrid scraper if Cobalt also failed
+        // If Cobalt failed or if it's standard resolution, try SaveFrom next (for video only)
+        if (!videoUrl && !isAudio) {
+          try {
+            const result = await resolveSaveFrom(url);
+            if (result && result.length > 0) {
+              const item = result[0];
+              title = item.meta?.title || "";
+              thumbnail = item.thumb || "";
+              duration = item.meta?.duration || "00:00";
+              
+              // Filter progressive MP4 formats (both video and audio)
+              const mp4s = item.url.filter((f: any) => f.url && f.ext === 'mp4' && !f.name.includes('no audio'));
+              // Prefer googlevideo CDN URLs directly if present
+              const preferred = mp4s.find((f: any) => f.url.includes('googlevideo.com')) || mp4s[0] || item.url[0];
+              if (preferred?.url) {
+                videoUrl = preferred.url;
+                console.log("[SaveFrom-YT] Resolved:", title.slice(0, 40), "→", preferred.name);
+              }
+            }
+          } catch (e: any) {
+            console.warn("[SaveFrom-YT] Error:", e.message);
+          }
+        }
+
+        // If videoUrl is still not resolved, try Cobalt as fallback
         if (!videoUrl) {
+          try {
+            console.log(`[Cobalt-YT-Fallback] Resolving stream (${quality || 'max'}) via community instances...`);
+            const res = await resolveCobalt(url, quality || 'max');
+            title = res.title;
+            thumbnail = res.thumbnail;
+            videoUrl = res.videoUrl;
+            duration = res.duration;
+            console.log("[Cobalt-YT-Fallback] Resolved successfully:", title.slice(0, 40));
+          } catch (e: any) {
+            console.error("[Cobalt-YT-Fallback] Error:", e.message);
+          }
+        }
+
+        // Last fallback: hybrid scraper (video only)
+        if (!videoUrl && !isAudio) {
           try {
             console.log("[Hybrid-YT] Resolving stream via ytdl-core + VM decipher...");
             const res = await resolveYouTubeHybrid(url);
@@ -532,51 +580,85 @@ export function createApp() {
         }
       }
 
-      // ── 2. TikTok, Facebook, Instagram, Twitter: Use Snapsave Scraper Action
+      // ── 2. TikTok, Facebook, Instagram, Twitter: Use Snapsave Scraper Action or Cobalt
       if (!videoUrl && (isTT || isFB || isIG || isTW)) {
-        try {
-          const snapsaveResponse = await fetch('https://snapsave.app/action.php?lang=en', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Origin': 'https://snapsave.app',
-              'Referer': 'https://snapsave.app/en',
-            },
-            body: new URLSearchParams({ url })
-          });
+        const isAudio = quality === 'mp3';
 
-          if (snapsaveResponse.ok) {
-            const code = await snapsaveResponse.text();
-            const decodedHtml = decryptSnapSave(code);
-
-            // Extract links from resolved HTML
-            const links: string[] = [];
-            const linkRegex = /href=\\"([^\\"]+)\\"/g;
-            let match;
-            while ((match = linkRegex.exec(decodedHtml)) !== null) {
-              let cleanUrl = match[1].replace(/\\/g, '');
-              if (cleanUrl.startsWith('/')) {
-                cleanUrl = 'https://snapsave.app' + cleanUrl;
-              }
-              links.push(cleanUrl);
-            }
-
-            if (links.length > 0) {
-              videoUrl = links[0]; // Choose first/best resolution link
-              
-              // Extract description/title if possible
-              const titleMatch = decodedHtml.match(/<strong>(.*?)<\/strong>/);
-              if (titleMatch) title = titleMatch[1];
-              
-              const thumbMatch = decodedHtml.match(/src=\\"([^\\"]+)\\"/);
-              if (thumbMatch) thumbnail = thumbMatch[1].replace(/\\/g, '');
-              
-              console.log(`[Snapsave-${platform}] Resolved stream link!`);
-            }
+        // Try Cobalt first if audio-only is requested
+        if (isAudio) {
+          try {
+            console.log(`[Cobalt-${platform}] Resolving audio stream (${quality}) via community instances...`);
+            const res = await resolveCobalt(url, quality);
+            title = res.title;
+            thumbnail = res.thumbnail;
+            videoUrl = res.videoUrl;
+            duration = res.duration;
+            console.log(`[Cobalt-${platform}] Resolved successfully:`, title.slice(0, 40));
+          } catch (e: any) {
+            console.error(`[Cobalt-${platform}] Error:`, e.message);
           }
-        } catch (e: any) {
-          console.warn(`[Snapsave-${platform}] Error:`, e.message);
+        }
+
+        if (!videoUrl) {
+          try {
+            const snapsaveResponse = await fetch('https://snapsave.app/action.php?lang=en', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Origin': 'https://snapsave.app',
+                'Referer': 'https://snapsave.app/en',
+              },
+              body: new URLSearchParams({ url })
+            });
+
+            if (snapsaveResponse.ok) {
+              const code = await snapsaveResponse.text();
+              const decodedHtml = decryptSnapSave(code);
+
+              // Extract links from resolved HTML
+              const links: string[] = [];
+              const linkRegex = /href=\\"([^\\"]+)\\"/g;
+              let match;
+              while ((match = linkRegex.exec(decodedHtml)) !== null) {
+                let cleanUrl = match[1].replace(/\\/g, '');
+                if (cleanUrl.startsWith('/')) {
+                  cleanUrl = 'https://snapsave.app' + cleanUrl;
+                }
+                links.push(cleanUrl);
+              }
+
+              if (links.length > 0) {
+                videoUrl = links[0]; // Choose first/best resolution link
+                
+                // Extract description/title if possible
+                const titleMatch = decodedHtml.match(/<strong>(.*?)<\/strong>/);
+                if (titleMatch) title = titleMatch[1];
+                
+                const thumbMatch = decodedHtml.match(/src=\\"([^\\"]+)\\"/);
+                if (thumbMatch) thumbnail = thumbMatch[1].replace(/\\/g, '');
+                
+                console.log(`[Snapsave-${platform}] Resolved stream link!`);
+              }
+            }
+          } catch (e: any) {
+            console.warn(`[Snapsave-${platform}] Error:`, e.message);
+          }
+        }
+
+        // Fallback to Cobalt for video if Snapsave fails
+        if (!videoUrl) {
+          try {
+            console.log(`[Cobalt-${platform}-Fallback] Resolving stream (${quality || 'max'}) via community instances...`);
+            const res = await resolveCobalt(url, quality || 'max');
+            title = res.title;
+            thumbnail = res.thumbnail;
+            videoUrl = res.videoUrl;
+            duration = res.duration;
+            console.log(`[Cobalt-${platform}-Fallback] Resolved successfully:`, title.slice(0, 40));
+          } catch (e: any) {
+            console.error(`[Cobalt-${platform}-Fallback] Error:`, e.message);
+          }
         }
       }
 
@@ -654,17 +736,12 @@ export function createApp() {
 
       // Pipe the response body directly — no buffering
       if (!upstream.body) { res.end(); return; }
-      const reader = upstream.body.getReader();
-      const pump = async () => {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { res.end(); break; }
-          const ok = res.write(value);
-          if (!ok) await new Promise(r => res.once("drain", r));
-        }
-      };
-      req.on("close", () => reader.cancel());
-      await pump();
+      const { Readable } = require("stream");
+      const nodeStream = Readable.fromWeb(upstream.body as any);
+      nodeStream.pipe(res);
+      req.on("close", () => {
+        nodeStream.destroy();
+      });
     } catch (err: any) {
       console.error("[media-proxy] Error:", err.message);
       if (!res.headersSent) res.status(500).json({ error: err.message });

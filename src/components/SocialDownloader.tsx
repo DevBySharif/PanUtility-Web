@@ -29,10 +29,12 @@ interface VideoMeta {
 }
 
 const QUALITIES = [
-  { id: '720p', label: 'MP4 720p HD' },
-  { id: '480p', label: 'MP4 480p' },
-  { id: '360p', label: 'MP4 360p' },
-  { id: 'mp3',  label: 'MP3 Audio' },
+  { id: 'max',   label: 'Highest Quality (Up to 4K/1080p)' },
+  { id: '1080p', label: 'MP4 1080p Full HD' },
+  { id: '720p',  label: 'MP4 720p HD' },
+  { id: '480p',  label: 'MP4 480p' },
+  { id: '360p',  label: 'MP4 360p' },
+  { id: 'mp3',   label: 'MP3 Audio' },
 ];
 
 export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
@@ -43,6 +45,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
   const [meta, setMeta] = useState<VideoMeta | null>(null);
   const [progress, setProgress] = useState(0);
   const [selectedQuality, setSelectedQuality] = useState(0);
+  const [isReResolving, setIsReResolving] = useState(false);
 
   const detectPlatform = (u: string) => {
     const l = u.toLowerCase();
@@ -79,7 +82,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
       const r = await fetch('/api/resolve-social', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: trimmed }),
+        body: JSON.stringify({ url: trimmed, quality: QUALITIES[selectedQuality].id }),
       });
 
       clearInterval(iv);
@@ -114,7 +117,40 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     }
   };
 
-  const handleDownload = async () => {
+  const handleQualityChange = async (qualityIndex: number) => {
+    setSelectedQuality(qualityIndex);
+    if (!meta) return;
+
+    setIsReResolving(true);
+    setErrorMsg('');
+
+    try {
+      const r = await fetch('/api/resolve-social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim(), quality: QUALITIES[qualityIndex].id }),
+      });
+
+      if (!r.ok) {
+        let errMsg = 'Failed to switch quality.';
+        try {
+          const e = await r.json();
+          if (e.error) errMsg = e.error;
+        } catch {}
+        throw new Error(errMsg);
+      }
+
+      const d = await r.json();
+      setMeta(prev => prev ? { ...prev, videoUrl: d.videoUrl } : null);
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Error switching quality.');
+      setStatus('error');
+    } finally {
+      setIsReResolving(false);
+    }
+  };
+
+  const handleDownload = () => {
     if (!meta?.videoUrl) return;
     const isAudio = QUALITIES[selectedQuality].id === 'mp3';
     const cleanTitle = meta.title.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_').slice(0, 60);
@@ -123,47 +159,35 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     setStatus('downloading');
     setProgress(5);
 
-    // Animate progress bar
+    // Simulate progress bar quickly while the browser launches the native download stream
     const iv = setInterval(() => {
       setProgress(p => {
-        if (p >= 88) { clearInterval(iv); return 88; }
-        return p + Math.random() * 8 + 3;
+        if (p >= 90) {
+          clearInterval(iv);
+          setTimeout(() => {
+            setProgress(100);
+            setStatus('completed');
+            confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
+          }, 400);
+          return 90;
+        }
+        return p + Math.random() * 25 + 15;
       });
-    }, 350);
+    }, 150);
 
-    try {
-      // Stream through our proxy which adds Content-Disposition: attachment
-      const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(cleanTitle)}`;
-      const resp = await fetch(proxyUrl);
-
-      if (!resp.ok) throw new Error(`Proxy returned ${resp.status}`);
-
-      const blob = await resp.blob();
-      clearInterval(iv);
-      setProgress(100);
-
-      const objUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objUrl;
-      a.download = `${cleanTitle}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objUrl);
-
-      setStatus('completed');
-      confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
-
-    } catch {
-      clearInterval(iv);
-      // Fallback: open the URL directly in a new tab — user can right-click → Save
-      window.open(meta.videoUrl, '_blank', 'noopener');
-      setProgress(100);
-      setStatus('completed');
-    }
+    const filename = `${cleanTitle}.${ext}`;
+    const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    
+    // Create temporary link and click to trigger browser native streaming download
+    const a = document.createElement('a');
+    a.href = proxyUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
-  const reset = () => { setUrl(''); setStatus('idle'); setMeta(null); setProgress(0); };
+  const reset = () => { setUrl(''); setStatus('idle'); setMeta(null); setProgress(0); setSelectedQuality(0); setIsReResolving(false); };
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6" id="social-downloader-tool">
@@ -270,23 +294,32 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                   </div>
 
                   {status === 'ready' && (
-                    <div className="flex items-stretch gap-0.5 rounded-lg overflow-hidden border border-[#2a2a2a] w-fit">
-                      <button
-                        id="download-btn"
-                        onClick={handleDownload}
-                        className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
-                      >
-                        <Download className="w-4 h-4" /> Download
-                      </button>
-                      <select
-                        value={selectedQuality}
-                        onChange={e => setSelectedQuality(Number(e.target.value))}
-                        className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 text-xs font-semibold cursor-pointer focus:outline-none min-w-[130px]"
-                      >
-                        {QUALITIES.map((q, i) => (
-                          <option key={q.id} value={i}>{q.label}</option>
-                        ))}
-                      </select>
+                    <div className="flex items-center gap-3 h-10">
+                      {isReResolving ? (
+                        <div className="flex items-center gap-2 text-xs text-[#10b981] font-mono">
+                          <ArrowsCounterClockwise className="w-4 h-4 animate-spin text-[#10b981]" />
+                          <span>Re-resolving stream…</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-stretch gap-0.5 rounded-lg overflow-hidden border border-[#2a2a2a] w-fit">
+                          <button
+                            id="download-btn"
+                            onClick={handleDownload}
+                            className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
+                          >
+                            <Download className="w-4 h-4" /> Download
+                          </button>
+                          <select
+                            value={selectedQuality}
+                            onChange={e => handleQualityChange(Number(e.target.value))}
+                            className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 text-xs font-semibold cursor-pointer focus:outline-none min-w-[130px]"
+                          >
+                            {QUALITIES.map((q, i) => (
+                              <option key={q.id} value={i}>{q.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
                   )}
 

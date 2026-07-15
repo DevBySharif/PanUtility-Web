@@ -220,7 +220,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         headers: {
-          'Content-TextT': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           audio: base64Audio,
@@ -377,7 +377,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
             AI Audio Transcriber
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Transcribe your audio tracks or live recordings with automatic timestamps using Gemini 3.5 Flash.
+            Transcribe your audio tracks or live recordings with automatic timestamps using Gemini 2.5 Flash.
           </p>
         </div>
         {audioFile && (
@@ -467,7 +467,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                     {audioFile.name}
                   </h3>
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">
-                    TextT: {audioFile.type || 'audio/mp3'} &bull; {Math.round(audioFile.size / 1024 / 1024 * 100) / 100} MB
+                    Type: {audioFile.type || 'audio/mp3'} &bull; {Math.round(audioFile.size / 1024 / 1024 * 100) / 100} MB
                   </p>
                 </div>
               </div>

@@ -741,7 +741,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         runWordCount(e.target.value);
                       }
                     }}
-                    placeholder={`TextT or paste your content here...`}
+                    placeholder={`Type or paste your content here...`}
                     className="w-full min-h-[160px] bg-[#070707] border border-[#222] rounded-xl p-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#10b981]/40 focus:ring-1 focus:ring-[#10b981]/20 transition-all font-mono leading-relaxed shadow-inner"
                   />
                 </div>

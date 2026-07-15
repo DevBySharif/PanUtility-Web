@@ -796,7 +796,7 @@ function AppContent() {
                           {dashboardPendingFile.name}
                         </h4>
                         <p className="text-[10px] text-zinc-500 font-mono mt-1 truncate">
-                          TextT: {dashboardPendingFile.type || 'Unknown Format'}
+                          Type: {dashboardPendingFile.type || 'Unknown Format'}
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5 justify-center sm:justify-start">
                           <span className="text-[8px] bg-zinc-800 border border-zinc-700/50 text-zinc-300 px-2 py-0.5 rounded font-mono uppercase">
@@ -1249,7 +1249,7 @@ function AppContent() {
               } else if (file.type.startsWith('video/')) {
                 handleRoute(file, 'video-splitter');
               } else {
-                toast.error('Unsupported File TextT', 'No suitable tools found for this file.');
+                toast.error('Unsupported File Type', 'No suitable tools found for this file.');
               }
             }
           }}

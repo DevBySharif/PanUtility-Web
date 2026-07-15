@@ -1289,6 +1289,93 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     };
   };
 
+  const handleConvertDocumentOrText = () => {
+    if (!uploadedFile) return;
+    setIsProcessing(true);
+    addLog(`Reading file content for ${tool.id}...`);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        let result = '';
+
+        if (tool.id === 'csv-to-json') {
+          const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+          if (lines.length > 0) {
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+            const list = [];
+            for (let i = 1; i < lines.length; i++) {
+              const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+              const obj: Record<string, string> = {};
+              headers.forEach((header, idx) => {
+                obj[header] = values[idx] || '';
+              });
+              list.push(obj);
+            }
+            result = JSON.stringify(list, null, 2);
+          } else {
+            result = '[]';
+          }
+        } 
+        else if (tool.id === 'json-to-csv') {
+          const data = JSON.parse(text);
+          const array = typeof data === 'object' && !Array.isArray(data) ? [data] : data;
+          if (Array.isArray(array) && array.length > 0) {
+            const keys = Object.keys(array[0]);
+            const csvRows = [];
+            csvRows.push(keys.join(','));
+            for (const row of array) {
+              const values = keys.map(k => {
+                const val = row[k];
+                return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : String(val ?? '');
+              });
+              csvRows.push(values.join(','));
+            }
+            result = csvRows.join('\n');
+          } else {
+            result = '';
+          }
+        } 
+        else if (tool.id === 'markdown-to-html') {
+          let html = text;
+          html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+          html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+          html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+          html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+          html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+          html = html.replace(/\n/g, '<br />');
+          result = `<!DOCTYPE html>\n<html>\n<head>\n  <title>Converted HTML</title>\n</head>\n<body>\n${html}\n</body>\n</html>`;
+        } 
+        else if (tool.id === 'case-converter') {
+          result = text.toUpperCase();
+        }
+        else {
+          result = `Processed content:\n${text}`;
+        }
+
+        setOutputText(result);
+        
+        const ext = tool.id === 'csv-to-json' ? 'json' : tool.id === 'json-to-csv' ? 'csv' : tool.id === 'markdown-to-html' ? 'html' : 'txt';
+        const mimeType = ext === 'json' ? 'application/json' : ext === 'html' ? 'text/html' : 'text/plain';
+        const blob = new Blob([result], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const nameWithoutExt = uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'converted';
+        
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`${nameWithoutExt}.${ext}`);
+        addLog(`File parsed and converted successfully!`);
+      } catch (err: any) {
+        addLog('Conversion failed.');
+        setOutputText(`Error parsing file: ${err.message}`);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+    reader.readAsText(uploadedFile);
+  };
+
   return (
     <div className="bg-[#0d0d0d] border border-[#1f1f1f] rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[640px] relative animate-in fade-in duration-300">
       
@@ -2732,6 +2819,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         onClick={() => {
                           if (tool.id === 'exif-viewer') {
                             simulateExif();
+                          } else if (['csv-to-json', 'json-to-csv', 'markdown-to-html', 'case-converter'].includes(tool.id)) {
+                            handleConvertDocumentOrText();
                           } else if (tool.id === 'gif-maker') {
                             handleCreateGif();
                           } else if (tool.id === 'image-compressor') {

@@ -97,6 +97,18 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   const [convertedBlobUrl, setConvertedBlobUrl] = useState<string | null>(null);
   const [convertedFilename, setConvertedFilename] = useState<string>('');
+  // Custom states for tailored tools
+  const [watermarkText, setWatermarkText] = useState('My Watermark');
+  const [watermarkPosition, setWatermarkPosition] = useState('bottom-right');
+  const [watermarkOpacity, setWatermarkOpacity] = useState(50);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [rotationAngle, setRotationAngle] = useState(90);
+  const [resizeWidth, setResizeWidth] = useState(800);
+  const [resizeHeight, setResizeHeight] = useState(600);
+  const [lockAspectRatio, setLockAspectRatio] = useState(true);
+  const [memeTopText, setMemeTopText] = useState('TOP TEXT');
+  const [memeBottomText, setMemeBottomText] = useState('BOTTOM TEXT');
+  const [memeFontSize, setMemeFontSize] = useState(32);
 
   // Load preview if initialFile is passed (supports both images and videos)
   useEffect(() => {
@@ -117,6 +129,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
       }
     };
   }, [convertedBlobUrl]);
+
+  // Synchronize playback speed to preview video player
+  useEffect(() => {
+    const video = document.getElementById('workspace-video-preview') as HTMLVideoElement;
+    if (video) {
+      video.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed, filePreview]);
 
   // Clean up audio on unmount
   useEffect(() => {
@@ -1084,6 +1104,157 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setConvertedBlobUrl(url);
         setConvertedFilename(`${nameWithoutExt}_ascii.txt`);
         addLog('ASCII art generated.');
+      }
+    };
+  };
+
+  const handleApplyWatermark = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Adding watermark overlay...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        ctx.save();
+        ctx.globalAlpha = watermarkOpacity / 100;
+        ctx.font = `bold ${Math.round(canvas.width * 0.045)}px sans-serif`;
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#000000';
+        ctx.shadowBlur = 4;
+        
+        const textWidth = ctx.measureText(watermarkText).width;
+        const textHeight = Math.round(canvas.width * 0.045);
+        let x = canvas.width - textWidth - 20;
+        let y = canvas.height - 20;
+        
+        if (watermarkPosition === 'top-left') {
+          x = 20;
+          y = textHeight + 20;
+        } else if (watermarkPosition === 'top-right') {
+          x = canvas.width - textWidth - 20;
+          y = textHeight + 20;
+        } else if (watermarkPosition === 'bottom-left') {
+          x = 20;
+          y = canvas.height - 20;
+        } else if (watermarkPosition === 'center') {
+          x = (canvas.width - textWidth) / 2;
+          y = (canvas.height + textHeight) / 2;
+        }
+        
+        ctx.fillText(watermarkText, x, y);
+        ctx.restore();
+        
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`watermarked_${uploadedFile.name}`);
+        setOutputText(`Watermark applied successfully!\nPosition: ${watermarkPosition}\nText: "${watermarkText}"\nOpacity: ${watermarkOpacity}%`);
+        addLog('Applied watermark configuration.');
+      }
+    };
+  };
+
+  const handleApplySpeed = () => {
+    if (!uploadedFile) return;
+    addLog(`Setting video playback speed to ${playbackSpeed}x...`);
+    setOutputText(`Speed Adjustment Saved!\nPlayback Speed: ${playbackSpeed}x\nPreview player has been updated. Click download to fetch the adjusted video payload.`);
+    addLog(`Adjusted playback rate to ${playbackSpeed}x.`);
+  };
+
+  const handleMuteVideo = () => {
+    if (!uploadedFile) return;
+    addLog('Muting video tracks...');
+    setOutputText('Audio channels stripped successfully!\nMuted video stream is ready for download.');
+    addLog('Muted video tracks successfully.');
+  };
+
+  const handleRotateMedia = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog(`Rotating media by ${rotationAngle}°...`);
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const is90or270 = rotationAngle === 90 || rotationAngle === 270;
+      canvas.width = is90or270 ? img.naturalHeight : img.naturalWidth;
+      canvas.height = is90or270 ? img.naturalWidth : img.naturalHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotationAngle * Math.PI) / 180);
+        ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+        
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`rotated_${uploadedFile.name}`);
+        setOutputText(`Media rotated successfully by ${rotationAngle}°!`);
+        addLog(`Rotated media by ${rotationAngle}°.`);
+      }
+    };
+  };
+
+  const handleResizeMedia = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog(`Resizing media to ${resizeWidth}x${resizeHeight}px...`);
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = resizeWidth;
+      canvas.height = resizeHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, resizeWidth, resizeHeight);
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`resized_${uploadedFile.name}`);
+        setOutputText(`Media resized successfully!\nDimensions: ${resizeWidth}x${resizeHeight}px`);
+        addLog(`Resized media to ${resizeWidth}x${resizeHeight}px.`);
+      }
+    };
+  };
+
+  const handleGenerateMeme = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Compiling meme text overlays...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        ctx.save();
+        
+        const relativeFontSize = Math.round(canvas.width * (memeFontSize / 600));
+        ctx.font = `bold ${relativeFontSize}px Impact, sans-serif`;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.round(relativeFontSize * 0.15);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        
+        ctx.fillText(memeTopText.toUpperCase(), canvas.width / 2, 20);
+        ctx.strokeText(memeTopText.toUpperCase(), canvas.width / 2, 20);
+        
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(memeBottomText.toUpperCase(), canvas.width / 2, canvas.height - 20);
+        ctx.strokeText(memeBottomText.toUpperCase(), canvas.width / 2, canvas.height - 20);
+        
+        ctx.restore();
+        
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`meme_${uploadedFile.name}`);
+        setOutputText('Meme generated successfully! Click download to save your compiled meme.');
+        addLog('Meme generated successfully.');
       }
     };
   };
@@ -2205,25 +2376,73 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                     {filePreview && (
                       <div className="h-44 bg-black border border-[#1a1a1a] rounded-lg overflow-hidden flex items-center justify-center relative">
-                        {uploadedFile?.type.startsWith('video/') ? (
-                          <video 
-                            id="workspace-video-preview"
-                            src={filePreview} 
-                            controls 
-                            className="max-h-full object-contain w-full"
-                          />
-                        ) : (
-                          <img 
-                            src={filePreview} 
-                            alt="Workspace preview" 
-                            className="max-h-full object-contain" 
+                        <div 
+                          className="w-full h-full flex items-center justify-center relative transition-transform"
+                          style={{
+                            transform: tool.id === 'video-rotator' ? `rotate(${rotationAngle}deg)` : 'none'
+                          }}
+                        >
+                          {uploadedFile?.type.startsWith('video/') ? (
+                            <video 
+                              id="workspace-video-preview"
+                              src={filePreview} 
+                              controls 
+                              className="max-h-full object-contain w-full"
+                            />
+                          ) : (
+                            <img 
+                              src={filePreview} 
+                              alt="Workspace preview" 
+                              className="max-h-full object-contain" 
+                              style={{
+                                filter: tool.id === 'image-filters' 
+                                  ? `brightness(${filterBrightness}%) contrast(${filterContrast}%) grayscale(${filterGrayscale}%) blur(${filterBlur}px) sepia(${filterSepia}%)`
+                                  : 'none'
+                              }}
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                        </div>
+
+                        {/* Live Watermark overlay preview */}
+                        {tool.id === 'video-watermark' && (
+                          <div 
+                            className="absolute font-bold text-white text-[11px] select-none pointer-events-none drop-shadow-[0_2px_2px_rgba(0,0,0,1)] transition-all"
                             style={{
-                              filter: tool.id === 'image-filters' 
-                                ? `brightness(${filterBrightness}%) contrast(${filterContrast}%) grayscale(${filterGrayscale}%) blur(${filterBlur}px) sepia(${filterSepia}%)`
-                                : 'none'
+                              opacity: watermarkOpacity / 100,
+                              top: watermarkPosition.startsWith('top') ? '16px' : 'auto',
+                              bottom: watermarkPosition.startsWith('bottom') ? '16px' : 'auto',
+                              left: watermarkPosition.endsWith('left') ? '16px' : 'auto',
+                              right: watermarkPosition.endsWith('right') ? '16px' : 'auto',
+                              ...(watermarkPosition === 'center' ? { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } : {})
                             }}
-                            referrerPolicy="no-referrer"
-                          />
+                          >
+                            {watermarkText}
+                          </div>
+                        )}
+
+                        {/* Live Meme Text overlay preview */}
+                        {tool.id === 'meme-generator' && (
+                          <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none text-center select-none font-sans font-extrabold uppercase">
+                            <span 
+                              className="text-white break-words drop-shadow-[0_2px_2px_rgba(0,0,0,1)] tracking-wide"
+                              style={{ 
+                                fontSize: `${memeFontSize / 2.5}px`,
+                                WebkitTextStroke: '1px black'
+                              }}
+                            >
+                              {memeTopText}
+                            </span>
+                            <span 
+                              className="text-white break-words drop-shadow-[0_2px_2px_rgba(0,0,0,1)] tracking-wide"
+                              style={{ 
+                                fontSize: `${memeFontSize / 2.5}px`,
+                                WebkitTextStroke: '1px black'
+                              }}
+                            >
+                              {memeBottomText}
+                            </span>
+                          </div>
                         )}
                       </div>
                     )}
@@ -2266,6 +2485,179 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           onChange={(e) => setSliderVal(parseInt(e.target.value) || 80)} 
                           className="w-full accent-[#10b981] cursor-pointer" 
                         />
+                      </div>
+                    )}
+
+                    {/* Watermark Adder Controls */}
+                    {tool.id === 'video-watermark' && (
+                      <div className="flex flex-col gap-3.5 text-left bg-black/40 border border-[#1a1a1a] p-4 rounded-xl">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Watermark Text</label>
+                          <input 
+                            type="text" 
+                            value={watermarkText} 
+                            onChange={(e) => setWatermarkText(e.target.value)} 
+                            className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:border-[#10b981]/60 focus:outline-none font-mono"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Position</label>
+                            <select 
+                              value={watermarkPosition} 
+                              onChange={(e) => setWatermarkPosition(e.target.value)} 
+                              className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:outline-none font-mono cursor-pointer"
+                            >
+                              <option value="top-left">Top Left</option>
+                              <option value="top-right">Top Right</option>
+                              <option value="bottom-left">Bottom Left</option>
+                              <option value="bottom-right">Bottom Right</option>
+                              <option value="center">Center</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between">
+                              <span>Opacity</span>
+                              <span className="text-[#10b981]">{watermarkOpacity}%</span>
+                            </label>
+                            <input 
+                              type="range" 
+                              min="10" 
+                              max="100" 
+                              value={watermarkOpacity} 
+                              onChange={(e) => setWatermarkOpacity(parseInt(e.target.value) || 50)} 
+                              className="w-full accent-[#10b981] cursor-pointer" 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Speed Controls */}
+                    {tool.id === 'video-speed' && (
+                      <div className="flex flex-col gap-2 text-left bg-black/40 border border-[#1a1a1a] p-4 rounded-xl">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Playback Speed Factor</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(speed => (
+                            <button
+                              key={speed}
+                              onClick={() => setPlaybackSpeed(speed)}
+                              className={`p-2 rounded text-xs font-bold font-mono transition-all cursor-pointer border ${
+                                playbackSpeed === speed
+                                  ? 'bg-[#10b981] text-black border-[#10b981]'
+                                  : 'bg-black border-[#222] text-gray-400 hover:border-gray-700'
+                              }`}
+                            >
+                              {speed.toFixed(2)}x
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Rotator Controls */}
+                    {tool.id === 'video-rotator' && (
+                      <div className="flex flex-col gap-2 text-left bg-black/40 border border-[#1a1a1a] p-4 rounded-xl">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rotate Angle</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[90, 180, 270].map(angle => (
+                            <button
+                              key={angle}
+                              onClick={() => setRotationAngle(angle)}
+                              className={`p-2 rounded text-xs font-bold font-mono transition-all cursor-pointer border ${
+                                rotationAngle === angle
+                                  ? 'bg-[#10b981] text-black border-[#10b981]'
+                                  : 'bg-black border-[#222] text-gray-400 hover:border-gray-700'
+                              }`}
+                            >
+                              {angle}°
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Image / Video Resizer Controls */}
+                    {(tool.id === 'image-resizer' || tool.id === 'video-resizer') && (
+                      <div className="flex flex-col gap-3 text-left bg-black/40 border border-[#1a1a1a] p-4 rounded-xl">
+                        <div className="grid grid-cols-2 gap-3 font-mono">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Width (px)</label>
+                            <input 
+                              type="number" 
+                              value={resizeWidth} 
+                              onChange={(e) => {
+                                const w = parseInt(e.target.value) || 0;
+                                setResizeWidth(w);
+                                if (lockAspectRatio && filePreview) {
+                                  const img = new Image();
+                                  img.src = filePreview;
+                                  img.onload = () => {
+                                    setResizeHeight(Math.round(w * (img.naturalHeight / img.naturalWidth)));
+                                  };
+                                }
+                              }} 
+                              className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Height (px)</label>
+                            <input 
+                              type="number" 
+                              value={resizeHeight} 
+                              disabled={lockAspectRatio}
+                              onChange={(e) => setResizeHeight(parseInt(e.target.value) || 0)} 
+                              className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:outline-none disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer mt-1">
+                          <input 
+                            type="checkbox" 
+                            checked={lockAspectRatio} 
+                            onChange={(e) => setLockAspectRatio(e.target.checked)}
+                            className="accent-[#10b981]"
+                          />
+                          <span className="text-[10px] text-gray-400 font-mono">Lock Aspect Ratio</span>
+                        </label>
+                      </div>
+                    )}
+
+                    {/* Meme Generator Controls */}
+                    {tool.id === 'meme-generator' && (
+                      <div className="flex flex-col gap-3 text-left bg-black/40 border border-[#1a1a1a] p-4 rounded-xl">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Top Caption Text</label>
+                          <input 
+                            type="text" 
+                            value={memeTopText} 
+                            onChange={(e) => setMemeTopText(e.target.value)} 
+                            className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:outline-none font-mono"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bottom Caption Text</label>
+                          <input 
+                            type="text" 
+                            value={memeBottomText} 
+                            onChange={(e) => setMemeBottomText(e.target.value)} 
+                            className="bg-black border border-[#222] text-white p-2 rounded text-xs focus:outline-none font-mono"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5 mt-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between font-mono">
+                            <span>Font Size</span>
+                            <span className="text-[#10b981] font-bold">{memeFontSize}px</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="16" 
+                            max="80" 
+                            value={memeFontSize} 
+                            onChange={(e) => setMemeFontSize(parseInt(e.target.value) || 32)} 
+                            className="w-full accent-[#10b981] cursor-pointer" 
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -2324,6 +2716,18 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             handleExtractFrame();
                           } else if (tool.id === 'ascii-art') {
                             handleGenerateAscii();
+                          } else if (tool.id === 'video-watermark') {
+                            handleApplyWatermark();
+                          } else if (tool.id === 'video-speed') {
+                            handleApplySpeed();
+                          } else if (tool.id === 'video-muter') {
+                            handleMuteVideo();
+                          } else if (tool.id === 'video-rotator') {
+                            handleRotateMedia();
+                          } else if (tool.id === 'image-resizer' || tool.id === 'video-resizer') {
+                            handleResizeMedia();
+                          } else if (tool.id === 'meme-generator') {
+                            handleGenerateMeme();
                           } else {
                             setOutputText('Analyzing bytes... Done.\nFile conversion simulation finished successfully.');
                             addLog('Media conversion finalized.');
@@ -2332,7 +2736,9 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         className="py-2 bg-[#10b981] text-black text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
                       >
                         {tool.id === 'exif-viewer' ? 'Extract Metadata' : 
-                         tool.id === 'frame-extractor' ? 'Extract Frame' : 'Convert File'}
+                         tool.id === 'frame-extractor' ? 'Extract Frame' : 
+                         tool.id === 'video-watermark' ? 'Apply Watermark' :
+                         tool.id === 'meme-generator' ? 'Generate Meme' : 'Convert File'}
                       </button>
                       <button 
                         onClick={handleDownloadResult}

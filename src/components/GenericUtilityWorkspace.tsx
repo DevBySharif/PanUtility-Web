@@ -94,16 +94,28 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const noiseNodeRef = useRef<AudioWorkletNode | ScriptProcessorNode | null>(null);
 
-  // Load preview if initialFile is passed
+  const [convertedBlobUrl, setConvertedBlobUrl] = useState<string | null>(null);
+  const [convertedFilename, setConvertedFilename] = useState<string>('');
+
+  // Load preview if initialFile is passed (supports both images and videos)
   useEffect(() => {
     if (uploadedFile) {
-      if (uploadedFile.type.startsWith('image/')) {
-        const url = URL.createObjectURL(uploadedFile);
-        setFilePreview(url);
-        return () => URL.revokeObjectURL(url);
-      }
+      const url = URL.createObjectURL(uploadedFile);
+      setFilePreview(url);
+      setConvertedBlobUrl(null);
+      setConvertedFilename('');
+      return () => URL.revokeObjectURL(url);
     }
   }, [uploadedFile]);
+
+  // Clean up converted object URL to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (convertedBlobUrl) {
+        try { URL.revokeObjectURL(convertedBlobUrl); } catch(e){}
+      }
+    };
+  }, [convertedBlobUrl]);
 
   // Clean up audio on unmount
   useEffect(() => {
@@ -660,6 +672,17 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   ]);
 
   const handleDownloadResult = () => {
+    if (convertedBlobUrl) {
+      const a = document.createElement('a');
+      a.href = convertedBlobUrl;
+      a.download = convertedFilename || `${tool.id}_result.bin`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      addLog(`Downloaded processed file: ${convertedFilename}`);
+      return;
+    }
+
     if (!uploadedFile) {
       const blob = new Blob([outputText || 'No content generated.'], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -738,6 +761,249 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     addLog(`Downloaded processed file: ${nameWithoutExt}.${ext}`);
+  };
+
+  const loadGifshot = (): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      if ((window as any).gifshot) {
+        resolve((window as any).gifshot);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js';
+      script.onload = () => resolve((window as any).gifshot);
+      script.onerror = () => reject(new Error('Failed to load gifshot engine.'));
+      document.head.appendChild(script);
+    });
+  };
+
+  const handleCreateGif = async () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Loading GIF engine...');
+    try {
+      const gifshot = await loadGifshot();
+      addLog('Extracting frames & compiling animated GIF...');
+      
+      gifshot.createGIF({
+        video: [filePreview],
+        gifWidth: 400,
+        gifHeight: 300,
+        interval: 0.15,
+        numFrames: 15,
+        frameDuration: 1.5
+      }, (obj: any) => {
+        if (!obj.error) {
+          setConvertedBlobUrl(obj.image);
+          setConvertedFilename(`converted_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'media'}.gif`);
+          setOutputText('GIF compilation complete! Output file is ready for download.');
+          addLog('Animated GIF successfully compiled.');
+        } else {
+          addLog('GIF conversion failed.');
+          setOutputText(`GIF Engine Error: ${obj.error}`);
+        }
+      });
+    } catch (e: any) {
+      addLog('GIF engine failed to load.');
+      setOutputText(`Error: ${e.message}`);
+    }
+  };
+
+  const handleCompressImage = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Compressing image bytes...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const quality = sliderVal / 100;
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            setConvertedBlobUrl(url);
+            setConvertedFilename(`compressed_${uploadedFile.name}`);
+            const savings = Math.round((1 - (blob.size / uploadedFile.size)) * 100);
+            setOutputText(`Compressed Size: ${(blob.size / 1024).toFixed(1)} KB (Original: ${(uploadedFile.size / 1024).toFixed(1)} KB)\nSize Reduction: ${savings}%\nStatus: Ready for download!`);
+            addLog(`Compressed image by ${savings}%.`);
+          }
+        }, 'image/jpeg', quality);
+      }
+    };
+  };
+
+  const handleGenerateFavicon = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Generating favicon icon...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, 32, 32);
+        const url = canvas.toDataURL('image/png');
+        setConvertedBlobUrl(url);
+        setConvertedFilename('favicon.png');
+        setOutputText('Favicon generated at 32x32px resolution!\nFormat: PNG Icon\nReady for download.');
+        addLog('Favicon icon compiled.');
+      }
+    };
+  };
+
+  const handleApplyFilter = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Applying filters to render canvas...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.filter = `brightness(${filterBrightness}%) contrast(${filterContrast}%) grayscale(${filterGrayscale}%) blur(${filterBlur}px) sepia(${filterSepia}%)`;
+        ctx.drawImage(img, 0, 0);
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`filtered_${uploadedFile.name}`);
+        setOutputText(`CSS filter adjustments applied successfully!\nSettings: Brightness=${filterBrightness}%, Contrast=${filterContrast}%, Grayscale=${filterGrayscale}%, Blur=${filterBlur}px, Sepia=${filterSepia}%\nReady for download.`);
+        addLog('Applied photo filter configurations.');
+      }
+    };
+  };
+
+  const handleExtractAudio = async () => {
+    if (!uploadedFile) return;
+    addLog('Decoding video audio track...');
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const arrayBuffer = await uploadedFile.arrayBuffer();
+      const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      addLog('Compiling audio stream...');
+      
+      const startSample = 0;
+      const endSample = decodedBuffer.length;
+      const numChannels = decodedBuffer.numberOfChannels;
+      const sampleRate = decodedBuffer.sampleRate;
+      const subLength = endSample - startSample;
+
+      const buffer = new ArrayBuffer(44 + subLength * 2 * numChannels);
+      const view = new DataView(buffer);
+
+      const writeString = (view: DataView, offset: number, string: string) => {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
+
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + subLength * 2 * numChannels, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2 * numChannels, true);
+      view.setUint16(32, 2 * numChannels, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, subLength * 2 * numChannels, true);
+
+      let offset = 44;
+      const channelData: Float32Array[] = [];
+      for (let channel = 0; channel < numChannels; channel++) {
+        channelData.push(decodedBuffer.getChannelData(channel));
+      }
+
+      for (let i = 0; i < subLength; i++) {
+        for (let channel = 0; channel < numChannels; channel++) {
+          const sample = Math.max(-1, Math.min(1, channelData[channel][startSample + i]));
+          const pcmVal = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, pcmVal, true);
+          offset += 2;
+        }
+      }
+
+      const wavBlob = new Blob([view], { type: 'audio/wav' });
+      const url = URL.createObjectURL(wavBlob);
+      
+      const nameWithoutExt = uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'audio';
+      setConvertedBlobUrl(url);
+      setConvertedFilename(`${nameWithoutExt}.wav`);
+      setOutputText(`Audio track extracted successfully!\nFormat: WAV Stereo Uncompressed\nDuration: ${decodedBuffer.duration.toFixed(1)}s\nSample Rate: ${decodedBuffer.sampleRate} Hz`);
+      addLog('Audio track extracted successfully.');
+    } catch (err: any) {
+      console.error(err);
+      addLog('Audio decoding failed.');
+      setOutputText(`Decoding Error: ${err.message || 'The audio track format could not be decoded.'}`);
+    }
+  };
+
+  const handleExtractFrame = () => {
+    const video = document.getElementById('workspace-video-preview') as HTMLVideoElement;
+    if (!video) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const url = canvas.toDataURL('image/jpeg', 0.95);
+      
+      setConvertedBlobUrl(url);
+      setConvertedFilename(`frame_${video.currentTime.toFixed(2)}.jpg`);
+      addLog(`Extracted frame at ${video.currentTime.toFixed(2)}s.`);
+      setOutputText(`Frame extracted successfully at ${video.currentTime.toFixed(2)}s.\nResolution: ${canvas.width}x${canvas.height}px.`);
+    }
+  };
+
+  const handleGenerateAscii = () => {
+    if (!uploadedFile || !filePreview) return;
+    addLog('Generating ASCII Art text block...');
+    const img = new Image();
+    img.src = filePreview;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const width = 80;
+      const height = Math.round(width * (img.naturalHeight / img.naturalWidth) * 0.55);
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        const imgData = ctx.getImageData(0, 0, width, height).data;
+        const chars = '@#S%?*+;:-. ';
+        let ascii = '';
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const r = imgData[idx];
+            const g = imgData[idx+1];
+            const b = imgData[idx+2];
+            const brightness = (r + g + b) / 3;
+            const charIdx = Math.floor((brightness / 255) * (chars.length - 1));
+            ascii += chars[charIdx];
+          }
+          ascii += '\n';
+        }
+        setOutputText(ascii);
+        
+        const blob = new Blob([ascii], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const nameWithoutExt = uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'ascii';
+        setConvertedBlobUrl(url);
+        setConvertedFilename(`${nameWithoutExt}_ascii.txt`);
+        addLog('ASCII art generated.');
+      }
+    };
   };
 
   return (
@@ -1856,18 +2122,27 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     </div>
 
                     {filePreview && (
-                      <div className="h-44 bg-black border border-[#1a1a1a] rounded-lg overflow-hidden flex items-center justify-center">
-                        <img 
-                          src={filePreview} 
-                          alt="Workspace preview" 
-                          className="max-h-full object-contain" 
-                          style={{
-                            filter: tool.id === 'image-filters' 
-                              ? `brightness(${filterBrightness}%) contrast(${filterContrast}%) grayscale(${filterGrayscale}%) blur(${filterBlur}px) sepia(${filterSepia}%)`
-                              : 'none'
-                          }}
-                          referrerPolicy="no-referrer"
-                        />
+                      <div className="h-44 bg-black border border-[#1a1a1a] rounded-lg overflow-hidden flex items-center justify-center relative">
+                        {uploadedFile?.type.startsWith('video/') ? (
+                          <video 
+                            id="workspace-video-preview"
+                            src={filePreview} 
+                            controls 
+                            className="max-h-full object-contain w-full"
+                          />
+                        ) : (
+                          <img 
+                            src={filePreview} 
+                            alt="Workspace preview" 
+                            className="max-h-full object-contain" 
+                            style={{
+                              filter: tool.id === 'image-filters' 
+                                ? `brightness(${filterBrightness}%) contrast(${filterContrast}%) grayscale(${filterGrayscale}%) blur(${filterBlur}px) sepia(${filterSepia}%)`
+                                : 'none'
+                            }}
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
                       </div>
                     )}
 
@@ -1892,6 +2167,23 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             <input type="range" min="0" max="10" value={filterBlur} onChange={(e) => setFilterBlur(parseInt(e.target.value))} className="accent-[#10b981] w-full" />
                           </div>
                         </div>
+                      </div>
+                    )}
+                    {/* Image Compressor Quality Slider */}
+                    {tool.id === 'image-compressor' && (
+                      <div className="flex flex-col gap-1.5 text-left bg-black/40 border border-[#1a1a1a] p-3 rounded-lg">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex justify-between font-mono">
+                          <span>Target Quality ({sliderVal}%)</span>
+                          <span className="text-[#10b981] font-bold">{sliderVal}%</span>
+                        </label>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="100" 
+                          value={sliderVal} 
+                          onChange={(e) => setSliderVal(parseInt(e.target.value) || 80)} 
+                          className="w-full accent-[#10b981] cursor-pointer" 
+                        />
                       </div>
                     )}
 
@@ -1936,6 +2228,20 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         onClick={() => {
                           if (tool.id === 'exif-viewer') {
                             simulateExif();
+                          } else if (tool.id === 'gif-maker') {
+                            handleCreateGif();
+                          } else if (tool.id === 'image-compressor') {
+                            handleCompressImage();
+                          } else if (tool.id === 'favicon-generator') {
+                            handleGenerateFavicon();
+                          } else if (tool.id === 'image-filters') {
+                            handleApplyFilter();
+                          } else if (tool.id === 'video-to-audio') {
+                            handleExtractAudio();
+                          } else if (tool.id === 'frame-extractor') {
+                            handleExtractFrame();
+                          } else if (tool.id === 'ascii-art') {
+                            handleGenerateAscii();
                           } else {
                             setOutputText('Analyzing bytes... Done.\nFile conversion simulation finished successfully.');
                             addLog('Media conversion finalized.');
@@ -1943,7 +2249,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         }} 
                         className="py-2 bg-[#10b981] text-black text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
                       >
-                        {tool.id === 'exif-viewer' ? 'Extract Metadata' : 'Convert File'}
+                        {tool.id === 'exif-viewer' ? 'Extract Metadata' : 
+                         tool.id === 'frame-extractor' ? 'Extract Frame' : 'Convert File'}
                       </button>
                       <button 
                         onClick={handleDownloadResult}

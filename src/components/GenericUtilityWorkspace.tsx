@@ -764,32 +764,130 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     addLog(`Downloaded processed file: ${nameWithoutExt}.${ext}`);
   };
 
-  const handleCreateGif = () => {
+  const handleCreateGif = async () => {
     if (!uploadedFile || !filePreview) return;
-    addLog('Extracting frames & compiling animated GIF...');
-    try {
-      gifshot.createGIF({
-        video: [filePreview],
-        gifWidth: 400,
-        gifHeight: 300,
-        interval: 0.15,
-        numFrames: 15,
-        frameDuration: 1.5
-      }, (obj: any) => {
-        if (!obj.error) {
-          setConvertedBlobUrl(obj.image);
-          setConvertedFilename(`converted_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'media'}.gif`);
-          setOutputText('GIF compilation complete! Output file is ready for download.');
-          addLog('Animated GIF successfully compiled.');
-        } else {
-          addLog('GIF conversion failed.');
-          setOutputText(`GIF Engine Error: ${obj.error}`);
-        }
-      });
-    } catch (e: any) {
-      addLog('GIF engine failed to load.');
-      setOutputText(`Error: ${e.message}`);
+    
+    // Static Image Input
+    if (uploadedFile.type.startsWith('image/')) {
+      addLog('Processing image to GIF...');
+      try {
+        const img = new Image();
+        img.src = filePreview;
+        img.onload = () => {
+          const frames: string[] = [];
+          const canvas = document.createElement('canvas');
+          canvas.width = 320;
+          canvas.height = Math.round(320 * (img.naturalHeight / img.naturalWidth)) || 240;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            for (let i = 0; i < 5; i++) {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.save();
+              const scale = 1 + (i * 0.02);
+              ctx.translate(canvas.width / 2, canvas.height / 2);
+              ctx.scale(scale, scale);
+              ctx.translate(-canvas.width / 2, -canvas.height / 2);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              ctx.restore();
+              frames.push(canvas.toDataURL('image/jpeg', 0.8));
+            }
+            
+            addLog('Assembling GIF frames...');
+            gifshot.createGIF({
+              images: frames,
+              gifWidth: canvas.width,
+              gifHeight: canvas.height,
+              interval: 0.2,
+              frameDuration: 2
+            }, (obj: any) => {
+              if (!obj.error) {
+                setConvertedBlobUrl(obj.image);
+                setConvertedFilename(`animated_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'image'}.gif`);
+                setOutputText('GIF generation from image complete! Ready for download.');
+                addLog('GIF compiled successfully.');
+              } else {
+                addLog('GIF assembly failed.');
+                setOutputText(`GIF Error: ${obj.error}`);
+              }
+            });
+          }
+        };
+      } catch (e: any) {
+        addLog('Image conversion failed.');
+        setOutputText(`Error: ${e.message}`);
+      }
+      return;
     }
+
+    // Video Input
+    if (uploadedFile.type.startsWith('video/')) {
+      addLog('Extracting video frames...');
+      const video = document.createElement('video');
+      video.src = filePreview;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      
+      video.onloadedmetadata = async () => {
+        try {
+          const duration = video.duration || 3;
+          const frameCount = 10;
+          const interval = duration / frameCount;
+          const frames: string[] = [];
+
+          const canvas = document.createElement('canvas');
+          canvas.width = 320;
+          canvas.height = Math.round(320 * (video.videoHeight / video.videoWidth)) || 240;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Could not create canvas context');
+
+          addLog(`Scanning video stream (${duration.toFixed(1)}s)...`);
+
+          for (let i = 0; i < frameCount; i++) {
+            video.currentTime = i * interval;
+            await new Promise((resolve) => {
+              const onSeeked = () => {
+                video.removeEventListener('seeked', onSeeked);
+                resolve(true);
+              };
+              video.addEventListener('seeked', onSeeked);
+            });
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            frames.push(canvas.toDataURL('image/jpeg', 0.8));
+            addLog(`Captured frame ${i + 1}/${frameCount}...`);
+          }
+
+          addLog('Compiling animation loops...');
+          gifshot.createGIF({
+            images: frames,
+            gifWidth: canvas.width,
+            gifHeight: canvas.height,
+            interval: 0.15,
+            frameDuration: 1.5
+          }, (obj: any) => {
+            if (!obj.error) {
+              setConvertedBlobUrl(obj.image);
+              setConvertedFilename(`converted_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'video'}.gif`);
+              setOutputText('GIF compilation complete! Your animated GIF is ready for download.');
+              addLog('Animated GIF successfully compiled.');
+            } else {
+              addLog('GIF assembly failed.');
+              setOutputText(`GIF Error: ${obj.error}`);
+            }
+          });
+
+        } catch (e: any) {
+          addLog('Frame extraction failed.');
+          setOutputText(`Error: ${e.message}`);
+        }
+      };
+      
+      video.load();
+      return;
+    }
+
+    addLog('Unsupported file type for GIF conversion.');
   };
 
   const handleCompressImage = () => {

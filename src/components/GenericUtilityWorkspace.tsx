@@ -109,6 +109,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const [memeTopText, setMemeTopText] = useState('TOP TEXT');
   const [memeBottomText, setMemeBottomText] = useState('BOTTOM TEXT');
   const [memeFontSize, setMemeFontSize] = useState(32);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Load preview if initialFile is passed (supports both images and videos)
   useEffect(() => {
@@ -786,6 +787,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   const handleCreateGif = async () => {
     if (!uploadedFile || !filePreview) return;
+    const gifEngine = (gifshot as any).default || gifshot;
+    setIsProcessing(true);
     
     // Static Image Input
     if (uploadedFile.type.startsWith('image/')) {
@@ -813,13 +816,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
             }
             
             addLog('Assembling GIF frames...');
-            gifshot.createGIF({
+            gifEngine.createGIF({
               images: frames,
               gifWidth: canvas.width,
               gifHeight: canvas.height,
               interval: 0.2,
               frameDuration: 2
             }, (obj: any) => {
+              setIsProcessing(false);
               if (!obj.error) {
                 setConvertedBlobUrl(obj.image);
                 setConvertedFilename(`animated_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'image'}.gif`);
@@ -833,6 +837,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           }
         };
       } catch (e: any) {
+        setIsProcessing(false);
         addLog('Image conversion failed.');
         setOutputText(`Error: ${e.message}`);
       }
@@ -879,13 +884,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           }
 
           addLog('Compiling animation loops...');
-          gifshot.createGIF({
+          gifEngine.createGIF({
             images: frames,
             gifWidth: canvas.width,
             gifHeight: canvas.height,
             interval: 0.15,
             frameDuration: 1.5
           }, (obj: any) => {
+            setIsProcessing(false);
             if (!obj.error) {
               setConvertedBlobUrl(obj.image);
               setConvertedFilename(`converted_${uploadedFile.name.substring(0, uploadedFile.name.lastIndexOf('.')) || 'video'}.gif`);
@@ -898,6 +904,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           });
 
         } catch (e: any) {
+          setIsProcessing(false);
           addLog('Frame extraction failed.');
           setOutputText(`Error: ${e.message}`);
         }
@@ -912,6 +919,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   const handleCompressImage = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Compressing image bytes...');
     const img = new Image();
     img.src = filePreview;
@@ -924,21 +932,25 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         ctx.drawImage(img, 0, 0);
         const quality = sliderVal / 100;
         canvas.toBlob((blob) => {
+          setIsProcessing(false);
           if (blob) {
             const url = URL.createObjectURL(blob);
             setConvertedBlobUrl(url);
             setConvertedFilename(`compressed_${uploadedFile.name}`);
-            const savings = Math.round((1 - (blob.size / uploadedFile.size)) * 100);
+            const savings = Math.max(0, Math.round((1 - (blob.size / uploadedFile.size)) * 100));
             setOutputText(`Compressed Size: ${(blob.size / 1024).toFixed(1)} KB (Original: ${(uploadedFile.size / 1024).toFixed(1)} KB)\nSize Reduction: ${savings}%\nStatus: Ready for download!`);
             addLog(`Compressed image by ${savings}%.`);
           }
         }, 'image/jpeg', quality);
+      } else {
+        setIsProcessing(false);
       }
     };
   };
 
   const handleGenerateFavicon = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Generating favicon icon...');
     const img = new Image();
     img.src = filePreview;
@@ -955,11 +967,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText('Favicon generated at 32x32px resolution!\nFormat: PNG Icon\nReady for download.');
         addLog('Favicon icon compiled.');
       }
+      setIsProcessing(false);
     };
   };
 
   const handleApplyFilter = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Applying filters to render canvas...');
     const img = new Image();
     img.src = filePreview;
@@ -977,11 +991,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText(`CSS filter adjustments applied successfully!\nSettings: Brightness=${filterBrightness}%, Contrast=${filterContrast}%, Grayscale=${filterGrayscale}%, Blur=${filterBlur}px, Sepia=${filterSepia}%\nReady for download.`);
         addLog('Applied photo filter configurations.');
       }
+      setIsProcessing(false);
     };
   };
 
   const handleExtractAudio = async () => {
     if (!uploadedFile) return;
+    setIsProcessing(true);
     addLog('Decoding video audio track...');
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -1041,16 +1057,19 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
       setConvertedFilename(`${nameWithoutExt}.wav`);
       setOutputText(`Audio track extracted successfully!\nFormat: WAV Stereo Uncompressed\nDuration: ${decodedBuffer.duration.toFixed(1)}s\nSample Rate: ${decodedBuffer.sampleRate} Hz`);
       addLog('Audio track extracted successfully.');
+      setIsProcessing(false);
     } catch (err: any) {
       console.error(err);
       addLog('Audio decoding failed.');
       setOutputText(`Decoding Error: ${err.message || 'The audio track format could not be decoded.'}`);
+      setIsProcessing(false);
     }
   };
 
   const handleExtractFrame = () => {
     const video = document.getElementById('workspace-video-preview') as HTMLVideoElement;
     if (!video) return;
+    setIsProcessing(true);
 
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
@@ -1065,10 +1084,12 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
       addLog(`Extracted frame at ${video.currentTime.toFixed(2)}s.`);
       setOutputText(`Frame extracted successfully at ${video.currentTime.toFixed(2)}s.\nResolution: ${canvas.width}x${canvas.height}px.`);
     }
+    setIsProcessing(false);
   };
 
   const handleGenerateAscii = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Generating ASCII Art text block...');
     const img = new Image();
     img.src = filePreview;
@@ -1105,11 +1126,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setConvertedFilename(`${nameWithoutExt}_ascii.txt`);
         addLog('ASCII art generated.');
       }
+      setIsProcessing(false);
     };
   };
 
   const handleApplyWatermark = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Adding watermark overlay...');
     const img = new Image();
     img.src = filePreview;
@@ -1155,6 +1178,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText(`Watermark applied successfully!\nPosition: ${watermarkPosition}\nText: "${watermarkText}"\nOpacity: ${watermarkOpacity}%`);
         addLog('Applied watermark configuration.');
       }
+      setIsProcessing(false);
     };
   };
 
@@ -1174,6 +1198,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   const handleRotateMedia = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog(`Rotating media by ${rotationAngle}°...`);
     const img = new Image();
     img.src = filePreview;
@@ -1195,11 +1220,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText(`Media rotated successfully by ${rotationAngle}°!`);
         addLog(`Rotated media by ${rotationAngle}°.`);
       }
+      setIsProcessing(false);
     };
   };
 
   const handleResizeMedia = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog(`Resizing media to ${resizeWidth}x${resizeHeight}px...`);
     const img = new Image();
     img.src = filePreview;
@@ -1216,11 +1243,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText(`Media resized successfully!\nDimensions: ${resizeWidth}x${resizeHeight}px`);
         addLog(`Resized media to ${resizeWidth}x${resizeHeight}px.`);
       }
+      setIsProcessing(false);
     };
   };
 
   const handleGenerateMeme = () => {
     if (!uploadedFile || !filePreview) return;
+    setIsProcessing(true);
     addLog('Compiling meme text overlays...');
     const img = new Image();
     img.src = filePreview;
@@ -1256,6 +1285,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         setOutputText('Meme generated successfully! Click download to save your compiled meme.');
         addLog('Meme generated successfully.');
       }
+      setIsProcessing(false);
     };
   };
 
@@ -2733,16 +2763,27 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             addLog('Media conversion finalized.');
                           }
                         }} 
-                        className="py-2 bg-[#10b981] text-black text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
+                        disabled={isProcessing}
+                        className={`py-2 text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer ${
+                          isProcessing 
+                            ? 'bg-[#151515] border border-[#222] text-gray-500 cursor-wait' 
+                            : 'bg-[#10b981] text-black hover:bg-[#059669]'
+                        }`}
                       >
-                        {tool.id === 'exif-viewer' ? 'Extract Metadata' : 
+                        {isProcessing ? 'Processing...' : 
+                         tool.id === 'exif-viewer' ? 'Extract Metadata' : 
                          tool.id === 'frame-extractor' ? 'Extract Frame' : 
                          tool.id === 'video-watermark' ? 'Apply Watermark' :
                          tool.id === 'meme-generator' ? 'Generate Meme' : 'Convert File'}
                       </button>
                       <button 
                         onClick={handleDownloadResult}
-                        className="py-2 bg-[#151515] border border-[#222] text-white text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer"
+                        disabled={isProcessing || !convertedBlobUrl}
+                        className={`py-2 text-xs font-bold rounded uppercase tracking-wider transition-all cursor-pointer border ${
+                          isProcessing || !convertedBlobUrl
+                            ? 'bg-[#151515] border-[#222] text-gray-600 opacity-50 cursor-not-allowed'
+                            : 'bg-[#10b981] border-[#10b981] text-black hover:bg-[#059669] shadow-[0_0_15px_rgba(16,185,129,0.3)] animate-pulse'
+                        }`}
                       >
                         Download Result
                       </button>

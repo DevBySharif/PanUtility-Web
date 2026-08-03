@@ -1,10 +1,41 @@
-export type ToolId = string;
+export type ToolStatus = 'functional' | 'beta' | 'coming-soon' | 'disabled';
 
-export interface ToolItem {
-  id: ToolId;
-  title: string;
+export type ProcessingType = 'browser' | 'server' | 'external' | 'none';
+
+export type ToolCategory =
+  | 'Video'
+  | 'Image'
+  | 'Document'
+  | 'Audio'
+  | 'Text & Writing'
+  | 'Developer Tools'
+  | 'Math & Finance'
+  | 'Health & Lifestyle'
+  | 'Fun & Games';
+
+export type ToolComponentKey =
+  | 'image-converter'
+  | 'pdf-compiler'
+  | 'audio-trimmer'
+  | 'audio-transcriber'
+  | 'qr-generator'
+  | 'color-extractor'
+  | 'generic';
+
+export interface ToolDefinition {
+  id: string;
+  name: string;
   description: string;
-  category: string;
+  category: ToolCategory;
+  status: ToolStatus;
+  statusReason?: string;
+  processingType: ProcessingType;
+  privacyNotice?: string;
+  supportedInputTypes: string[];
+  supportedOutputTypes: string[];
+  isFeatured: boolean;
+  isIndexable: boolean;
+  componentKey?: ToolComponentKey;
   icon: string; // we'll use Lucide icon names
   color: string; // Tailwind colors for subtle borders/accents
   badge?: string;

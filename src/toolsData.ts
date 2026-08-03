@@ -1,6 +1,16 @@
-import { ToolItem } from './types';
+import type { ProcessingType, ToolCategory, ToolComponentKey, ToolDefinition, ToolStatus } from './types.ts';
 
-export const TOOLS_LIST: ToolItem[] = [
+interface ToolCatalogSeed {
+  id: string;
+  title: string;
+  description: string;
+  category: ToolCategory;
+  icon: string;
+  color: string;
+  badge?: string;
+}
+
+const TOOL_CATALOG = [
   // --- VIDEO & ANIMATION (12 tools) ---
   {
     id: 'video-splitter',
@@ -929,10 +939,223 @@ export const TOOLS_LIST: ToolItem[] = [
     icon: 'SquaresFour',
     color: 'border-teal-500/20 hover:border-teal-500/60 text-teal-400 bg-teal-500/5'
   }
-];
+] as const satisfies readonly ToolCatalogSeed[];
+
+export type ToolId = (typeof TOOL_CATALOG)[number]['id'];
+
+const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
+  'video-splitter': 'disabled',
+  'social-downloader': 'disabled',
+  'gif-maker': 'beta',
+  'video-to-audio': 'beta',
+  'frame-extractor': 'beta',
+  'video-speed': 'disabled',
+  'video-muter': 'disabled',
+  'video-compressor': 'coming-soon',
+  'video-looper': 'coming-soon',
+  'video-rotator': 'disabled',
+  'video-resizer': 'disabled',
+  'video-watermark': 'disabled',
+  'subtitles-editor': 'coming-soon',
+  'image-converter': 'functional',
+  'color-extractor': 'functional',
+  'image-compressor': 'beta',
+  'image-cropper': 'coming-soon',
+  'meme-generator': 'beta',
+  'pixel-art': 'coming-soon',
+  'exif-viewer': 'disabled',
+  'favicon-generator': 'disabled',
+  'svg-optimizer': 'coming-soon',
+  'image-filters': 'beta',
+  'image-resizer': 'beta',
+  'gradient-generator': 'coming-soon',
+  'ascii-art': 'beta',
+  'pdf-compiler': 'functional',
+  'pdf-to-txt': 'coming-soon',
+  'txt-to-pdf': 'coming-soon',
+  'pdf-splitter': 'coming-soon',
+  'epub-to-pdf': 'coming-soon',
+  'csv-to-json': 'beta',
+  'excel-to-csv': 'disabled',
+  'pdf-merger': 'coming-soon',
+  'pdf-rotator': 'coming-soon',
+  'json-to-csv': 'beta',
+  'markdown-to-html': 'beta',
+  'audio-trimmer': 'beta',
+  'audio-transcriber': 'beta',
+  'sound-recorder': 'coming-soon',
+  'audio-merger': 'coming-soon',
+  'voice-changer': 'coming-soon',
+  'vocal-remover': 'disabled',
+  'silence-remover': 'disabled',
+  'audio-speed': 'coming-soon',
+  'bpm-finder': 'coming-soon',
+  'metronome': 'coming-soon',
+  'audio-converter': 'coming-soon',
+  'case-converter': 'functional',
+  'word-counter': 'functional',
+  'lorem-ipsum': 'functional',
+  'text-diff': 'coming-soon',
+  'markdown-editor': 'coming-soon',
+  'regex-tester': 'coming-soon',
+  'slug-generator': 'coming-soon',
+  'text-sorter': 'coming-soon',
+  'find-replace': 'coming-soon',
+  'morse-translator': 'beta',
+  'binary-translator': 'beta',
+  'base64-coder': 'beta',
+  'url-coder': 'beta',
+  'html-entities': 'beta',
+  'text-reverser': 'beta',
+  'line-remover': 'functional',
+  'sentence-generator': 'coming-soon',
+  'qr-generator': 'beta',
+  'json-formatter': 'functional',
+  'hash-generator': 'disabled',
+  'uuid-generator': 'coming-soon',
+  'yaml-to-json': 'disabled',
+  'xml-beautifier': 'coming-soon',
+  'jwt-debugger': 'coming-soon',
+  'sql-formatter': 'coming-soon',
+  'cron-parser': 'coming-soon',
+  'port-scanner': 'coming-soon',
+  'color-blender': 'coming-soon',
+  'contrast-checker': 'coming-soon',
+  'base-converter': 'coming-soon',
+  'user-agent': 'coming-soon',
+  'mock-api': 'coming-soon',
+  'scientific-calc': 'disabled',
+  'unit-converter': 'beta',
+  'currency-converter': 'disabled',
+  'percent-calc': 'functional',
+  'tip-calc': 'functional',
+  'gpa-calc': 'beta',
+  'age-calc': 'beta',
+  'loan-calc': 'beta',
+  'matrix-calc': 'coming-soon',
+  'binary-math': 'coming-soon',
+  'fibonacci-gen': 'coming-soon',
+  'bmi-calc': 'beta',
+  'bmr-calc': 'disabled',
+  'calorie-counter': 'coming-soon',
+  'noise-maker': 'beta',
+  'planner': 'coming-soon',
+  'breath-guide': 'beta',
+  'step-sim': 'disabled',
+  'pomodoro': 'beta',
+  'habit-tracker': 'beta',
+  'water-tracker': 'beta',
+  'sleep-calculator': 'coming-soon',
+  'password-gen': 'disabled',
+  'dice-roller': 'functional',
+  'coin-flipper': 'beta',
+  'rock-paper-scissors': 'functional',
+  'tic-tac-toe': 'coming-soon',
+  'name-picker': 'coming-soon',
+  'love-calculator': 'coming-soon',
+  'trivia-quiz': 'coming-soon',
+  'reaction-test': 'coming-soon',
+  'anagram-solver': 'coming-soon',
+  'sudoku-solver': 'coming-soon',
+};
+
+const DISABLED_REASONS: Partial<Record<ToolId, string>> = {
+  'social-downloader': 'The previous resolver depended on unsafe remote-script execution, unofficial scraping providers, and arbitrary media proxying. It is disabled until a safe documented provider is available.',
+  'video-splitter': 'The current export method can create structurally invalid video files. It is disabled until a real media pipeline is available.',
+  'video-speed': 'The current implementation previews speed changes but does not create an adjusted video file.',
+  'video-muter': 'The current implementation only mutes preview playback and does not create a muted video file.',
+  'video-rotator': 'The current implementation only rotates the preview and does not create a rotated video file.',
+  'video-resizer': 'Video resizing is not implemented and no valid output is produced.',
+  'video-watermark': 'Video watermark export is not implemented and no valid output is produced.',
+  'exif-viewer': 'The previous workspace displayed fabricated metadata instead of reading the uploaded image.',
+  'favicon-generator': 'The previous export labeled PNG bytes as an ICO file.',
+  'excel-to-csv': 'Excel parsing is not implemented and the current workspace cannot produce a valid CSV conversion.',
+  'vocal-remover': 'The current implementation does not separate vocals and instrumentals.',
+  'silence-remover': 'The current implementation does not detect or remove silence.',
+  'hash-generator': 'The previous implementation mislabeled non-cryptographic hashes as cryptographic.',
+  'yaml-to-json': 'The previous implementation returned fabricated output instead of parsing YAML.',
+  'scientific-calc': 'The previous calculator executed user input as JavaScript and is unsafe.',
+  'currency-converter': 'The previous implementation displayed fabricated exchange-rate results.',
+  'bmr-calc': 'The previous implementation displayed a fabricated health calculation.',
+  'step-sim': 'The previous implementation displayed fabricated health estimates.',
+  'password-gen': 'The previous implementation used Math.random and did not meet its secure-password claim.',
+};
+
+const DEDICATED_COMPONENTS: Partial<Record<ToolId, ToolComponentKey>> = {
+  'image-converter': 'image-converter',
+  'pdf-compiler': 'pdf-compiler',
+  'audio-trimmer': 'audio-trimmer',
+  'audio-transcriber': 'audio-transcriber',
+  'qr-generator': 'qr-generator',
+  'color-extractor': 'color-extractor',
+};
+
+function formatsFor(category: ToolCategory): { input: string[]; output: string[] } {
+  switch (category) {
+    case 'Video': return { input: ['video/*'], output: ['video/webm', 'image/jpeg', 'image/gif', 'audio/wav'] };
+    case 'Image': return { input: ['image/*'], output: ['image/jpeg', 'image/png', 'image/webp', 'text/plain'] };
+    case 'Document': return { input: ['text/plain', 'text/csv', 'application/json', 'application/pdf', 'image/*'], output: ['text/plain', 'text/csv', 'application/json', 'text/html', 'application/pdf'] };
+    case 'Audio': return { input: ['audio/*'], output: ['audio/wav', 'text/plain', 'text/srt'] };
+    case 'Text & Writing': return { input: ['text/plain'], output: ['text/plain'] };
+    case 'Developer Tools': return { input: ['text/plain'], output: ['text/plain', 'application/json', 'image/png'] };
+    case 'Math & Finance':
+    case 'Health & Lifestyle':
+    case 'Fun & Games': return { input: ['text/plain'], output: ['text/plain'] };
+  }
+}
+
+function processingFor(id: ToolId, status: ToolStatus): ProcessingType {
+  if (status === 'disabled' || status === 'coming-soon') return 'none';
+  if (id === 'audio-transcriber') return 'server';
+  if (id === 'qr-generator') return 'external';
+  return 'browser';
+}
+
+function privacyFor(id: ToolId): string | undefined {
+  if (id === 'audio-transcriber') return 'Audio is sent to PanUtility’s server, which sends it to Google Gemini. Provider availability affects processing.';
+  if (id === 'qr-generator') return 'QR contents are sent to the external QR rendering provider.';
+  return undefined;
+}
+
+export const TOOL_REGISTRY = TOOL_CATALOG.map((seed): ToolDefinition & { id: ToolId } => {
+  const status = STATUS_BY_ID[seed.id];
+  const unavailable = status === 'disabled' || status === 'coming-soon';
+  const formats = formatsFor(seed.category);
+  const badge = 'badge' in seed ? seed.badge : undefined;
+  return {
+    id: seed.id,
+    name: seed.title,
+    description: seed.description,
+    category: seed.category,
+    status,
+    statusReason: DISABLED_REASONS[seed.id],
+    processingType: processingFor(seed.id, status),
+    privacyNotice: privacyFor(seed.id),
+    supportedInputTypes: unavailable ? [] : formats.input,
+    supportedOutputTypes: unavailable ? [] : formats.output,
+    isFeatured: !unavailable && Boolean(badge),
+    isIndexable: !unavailable,
+    componentKey: unavailable ? undefined : (DEDICATED_COMPONENTS[seed.id] ?? 'generic'),
+    icon: seed.icon,
+    color: seed.color,
+    badge: unavailable ? undefined : badge,
+  };
+});
+
+export const TOOLS_LIST = TOOL_REGISTRY;
+
+export const TOOL_BY_ID = Object.fromEntries(
+  TOOL_REGISTRY.map((tool) => [tool.id, tool]),
+) as Record<ToolId, (typeof TOOL_REGISTRY)[number]>;
+
+export function isToolId(value: string): value is ToolId {
+  return Object.prototype.hasOwnProperty.call(TOOL_BY_ID, value);
+}
+
+export const INDEXABLE_TOOLS = TOOL_REGISTRY.filter((tool) => tool.isIndexable);
 
 // Map hotkeys for standard tools. For all 112 tools, we generate structured, highly visual tips.
-export const TOOL_SHORTCUTS: Record<string, { key: string; label: string; tip: string }> = {};
+export const TOOL_SHORTCUTS: Record<ToolId, { key: string; label: string; tip: string }> = {} as Record<ToolId, { key: string; label: string; tip: string }>;
 
 // Auto-populate hotkeys dynamically to maintain robustness & prevent manual typos
 const hotkeyPool = '123456789abcdefghijklmnopqrstuvwxyz';

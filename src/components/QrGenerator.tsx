@@ -95,6 +95,7 @@ export default function QrGenerator({ onBack }: QrGeneratorProps) {
           <p className="text-gray-400 text-sm mt-1">
             Instantly render high-quality custom scannable QR Codes for links, phone numbers, or text payloads.
           </p>
+          <p className="mt-2 text-xs leading-relaxed text-amber-300">QR contents are sent to the external QR rendering provider.</p>
         </div>
       </div>
 

@@ -1,0 +1,21 @@
+# Testing
+
+Use npm from the repository root (on restricted Windows PowerShell, invoke `npm.cmd`).
+
+| Command | Purpose |
+|---|---|
+| `npm run typecheck` | Strict TypeScript validation |
+| `npm run lint` | ESLint for TypeScript, React, and Hooks |
+| `npm run test` | 108 deterministic Vitest unit/component, API-security, and deployment tests in 11 files |
+| `npm run test:e2e` | 10 Playwright Chromium tests against the production Express build |
+| `npm run build:client` | Generate the registry sitemap and build Vite client |
+| `npm run build:server` | Build the Express server |
+| `npm run check` | Typecheck, lint, Vitest, then production build |
+
+Tests do not contact Gemini, SaveFrom, Cobalt, YouTube, QRServer, or other external providers. Playwright starts the local development server and covers catalog/search, all four maturity states, direct and unknown routes, theme persistence, and browser console errors.
+
+P0-B adds mocked API, SSRF/DNS/redirect, bounded-fetch, rate-limit, origin, error, and redaction coverage. `supertest` exercises the Express app without opening a network listener.
+
+Final P0-B verification: 75/75 Vitest and 8/8 Playwright tests pass; typecheck, lint, client/server/combined builds, `check`, and dependency audit pass. The audit reports zero known vulnerabilities.
+
+P0-C adds production environment/client-IP/store/readiness/header/cache/transcription tests and production CSP browser coverage. Run a build before Playwright because its stable server uses `server-dist/server.cjs`. Post-deployment verification is `npm run verify:deployment -- --base-url=https://...` and never invokes Gemini.

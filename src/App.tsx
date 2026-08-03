@@ -74,26 +74,17 @@ import {
   Wind,
   X
 } from '@phosphor-icons/react';
-import { ToolId, ToolItem } from './types';
+import type { ToolDefinition } from './types';
 import { ToastProvider, useToast } from './components/Toast';
-
-// Import our modular components
-import VideoSplitter from './components/VideoSplitter';
-import ImageConverter from './components/ImageConverter';
-import PdfCompiler from './components/PdfCompiler';
-import SocialDownloader from './components/SocialDownloader';
-import AudioTrimmer from './components/AudioTrimmer';
-import QrGenerator from './components/QrGenerator';
-import ColorExtractor from './components/ColorExtractor';
-import AudioTranscriber from './components/AudioTranscriber';
-import GenericUtilityWorkspace from './components/GenericUtilityWorkspace';
-
-import { TOOLS_LIST, TOOL_SHORTCUTS } from './toolsData';
+import ToolWorkspace from './components/ToolWorkspace';
+import { ToolNotFound, ToolStatusBadge } from './components/ToolAvailability';
+import { TOOL_BY_ID, TOOLS_LIST, TOOL_SHORTCUTS, isToolId, type ToolId } from './toolsData';
 import { SeoManager } from './components/SeoManager';
 
 function AppContent() {
   const toast = useToast();
   const [activeTool, setActiveTool] = useState<ToolId | null>(null);
+  const [routeNotFound, setRouteNotFound] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -114,19 +105,16 @@ function AppContent() {
       const path = window.location.pathname;
       const match = path.match(/^\/tools\/([^/]+)/);
       if (match) {
-        const toolId = match[1] as ToolId;
-        const toolExists = TOOLS_LIST.some(t => t.id === toolId) || [
-          'video-splitter', 'image-converter', 'pdf-compiler', 'social-downloader',
-          'audio-trimmer', 'audio-transcriber', 'qr-generator', 'color-extractor'
-        ].includes(toolId);
-        
-        if (toolExists) {
+        const toolId = match[1];
+        if (isToolId(toolId)) {
+          setRouteNotFound(false);
           setActiveTool(toolId);
         } else {
-          window.history.replaceState(null, '', '/');
+          setRouteNotFound(true);
           setActiveTool(null);
         }
       } else {
+        setRouteNotFound(path !== '/');
         setActiveTool(null);
       }
     };
@@ -139,9 +127,11 @@ function AppContent() {
   const navigateToTool = (toolId: ToolId | null) => {
     if (toolId) {
       window.history.pushState(null, '', `/tools/${toolId}`);
+      setRouteNotFound(false);
       setActiveTool(toolId);
     } else {
       window.history.pushState(null, '', '/');
+      setRouteNotFound(false);
       setActiveTool(null);
     }
   };
@@ -156,7 +146,7 @@ function AppContent() {
       const updated = [...pinnedToolIds, toolId];
       savePinnedTools(updated);
       const toolItem = TOOLS_LIST.find(t => t.id === toolId);
-      toast.success('Tool Pinned', `"${toolItem?.title}" pinned for rapid access.`);
+      toast.success('Tool Pinned', `"${toolItem?.name}" pinned for rapid access.`);
     }
   };
 
@@ -164,7 +154,7 @@ function AppContent() {
     const updated = pinnedToolIds.filter(id => id !== toolId);
     savePinnedTools(updated);
     const toolItem = TOOLS_LIST.find(t => t.id === toolId);
-    toast.success('Tool Unpinned', `"${toolItem?.title}" removed from favorites.`);
+    toast.success('Tool Unpinned', `"${toolItem?.name}" removed from favorites.`);
   };
 
   const togglePinTool = (toolId: string) => {
@@ -197,62 +187,11 @@ function AppContent() {
   }, [dashboardPendingFile]);
 
   const getRoutingOptions = (file: File) => {
-    const type = file.type;
-    if (type.startsWith('image/')) {
-      return [
-        {
-          toolId: 'image-converter' as ToolId,
-          title: 'Image Converter',
-          description: 'Convert formats, resize, compress',
-          icon: 'FileImage'
-        },
-        {
-          toolId: 'pdf-compiler' as ToolId,
-          title: 'PDF Compiler',
-          description: 'Compile multiple images into a PDF volume',
-          icon: 'FileText'
-        },
-        {
-          toolId: 'color-extractor' as ToolId,
-          title: 'Color Extractor',
-          description: 'Harvest dominant HEX color clusters',
-          icon: 'Palette'
-        }
-      ];
-    } else if (type.startsWith('audio/')) {
-      return [
-        {
-          toolId: 'audio-trimmer' as ToolId,
-          title: 'Audio Trimmer',
-          description: 'Slice & clip visual audio waveforms',
-          icon: 'MusicNotes'
-        },
-        {
-          toolId: 'audio-transcriber' as ToolId,
-          title: 'AI Audio Transcriber',
-          description: 'Convert spoken speech to text',
-          icon: 'Sparkle'
-        }
-      ];
-    } else if (type.startsWith('video/')) {
-      return [
-        {
-          toolId: 'video-splitter' as ToolId,
-          title: 'Video Splitter',
-          description: 'Segment and slice video tracks offline',
-          icon: 'Scissors'
-        }
-      ];
-    } else {
-      return [
-        {
-          toolId: 'pdf-compiler' as ToolId,
-          title: 'PDF Compiler',
-          description: 'Combine files into a PDF document',
-          icon: 'FileText'
-        }
-      ];
-    }
+    return TOOLS_LIST
+      .filter((tool) => tool.status === 'functional' || tool.status === 'beta')
+      .filter((tool) => tool.supportedInputTypes.some((supported) => supported === file.type || (supported.endsWith('/*') && file.type.startsWith(supported.slice(0, -1)))))
+      .slice(0, 3)
+      .map((tool) => ({ toolId: tool.id, title: tool.name, description: tool.description, icon: tool.icon }));
   };
 
   const [isGlobalDragging, setIsGlobalDragging] = useState(false);
@@ -361,34 +300,18 @@ function AppContent() {
         return;
       }
 
-      // Map keys to tools
+      // Resolve keyboard shortcuts from the central registry.
       const key = e.key.toLowerCase();
-      
-      // We accept both digits '1'-'8' or specific alpha keys
-      let targetToolId: ToolId | null = null;
-      if (key === '1' || key === 'v') {
-        targetToolId = 'video-splitter';
-      } else if (key === '2' || key === 'i') {
-        targetToolId = 'image-converter';
-      } else if (key === '3' || key === 'p') {
-        targetToolId = 'pdf-compiler';
-      } else if (key === '4' || key === 's') {
-        targetToolId = 'social-downloader';
-      } else if (key === '5' || key === 't') {
-        targetToolId = 'audio-trimmer';
-      } else if (key === '6' || key === 'a') {
-        targetToolId = 'audio-transcriber';
-      } else if (key === '7' || key === 'q') {
-        targetToolId = 'qr-generator';
-      } else if (key === '8' || key === 'c') {
-        targetToolId = 'color-extractor';
-      }
+      const targetToolId = TOOLS_LIST.find((tool) => {
+        const shortcut = TOOL_SHORTCUTS[tool.id];
+        return shortcut.key.toLowerCase() === key || shortcut.label === key;
+      })?.id ?? null;
 
       if (targetToolId) {
         e.preventDefault();
         navigateToTool(targetToolId);
         const toolItem = TOOLS_LIST.find(t => t.id === targetToolId);
-        toast.success('Workspace Activated', `Launching "${toolItem?.title}" via hotkey.`);
+        toast.success('Workspace Activated', `Launching "${toolItem?.name}" via hotkey.`);
       }
     };
 
@@ -401,7 +324,7 @@ function AppContent() {
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    localStorage.setItem('omnitool-theme', nextTheme);
+    localStorage.setItem('panutility-theme', nextTheme);
   };
 
   const getIcon = (name: string) => {
@@ -529,18 +452,13 @@ function AppContent() {
   const filteredTools = TOOLS_LIST.filter(t => {
     const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
     const matchesSearch = searchQuery.trim() === '' || 
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.category.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const activeToolObj = activeTool ? (TOOLS_LIST.find(t => t.id === activeTool) || {
-    id: activeTool,
-    title: activeTool.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-    description: `Perform client-side ${activeTool.split('-').join(' ')} operations safely in your browser.`,
-    category: 'Media Tools'
-  }) : undefined;
+  const activeToolObj: ToolDefinition | undefined = activeTool ? TOOL_BY_ID[activeTool] : undefined;
 
   return (
     <div 
@@ -551,9 +469,11 @@ function AppContent() {
     >
       <SeoManager 
         toolId={activeTool} 
-        toolTitle={activeToolObj?.title} 
+        toolTitle={activeToolObj?.name} 
         toolDescription={activeToolObj?.description} 
         category={activeToolObj?.category} 
+        isIndexable={activeToolObj?.isIndexable ?? false}
+        processingType={activeToolObj?.processingType}
       />
       
       {/* Universal Top Nav */}
@@ -578,7 +498,7 @@ function AppContent() {
           <div className="flex items-center gap-4 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
             <span className="hidden md:flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> 100% Sandbox Secure</span>
             <span className="hidden md:inline opacity-30">&bull;</span>
-            <span className="hidden lg:flex items-center gap-1.5"><Handshake className="w-4 h-4 text-emerald-400" /> Zero HardDrive Siphoning</span>
+            <span className="hidden lg:flex items-center gap-1.5"><Handshake className="w-4 h-4 text-emerald-400" /> Clear processing labels</span>
             
             {/* Elegant Theme Selector */}
             <button
@@ -605,7 +525,9 @@ function AppContent() {
       {/* Main Container */}
       <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-8 relative">
         <AnimatePresence mode="wait">
-          {!activeTool ? (
+          {routeNotFound ? (
+            <ToolNotFound onBack={handleBack} />
+          ) : !activeTool ? (
             /* Dashboard View */
             <motion.div
               key="dashboard"
@@ -621,10 +543,10 @@ function AppContent() {
                   Universal Sandbox Tools
                 </span>
                 <h1 className="text-4xl font-extrabold text-white tracking-tight sm:text-5xl leading-tight font-sans">
-                  Universal Offline <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 font-extrabold uppercase tracking-tight">Utility Suite</span>
+                  Universal <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 font-extrabold uppercase tracking-tight">Utility Suite</span>
                 </h1>
                 <p className="text-zinc-400 text-sm leading-relaxed">
-                  Fast, client-side, zero-telemetry utilities. Slice videos, compile PDF volumes, convert image formats, generate secure QR codes, and format data safely with zero server uploads.
+                  A transparent collection of browser, server, and provider-assisted utilities. Every tool shows its availability and where processing occurs before you use it.
                 </p>
               </div>
 
@@ -905,9 +827,10 @@ function AppContent() {
                           layoutId={`pinned-layout-${tool.id}`}
                           draggable={true}
                           onDragStart={(e) => {
-                            e.dataTransfer.setData('text/plain', tool.id);
-                            e.dataTransfer.setData('source', 'pinned-tool');
-                            e.dataTransfer.setData('index', index.toString());
+                            const dataTransfer = (e as unknown as React.DragEvent<HTMLDivElement>).dataTransfer;
+                            dataTransfer.setData('text/plain', tool.id);
+                            dataTransfer.setData('source', 'pinned-tool');
+                            dataTransfer.setData('index', index.toString());
                           }}
                           onDragOver={(e) => {
                             e.preventDefault();
@@ -932,7 +855,7 @@ function AppContent() {
                                 updated.splice(index, 0, draggedId);
                                 savePinnedTools(updated);
                                 const toolItem = TOOLS_LIST.find(t => t.id === draggedId);
-                                toast.success('Tool Pinned', `Pinned "${toolItem?.title}" at this position.`);
+                                toast.success('Tool Pinned', `Pinned "${toolItem?.name}" at this position.`);
                               }
                             }
                           }}
@@ -996,7 +919,7 @@ function AppContent() {
                             </div>
                             <div className="min-w-0">
                               <h3 className="font-sans text-xs font-semibold text-white truncate group-hover:text-emerald-400 transition-colors leading-tight">
-                                {tool.title}
+                                {tool.name}
                               </h3>
                               <span className="text-[8px] bg-zinc-800 text-zinc-400 border border-zinc-700/50 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono inline-block mt-1">
                                 {tool.category}
@@ -1058,9 +981,10 @@ function AppContent() {
                       onClick={() => navigateToTool(tool.id as ToolId)}
                       draggable={true}
                       onDragStart={(e) => {
-                        e.dataTransfer.setData('text/plain', tool.id);
-                        e.dataTransfer.setData('source', 'grid-tool');
-                        e.dataTransfer.effectAllowed = 'copyMove';
+                        const dataTransfer = (e as unknown as React.DragEvent<HTMLDivElement>).dataTransfer;
+                        dataTransfer.setData('text/plain', tool.id);
+                        dataTransfer.setData('source', 'grid-tool');
+                        dataTransfer.effectAllowed = 'copyMove';
                       }}
                       onMouseEnter={() => setHoveredToolId(tool.id)}
                       onMouseLeave={() => setHoveredToolId(null)}
@@ -1131,16 +1055,17 @@ function AppContent() {
                         {/* Text details */}
                         <div>
                           <h3 className="font-sans font-semibold text-base text-white leading-tight group-hover:text-emerald-400 transition-colors">
-                            {tool.title}
+                            {tool.name}
                           </h3>
                           <p className="text-zinc-400 text-xs mt-2 leading-relaxed">
                             {tool.description}
                           </p>
+                          <div className="mt-3"><ToolStatusBadge status={tool.status} /></div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:translate-x-1 transition-transform w-fit">
-                        Launch Workspace &rarr;
+                        {tool.status === 'coming-soon' ? 'View availability' : tool.status === 'disabled' ? 'View status' : 'Launch Workspace'} &rarr;
                       </div>
                     </motion.div>
                   ))}
@@ -1175,38 +1100,11 @@ function AppContent() {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTool === 'video-splitter' && (
-                <VideoSplitter onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool === 'image-converter' && (
-                <ImageConverter onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool === 'pdf-compiler' && (
-                <PdfCompiler onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool === 'social-downloader' && (
-                <SocialDownloader onBack={handleBack} />
-              )}
-              {activeTool === 'audio-trimmer' && (
-                <AudioTrimmer onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool === 'audio-transcriber' && (
-                <AudioTranscriber onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool === 'qr-generator' && (
-                <QrGenerator onBack={handleBack} />
-              )}
-              {activeTool === 'color-extractor' && (
-                <ColorExtractor onBack={handleBack} initialFile={droppedFile || undefined} />
-              )}
-              {activeTool && ![
-                'video-splitter', 'image-converter', 'pdf-compiler', 'social-downloader',
-                'audio-trimmer', 'audio-transcriber', 'qr-generator', 'color-extractor'
-              ].includes(activeTool) && (
-                <GenericUtilityWorkspace 
-                  tool={TOOLS_LIST.find(t => t.id === activeTool)!} 
-                  onBack={handleBack} 
-                  initialFile={droppedFile || undefined} 
+              {activeTool && (
+                <ToolWorkspace
+                  tool={TOOL_BY_ID[activeTool]}
+                  onBack={handleBack}
+                  initialFile={droppedFile || undefined}
                 />
               )}
             </motion.div>
@@ -1219,9 +1117,9 @@ function AppContent() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-widest text-gray-500 select-none font-medium">
           <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" /> PanUtility Workstation Framework &bull; Release 2026</span>
           <div className="flex gap-4">
-            <span className="hover:text-white transition-colors">Offline Sandbox</span>
+            <span className="hover:text-white transition-colors">Truthful Availability</span>
             <span>&bull;</span>
-            <span className="hover:text-white transition-colors">Client GPU Rendered</span>
+            <span className="hover:text-white transition-colors">Processing Disclosed</span>
             <span>&bull;</span>
             <span className="hover:text-white transition-colors">W3C Compliance</span>
           </div>

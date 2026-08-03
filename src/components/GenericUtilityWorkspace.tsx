@@ -53,11 +53,12 @@ import {
   Users,
   Wind
 } from '@phosphor-icons/react';
-import { ToolItem } from '../types';
+import type { ToolDefinition } from '../types';
 import gifshot from 'gifshot';
+import { decodeBase64Safely, decodeUrlSafely } from '../lib/toolTransforms';
 
 interface GenericUtilityWorkspaceProps {
-  tool: ToolItem;
+  tool: ToolDefinition;
   onBack: () => void;
   initialFile?: File;
 }
@@ -349,11 +350,12 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     if (!inputText) return;
     try {
       if (encode) {
-        setOutputText(btoa(inputText));
+        setOutputText(btoa(unescape(encodeURIComponent(inputText))));
         addLog('Encoded string to Base64.');
       } else {
-        setOutputText(atob(inputText));
-        addLog('Decoded Base64 string.');
+        const result = decodeBase64Safely(inputText);
+        setOutputText(result.value ?? result.error ?? 'Invalid Base64 input.');
+        if (result.value !== undefined) addLog('Decoded Base64 string.');
       }
     } catch(e) {
       setOutputText('Decoding failed. Please supply a valid Base64 string.');
@@ -648,6 +650,9 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   // 17. Exif Viewer simulation
   const simulateExif = () => {
+    setOutputText('EXIF extraction is temporarily unavailable.');
+    addLog('EXIF extraction is disabled until a real metadata parser is available.');
+    return;
     if (!uploadedFile) {
       addLog('Please select a photo file first.');
       return;
@@ -660,8 +665,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     const lon = (-74.0060 + (Math.random() - 0.5) * 0.1).toFixed(4);
 
     setOutputText(
-      `File Name: ${uploadedFile.name}\n` +
-      `File Size: ${(uploadedFile.size / 1024).toFixed(1)} KB\n` +
+      `File Name: ${uploadedFile!.name}\n` +
+      `File Size: ${(uploadedFile!.size / 1024).toFixed(1)} KB\n` +
       `Camera Model: ${camera}\n` +
       `ISO Speed: ISO ${iso}\n` +
       `Shutter Speed: ${shutter}\n` +
@@ -1400,7 +1405,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
             <div className={`p-2.5 rounded-lg w-fit ${tool.color} mb-3.5`}>
               <Sparkle className="w-5 h-5 text-[#10b981]" />
             </div>
-            <h1 className="font-sans text-2xl text-white tracking-tight">{tool.title}</h1>
+            <h1 className="font-sans text-2xl text-white tracking-tight">{tool.name}</h1>
             <span className="text-[9px] bg-[#1a1a1a] text-[#10b981] border border-[#2a2a2a] px-2 py-0.5 rounded font-mono uppercase tracking-wider inline-block mt-2 font-bold">
               {tool.category}
             </span>
@@ -1425,8 +1430,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
         </div>
         
         <div className="text-[8px] text-gray-600 font-mono flex items-center justify-between border-t border-[#111] pt-4 mt-6">
-          <span>GPU Rendered: 100% Client</span>
-          <span>Security Level: High</span>
+          <span>{tool.processingType === 'browser' ? 'Browser processing' : 'Connected processing'}</span>
+          <span>{tool.status === 'beta' ? 'Beta workspace' : 'Available'}</span>
         </div>
       </div>
 
@@ -1555,7 +1560,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 {tool.id === 'url-coder' && (
                   <>
                     <button onClick={() => setOutputText(encodeURIComponent(inputText))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode URL</button>
-                    <button onClick={() => setOutputText(decodeURIComponent(inputText))} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Decode URL</button>
+                    <button onClick={() => { const result = decodeUrlSafely(inputText); setOutputText(result.value ?? result.error ?? 'Invalid URL input.'); }} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Decode URL</button>
                   </>
                 )}
 
@@ -1624,8 +1629,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 {tool.id === 'yaml-to-json' && (
                   <button 
                     onClick={() => {
-                      setOutputText('{\n  "status": "YAML converter simulation ready",\n  "tip": "Simple YAML parsed successfully entirely client side"\n}');
-                      addLog('Simulated client-side YAML parsing.');
+                      setOutputText('YAML conversion is unavailable.');
+                      addLog('No YAML parser is configured.');
                     }} 
                     className="px-4 py-1.5 bg-[#10b981] text-black text-xs rounded transition-all cursor-pointer font-bold"
                   >
@@ -1706,7 +1711,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                             clean += ')'.repeat(openCount - closeCount);
                           }
                           
-                          const res = new Function(`return ${clean}`)();
+                          const res = Number.NaN;
                           setInputText(Number(res).toFixed(4).replace(/\.?0+$/, ''));
                           addLog(`Calculated: ${clean}`);
                         } catch(e) {
@@ -2287,12 +2292,11 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         const val = parseInt(e.target.value) || 0;
                         setSliderVal(val);
                         if (tool.id === 'bmr-calc') {
-                          setOutputText(`Estimated Daily Calorie Target: ${Math.floor(1500 + val * 15)} kcal\nBasal Metabolic Rate: ${Math.floor(1300 + val * 8)} calories per day`);
+                          setOutputText('BMR calculation is unavailable.');
                         } else if (tool.id === 'step-sim') {
-                          const steps = val * 200;
-                          setOutputText(`Step Count logged: ${steps} steps\nEstimated Distance: ${(steps * 0.0005).toFixed(2)} miles\nEstimated Energy Burned: ${Math.floor(steps * 0.04)} kcal`);
+                          setOutputText('Step estimation is unavailable.');
                         } else {
-                          setOutputText(`Lifestyle tracking coefficient: ${val}%\nDaily target progress status: Safe & Balanced`);
+                          setOutputText('This lifestyle tool is unavailable.');
                         }
                       }}
                       className="accent-[#10b981] w-full"
@@ -2430,8 +2434,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <button 
                     onClick={() => {
                       setGameScore(prev => prev + 1);
-                      setOutputText(`Action Triggered successfully!\nSession Rating: Classic Sandbox Level 1\nTally High Score: ${gameScore + 1}`);
-                      addLog('Registered interactive game move.');
+                      setOutputText('This game is not implemented.');
+                      addLog('No game implementation is available.');
                     }}
                     className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider cursor-pointer"
                   >
@@ -2848,8 +2852,8 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                           } else if (tool.id === 'meme-generator') {
                             handleGenerateMeme();
                           } else {
-                            setOutputText('Analyzing bytes... Done.\nFile conversion simulation finished successfully.');
-                            addLog('Media conversion finalized.');
+                            setOutputText('This operation is not implemented.');
+                            addLog('No processing implementation is available.');
                           }
                         }} 
                         disabled={isProcessing}

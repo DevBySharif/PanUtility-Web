@@ -658,7 +658,7 @@ export default function VideoSplitter({ onBack, initialFile }: VideoSplitterProp
                 {/* Method choice */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    Export Method <Question className="w-3 h-3 text-gray-500" title="Smart Record records the video stream perfectly. Byte Slice instantly splits the binary file." />
+                    Export Method <span title="Smart Record records the video stream. Byte Slice is disabled at the route level until a valid media pipeline is available."><Question className="w-3 h-3 text-gray-500" /></span>
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <button

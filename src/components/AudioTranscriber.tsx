@@ -32,6 +32,16 @@ interface TranscriptLine {
   text: string;
 }
 
+export const TRANSCRIPTION_MAX_BYTES = 3 * 1024 * 1024;
+export const TRANSCRIPTION_MIME_TYPES = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/aac', 'audio/flac']);
+
+export function validateTranscriptionFile(file: File): string | null {
+  if (!file.size) return 'Audio cannot be empty.';
+  if (file.size > TRANSCRIPTION_MAX_BYTES) return 'Audio must be 3 MiB or smaller for production upload.';
+  if (!TRANSCRIPTION_MIME_TYPES.has(file.type.toLowerCase())) return 'This audio format is not supported.';
+  return null;
+}
+
 export default function AudioTranscriber({ onBack, initialFile }: AudioTranscriberProps) {
   const { success: showSuccessToast, error: showWarningToast } = useToast();
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -46,6 +56,9 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
   const [recordingSeconds, setRecordingSeconds] = useState<number>(0);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+  const submittingRef = useRef(false);
 
   // Transcription states
   const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
@@ -53,9 +66,16 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
   const [transcriptionResult, setTranscriptionResult] = useState<string>('');
   const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
   const [transcribeError, setTranscribeError] = useState<string>('');
+  const [processingConfirmed, setProcessingConfirmed] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => () => {
+    requestRef.current?.abort();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    if (audioSrc) URL.revokeObjectURL(audioSrc);
+  }, [audioSrc]);
 
   // Load initial file if provided
   useEffect(() => {
@@ -117,11 +137,10 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
   };
 
   const loadAudio = (file: File) => {
-    if (!file.type.startsWith('audio/')) {
-      setTranscribeError('Selected file is not an audio file.');
-      return;
-    }
+    const validationError = validateTranscriptionFile(file);
+    if (validationError) { setTranscribeError(validationError); return; }
     setTranscribeError('');
+    if (audioSrc) URL.revokeObjectURL(audioSrc);
     setAudioFile(file);
     const src = URL.createObjectURL(file);
     setAudioSrc(src);
@@ -136,8 +155,10 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
     try {
       setTranscribeError('');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
       audioChunksRef.current = [];
-      const recorder = new MediaRecorder(stream);
+      const preferredMime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'].find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
       
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) {
@@ -146,12 +167,15 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
       };
 
       recorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
-        const file = new File([audioBlob], `recording_${new Date().toISOString().slice(0,10)}.mp3`, { type: 'audio/mp3' });
+        const mimeType = recorder.mimeType.split(';')[0] || audioChunksRef.current[0]?.type.split(';')[0] || 'audio/webm';
+        const extension = mimeType === 'audio/ogg' ? 'ogg' : 'webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const file = new File([audioBlob], `recording_${new Date().toISOString().slice(0,10)}.${extension}`, { type: mimeType });
         loadAudio(file);
         
         // Stop all tracks to release the microphone
         stream.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
       };
 
       recorder.start();
@@ -205,7 +229,12 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
 
   // Call backend transcription API
   const handleTranscribe = async () => {
-    if (!audioFile) return;
+    if (!audioFile || !processingConfirmed || submittingRef.current) return;
+    const validationError = validateTranscriptionFile(audioFile);
+    if (validationError) { setTranscribeError(validationError); return; }
+    submittingRef.current = true;
+    const controller = new AbortController();
+    requestRef.current = controller;
     
     setIsTranscribing(true);
     setTranscribeError('');
@@ -216,7 +245,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
       setProgressStep('Extracting audio buffer...');
       const base64Audio = await fileToBase64(audioFile);
       
-      setProgressStep('Uploading payload to Gemini HardDrive...');
+      setProgressStep('Uploading audio securely...');
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         headers: {
@@ -226,11 +255,17 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
           audio: base64Audio,
           mimeType: audioFile.type || 'audio/mp3',
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'HardDrive transcription failed');
+        const retryAfter = response.headers.get('Retry-After');
+        let code = '';
+        try { code = (await response.json()).error?.code || ''; } catch { /* safe fallback */ }
+        if (response.status === 429 || code === 'RATE_LIMITED') throw new Error(`Too many transcription requests. Try again${retryAfter ? ` in about ${retryAfter} seconds` : ' later'}.`);
+        if (response.status === 503 || code === 'SERVICE_UNAVAILABLE') throw new Error('Transcription is temporarily unavailable. Please try again later.');
+        if (response.status === 504 || code === 'PROVIDER_TIMEOUT') throw new Error('The transcription provider timed out. Please try again later.');
+        throw new Error('The transcription service could not complete this request.');
       }
 
       setProgressStep('Gemini model generating high-fidelity transcript...');
@@ -241,10 +276,12 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
       parseTranscript(text);
       
       confetti({ particleCount: 100, spread: 80 });
-    } catch (err: any) {
-      console.error(err);
-      setTranscribeError(err.message || 'An error occurred during transcription. Please try again.');
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') setTranscribeError('Transcription was cancelled.');
+      else setTranscribeError(err instanceof Error ? err.message : 'An error occurred during transcription. Please try again.');
     } finally {
+      submittingRef.current = false;
+      requestRef.current = null;
       setIsTranscribing(false);
       setProgressStep('');
     }
@@ -359,6 +396,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
     setTranscriptLines([]);
     setIsPlaying(false);
     setCurrentTime(0);
+    setProcessingConfirmed(false);
   };
 
   return (
@@ -412,14 +450,14 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
-              accept="audio/*"
+              accept={[...TRANSCRIPTION_MIME_TYPES].join(',')}
               className="hidden"
             />
             <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">
               <Upload className="w-8 h-8" />
             </div>
             <h3 className="text-white font-sans text-lg">Upload an audio file</h3>
-            <p className="text-gray-500 text-xs mt-1 mb-4">Supports MP3, WAV, AAC, M4A, FLAC, WEBM</p>
+            <p className="text-gray-500 text-xs mt-1 mb-4">MP3, WAV, AAC, M4A, FLAC, OGG or WEBM — maximum 3 MiB</p>
             <span className="text-xs font-bold text-[#0a0a0a] bg-[#10b981] px-4 py-2 rounded uppercase tracking-wider hover:bg-[#059669] transition-colors">
               Select Audio File
             </span>
@@ -503,10 +541,20 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
 
               {/* AI action trigger */}
               <div className="border-t border-[#1a1a1a] pt-4 mt-2">
+                <label className="mb-3 flex cursor-pointer items-start gap-3 rounded-lg border border-amber-800/40 bg-amber-950/10 p-3 text-left text-[11px] leading-relaxed text-amber-100">
+                  <input
+                    type="checkbox"
+                    checked={processingConfirmed}
+                    onChange={(event) => setProcessingConfirmed(event.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-emerald-500"
+                  />
+                  <span>I understand that this audio is sent to PanUtility’s server, which sends it to Google Gemini, and that provider availability affects processing.</span>
+                </label>
                 {!isTranscribing ? (
                   <button
                     onClick={handleTranscribe}
-                    className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#059669] to-[#10b981] hover:shadow-lg text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2"
+                    disabled={!processingConfirmed}
+                    className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#059669] to-[#10b981] hover:shadow-lg text-[#0a0a0a] rounded font-bold text-xs uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:from-zinc-700 disabled:to-zinc-700 disabled:text-zinc-400"
                   >
                     <Sparkle className="w-4 h-4 fill-current text-[#0a0a0a]" /> Transcribe with AI
                   </button>
@@ -519,6 +567,9 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                       <div className="bg-[#10b981] h-full w-2/3 animate-pulse" />
                     </div>
                   </div>
+                )}
+                {isTranscribing && (
+                  <button onClick={() => requestRef.current?.abort()} className="mt-3 w-full rounded border border-zinc-700 px-4 py-2 text-xs text-zinc-300">Cancel transcription</button>
                 )}
               </div>
             </div>

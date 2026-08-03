@@ -98,7 +98,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
         try {
           const e = await r.json();
           if (e.error) {
-            errMsg = `${e.error}\n\n${e.stack || ""}`;
+            errMsg = e.error;
           }
         } catch {}
         setErrorMsg(errMsg);
@@ -200,7 +200,8 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
             <Download className="w-8 h-8 text-[#10b981]" /> Social Media Downloader
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Download videos from YouTube, TikTok, Instagram, Twitter/X &amp; more.</p>
+          <p className="text-gray-400 text-sm mt-1">Beta link resolver for supported public media. Platform, provider, format, and quality availability vary.</p>
+          <p className="mt-2 text-xs text-amber-300">Submitted URLs are sent to PanUtility’s server and third-party resolver providers.</p>
         </div>
       </div>
 
@@ -212,7 +213,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
             <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2 justify-center">
               <Globe className="w-6 h-6 text-[#10b981]" /> Online Video Downloader
             </h2>
-            <p className="text-gray-400 text-xs md:text-sm">Paste any video link from YouTube, TikTok, Instagram, Twitter/X or a direct .mp4 URL.</p>
+            <p className="text-gray-400 text-xs md:text-sm">Paste a supported public media URL. Resolution and output format are not guaranteed.</p>
           </div>
 
           <div className="flex flex-col sm:flex-row rounded-lg overflow-hidden border border-[#2a2a2a] focus-within:border-[#10b981] transition-all bg-[#151515] p-1 shadow-inner gap-0">

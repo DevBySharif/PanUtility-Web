@@ -4,6 +4,7 @@ import process from 'node:process';
 const commands = [
   ['--experimental-strip-types', 'scripts/generate-sitemap.ts'],
   ['node_modules/vite/bin/vite.js', 'build'],
+  ['--experimental-strip-types', 'scripts/prerender.ts'],
 ];
 
 for (const args of commands) {

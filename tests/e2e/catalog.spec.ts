@@ -23,6 +23,22 @@ test('search finds and opens a functional tool', async ({ page }) => {
   assertNoErrors();
 });
 
+test('homepage surfaces only public functional tools', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Image Format Converter' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'JSON Beautifier & Validator' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'GIF Converter & Maker' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Video Compressor' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Scientific Algebra Calculator' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Social Video Downloader' })).toHaveCount(0);
+});
+
+test('search does not surface non-public tools', async ({ page }) => {
+  await page.goto('/');
+  await page.getByPlaceholder(/tools by name/i).fill('Social Video Downloader');
+  await expect(page.getByRole('heading', { name: /No tools found/i })).toBeVisible();
+});
+
 test('opens a beta route without contacting providers', async ({ page }) => {
   const assertNoErrors = failOnConsoleErrors(page);
   await page.goto('/tools/gif-maker');
@@ -60,6 +76,28 @@ test('shows not found for an unknown route', async ({ page }) => {
 test('direct known tool URL navigation works', async ({ page }) => {
   await page.goto('/tools/json-formatter');
   await expect(page.getByRole('heading', { name: 'JSON Beautifier & Validator' })).toBeVisible();
+});
+
+test('interacts with functional tools without console errors', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+  
+  // JSON Formatter E2E
+  await page.goto('/tools/json-formatter');
+  await page.getByPlaceholder(/Type or paste your content/i).fill('{"name":"PanUtility"}');
+  await page.getByRole('button', { name: /Verify & Format JSON/i }).click();
+  await expect(page.locator('textarea').last()).toHaveValue(/{\n {2}"name": "PanUtility"\n}/);
+
+  // Tip Calculator E2E
+  await page.goto('/tools/tip-calc');
+  await page.getByRole('button', { name: /20% Tip/i }).click();
+  await expect(page.getByText(/Tip Subtotal \(20%\):/i)).toBeVisible();
+
+  // Dice Roller E2E
+  await page.goto('/tools/dice-roller');
+  await page.getByRole('button', { name: /Roll D6/i }).click();
+  await expect(page.getByText(/Rolled D6:/i)).toBeVisible();
+
+  assertNoErrors();
 });
 
 test('theme toggle changes and persists the selected theme', async ({ page }) => {

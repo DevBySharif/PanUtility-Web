@@ -1133,8 +1133,8 @@ export const TOOL_REGISTRY = TOOL_CATALOG.map((seed): ToolDefinition & { id: Too
     privacyNotice: unavailable ? undefined : privacyFor(seed.id),
     supportedInputTypes: unavailable ? [] : formats.input,
     supportedOutputTypes: unavailable ? [] : formats.output,
-    isFeatured: !unavailable && Boolean(badge),
-    isIndexable: !unavailable,
+    isFeatured: status === 'functional' && Boolean(badge),
+    isIndexable: status === 'functional',
     componentKey: unavailable ? undefined : (DEDICATED_COMPONENTS[seed.id] ?? 'generic'),
     icon: seed.icon,
     color: seed.color,
@@ -1153,6 +1153,13 @@ export function isToolId(value: string): value is ToolId {
 }
 
 export const INDEXABLE_TOOLS = TOOL_REGISTRY.filter((tool) => tool.isIndexable);
+
+// Public catalog = Functional tools only. Beta, coming-soon, and disabled tools
+// keep their stable routes but are hidden from every discovery surface.
+export const FUNCTIONAL_TOOLS = TOOL_REGISTRY.filter((tool) => tool.status === 'functional');
+export const PUBLIC_TOOLS = FUNCTIONAL_TOOLS;
+export const HIDDEN_TOOLS = TOOL_REGISTRY.filter((tool) => tool.status !== 'functional');
+export const PUBLIC_TOOL_IDS = new Set(PUBLIC_TOOLS.map((tool) => tool.id));
 
 // Map hotkeys for standard tools. For all 112 tools, we generate structured, highly visual tips.
 export const TOOL_SHORTCUTS: Record<ToolId, { key: string; label: string; tip: string }> = {} as Record<ToolId, { key: string; label: string; tip: string }>;

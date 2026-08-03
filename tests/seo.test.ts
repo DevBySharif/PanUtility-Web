@@ -12,13 +12,13 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     expect(content).not.toContain('panutility.com');
   });
 
-  it('sitemap.xml contains exactly 43 canonical URLs on panutility.vercel.app', () => {
+  it('sitemap.xml contains exactly 1 + indexable-tool canonical URLs on panutility.vercel.app', () => {
     expect(existsSync('public/sitemap.xml')).toBe(true);
     const content = readFileSync('public/sitemap.xml', 'utf8');
     expect(content).not.toContain('panutility.com');
 
     const locs = content.match(/<loc>(https:\/\/panutility\.vercel\.app\/[^<]*)<\/loc>/g) || [];
-    expect(locs).toHaveLength(43); // 1 homepage + 42 indexable tools
+    expect(locs).toHaveLength(1 + INDEXABLE_TOOLS.length); // 1 homepage + indexable (public functional) tools
     expect(locs[0]).toContain('<loc>https://panutility.vercel.app/</loc>');
 
     for (const tool of INDEXABLE_TOOLS) {
@@ -96,13 +96,12 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     expect(html).toContain('<h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">JSON Beautifier &amp; Validator</h1>');
   });
 
-  it('all 42 indexable tools have unique titles and non-empty descriptions', () => {
-    expect(INDEXABLE_TOOLS).toHaveLength(42);
+  it(`all ${INDEXABLE_TOOLS.length} indexable tools have unique titles and non-empty descriptions`, () => {
     const titles = new Set(INDEXABLE_TOOLS.map((t) => t.name));
     const descriptions = new Set(INDEXABLE_TOOLS.map((t) => t.description));
 
-    expect(titles.size).toBe(42);
-    expect(descriptions.size).toBe(42);
+    expect(titles.size).toBe(INDEXABLE_TOOLS.length);
+    expect(descriptions.size).toBe(INDEXABLE_TOOLS.length);
 
     for (const tool of INDEXABLE_TOOLS) {
       expect(tool.name).toBeTruthy();
@@ -111,9 +110,9 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     }
   });
 
-  it('disabled and coming-soon tools are strictly excluded from indexability and static prerendering', () => {
-    const nonIndexable = TOOL_REGISTRY.filter((t) => t.status === 'disabled' || t.status === 'coming-soon');
-    expect(nonIndexable.length).toBe(71); // 20 disabled + 51 coming-soon = 71
+  it('beta, coming-soon and disabled tools are strictly excluded from indexability and static prerendering', () => {
+    const nonIndexable = TOOL_REGISTRY.filter((t) => t.status !== 'functional');
+    expect(nonIndexable.length).toBe(101); // 30 beta + 51 coming-soon + 20 disabled
 
     for (const tool of nonIndexable) {
       expect(tool.isIndexable).toBe(false);

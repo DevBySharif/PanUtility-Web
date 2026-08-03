@@ -78,7 +78,7 @@ import type { ToolDefinition } from './types';
 import { ToastProvider, useToast } from './components/Toast';
 import ToolWorkspace from './components/ToolWorkspace';
 import { ToolNotFound, ToolStatusBadge } from './components/ToolAvailability';
-import { TOOL_BY_ID, TOOLS_LIST, TOOL_SHORTCUTS, isToolId, type ToolId } from './toolsData';
+import { PUBLIC_TOOLS, PUBLIC_TOOL_IDS, TOOL_BY_ID, TOOLS_LIST, TOOL_SHORTCUTS, isToolId, type ToolId } from './toolsData';
 import { SeoManager } from './components/SeoManager';
 
 function AppContent() {
@@ -187,8 +187,7 @@ function AppContent() {
   }, [dashboardPendingFile]);
 
   const getRoutingOptions = (file: File) => {
-    return TOOLS_LIST
-      .filter((tool) => tool.status === 'functional' || tool.status === 'beta')
+    return PUBLIC_TOOLS
       .filter((tool) => tool.supportedInputTypes.some((supported) => supported === file.type || (supported.endsWith('/*') && file.type.startsWith(supported.slice(0, -1)))))
       .slice(0, 3)
       .map((tool) => ({ toolId: tool.id, title: tool.name, description: tool.description, icon: tool.icon }));
@@ -300,9 +299,9 @@ function AppContent() {
         return;
       }
 
-      // Resolve keyboard shortcuts from the central registry.
+      // Resolve keyboard shortcuts from the central registry (public tools only).
       const key = e.key.toLowerCase();
-      const targetToolId = TOOLS_LIST.find((tool) => {
+      const targetToolId = PUBLIC_TOOLS.find((tool) => {
         const shortcut = TOOL_SHORTCUTS[tool.id];
         return shortcut.key.toLowerCase() === key || shortcut.label === key;
       })?.id ?? null;
@@ -445,11 +444,11 @@ function AppContent() {
   };
 
   const categories = [
-    'All', 'Video', 'Image', 'Document', 'Audio', 'Text & Writing', 
+    'All', 'Video', 'Image', 'Document', 'Audio', 'Text & Writing',
     'Developer Tools', 'Math & Finance', 'Health & Lifestyle', 'Fun & Games'
-  ];
+  ].filter((category) => category === 'All' || PUBLIC_TOOLS.some((tool) => tool.category === category));
 
-  const filteredTools = TOOLS_LIST.filter(t => {
+  const filteredTools = PUBLIC_TOOLS.filter(t => {
     const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
     const matchesSearch = searchQuery.trim() === '' || 
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -459,6 +458,8 @@ function AppContent() {
   });
 
   const activeToolObj: ToolDefinition | undefined = activeTool ? TOOL_BY_ID[activeTool] : undefined;
+
+  const visiblePinnedToolIds = pinnedToolIds.filter((id) => id && PUBLIC_TOOL_IDS.has(id as ToolId));
 
   return (
     <div 
@@ -561,7 +562,7 @@ function AppContent() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="MagnifyingGlass tools by name, description, category... (Press / to focus)"
+                    placeholder="Search tools by name, description, category... (Press / to focus)"
                     className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-inner"
                   />
                   {searchQuery && (
@@ -738,7 +739,11 @@ function AppContent() {
                         Select workspace destination:
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {getRoutingOptions(dashboardPendingFile).map((option) => (
+                        {getRoutingOptions(dashboardPendingFile).length === 0 ? (
+                          <p className="text-[11px] text-zinc-500 leading-relaxed col-span-full border border-dashed border-zinc-800 rounded-lg p-3">
+                            No production-ready tool is currently available for this file type.
+                          </p>
+                        ) : getRoutingOptions(dashboardPendingFile).map((option) => (
                           <button
                             key={option.toolId}
                             id={`route-to-${option.toolId}`}
@@ -775,11 +780,11 @@ function AppContent() {
                     <h2 className="font-sans font-bold text-xs uppercase tracking-wider text-zinc-200">Favorite Workspaces</h2>
                   </div>
                   <span className="text-[10px] text-zinc-500 font-mono tracking-wider">
-                    {pinnedToolIds.length} tool{pinnedToolIds.length !== 1 ? 's' : ''} pinned
+                    {visiblePinnedToolIds.length} tool{visiblePinnedToolIds.length !== 1 ? 's' : ''} pinned
                   </span>
                 </div>
 
-                {pinnedToolIds.length === 0 ? (
+                {visiblePinnedToolIds.length === 0 ? (
                   <div 
                     id="pinned-shelf-empty"
                     className={`border border-dashed rounded-xl p-5 text-center transition-all duration-300 ${
@@ -818,7 +823,7 @@ function AppContent() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="pinned-shelf-grid">
-                    {pinnedToolIds.map((toolId, index) => {
+                    {visiblePinnedToolIds.map((toolId, index) => {
                       const tool = TOOLS_LIST.find(t => t.id === toolId);
                       if (!tool) return null;
                       return (
@@ -1150,15 +1155,11 @@ function AppContent() {
             dragCounter.current = 0;
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
               const file = e.dataTransfer.files[0];
-              // Smart default routing on general drop
+              // Smart default routing on general drop (production-ready Functional tools only)
               if (file.type.startsWith('image/')) {
                 handleRoute(file, 'image-converter');
-              } else if (file.type.startsWith('audio/')) {
-                handleRoute(file, 'audio-trimmer');
-              } else if (file.type.startsWith('video/')) {
-                handleRoute(file, 'video-splitter');
               } else {
-                toast.error('Unsupported File Type', 'No suitable tools found for this file.');
+                toast.error('No Production-Ready Tool', 'No production-ready tool is currently available for this file type.');
               }
             }
           }}
@@ -1177,8 +1178,8 @@ function AppContent() {
             </h2>
             <p className="text-gray-400 text-sm mt-2">
               {draggedFileType === 'image' && "Drop onto a specialized workspace below to open and process it, or drop anywhere to launch Image Converter."}
-              {draggedFileType === 'audio' && "Drop onto a workspace below to open, or drop anywhere to launch Audio Trimmer."}
-              {draggedFileType === 'video' && "Drop anywhere to open and segment your video clip in Video Splitting."}
+              {draggedFileType === 'audio' && "No production-ready tool is currently available for this file type."}
+              {draggedFileType === 'video' && "No production-ready tool is currently available for this file type."}
               {draggedFileType === 'other' && "This format is not natively supported by our tools."}
             </p>
           </div>
@@ -1270,63 +1271,14 @@ function AppContent() {
               </>
             )}
 
-            {draggedFileType === 'audio' && (
-              <>
-                <div
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsGlobalDragging(false);
-                    dragCounter.current = 0;
-                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                      handleRoute(e.dataTransfer.files[0], 'audio-trimmer');
-                    }
-                  }}
-                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <MusicNotes className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Audio Waveform Trimmer</h3>
-                      <p className="text-gray-500 text-xs mt-1">Visualize waveforms, trim and clip</p>
-                    </div>
-                  </div>
-                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
-                    Drop here to Trim Audio
-                  </div>
+            {(draggedFileType === 'audio' || draggedFileType === 'video') && (
+              <div className="min-w-[280px] max-w-[360px] bg-[#0f1115]/50 border-2 border-dashed border-zinc-800 p-6 rounded-xl flex flex-col items-center gap-4 mx-auto">
+                <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-zinc-400">
+                  {draggedFileType === 'audio' ? <MusicNotes className="w-8 h-8" /> : <Scissors className="w-8 h-8" />}
                 </div>
-
-              </>
-            )}
-
-            {draggedFileType === 'video' && (
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsGlobalDragging(false);
-                  dragCounter.current = 0;
-                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    handleRoute(e.dataTransfer.files[0], 'video-splitter');
-                  }
-                }}
-                className="min-w-[280px] max-w-[360px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group mx-auto"
-              >
-                <div className="flex flex-col items-center gap-4">
-                  <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                    <Scissors className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">Video Splitting & Cutting</h3>
-                    <p className="text-gray-500 text-xs mt-1">Trim, segment and cut video tracks</p>
-                  </div>
-                </div>
-                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
-                  Drop here to Trim Video
+                <div>
+                  <h3 className="font-sans font-semibold text-base text-white">No Production-Ready Tool</h3>
+                  <p className="text-gray-500 text-xs mt-1">No production-ready tool is currently available for this file type.</p>
                 </div>
               </div>
             )}

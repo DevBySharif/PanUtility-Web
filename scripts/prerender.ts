@@ -157,7 +157,7 @@ const homepageBody = `
 const prerenderedHomepageHtml = injectHeadAndBody(template, homepageHead, homepageBody);
 await writeFile(join(distDir, 'index.html'), prerenderedHomepageHtml, 'utf8');
 
-// 2. Prerender All 42 Indexable Tool Pages
+// 2. Prerender All Indexable (Public Functional) Tool Pages
 let prerenderCount = 0;
 for (const tool of INDEXABLE_TOOLS) {
   const canonical = `${DOMAIN}/tools/${tool.id}`;

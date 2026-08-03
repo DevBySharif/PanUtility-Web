@@ -1,6 +1,6 @@
 # PanUtility-Web tool inventory
 
-> P0-B update (2026-08-03): security review moved `social-downloader` from Beta to disabled because no safe deterministic provider survived removal of remote-script execution, unofficial scraping, and arbitrary proxying. Current enforced totals are 12 `functional`, 31 `beta`, 51 `coming-soon`, and 19 `disabled` across exactly 113 stable routes. `video-splitter` remains disabled.
+> P0-B update (2026-08-03): security review moved `social-downloader` from Beta to disabled because no safe deterministic provider survived removal of remote-script execution, unofficial scraping, and arbitrary proxying. Current enforced totals are 12 `functional`, 30 `beta`, 51 `coming-soon`, and 20 `disabled` across exactly 113 stable routes. `video-splitter` remains disabled. Public visibility update: only the 12 functional tools are presented in the public catalog (see `docs/PUBLIC_TOOL_VISIBILITY_POLICY.md`); beta, coming-soon, and disabled routes remain directly accessible and truthful.
 
 Audit date: 2026-08-03. Source of truth: `src/toolsData.ts` (113 catalog entries), route selection in `src/App.tsx`, dedicated components, `GenericUtilityWorkspace.tsx`, and `api/index.ts`. A route rendering a workspace is **not** counted as working unless its advertised operation is implemented.
 
@@ -188,4 +188,4 @@ Issue/state codes (each row's codes cover validation, states, mobile, privacy/se
 
 `audio-transcriber` is currently **Disabled** in the deployed catalog. It has no processing, supported formats, executable component, or sitemap entry. Its route presents: “Server-based transcription is temporarily unavailable in the free deployment.” The retained implementation is not loaded by the disabled route. This supersedes the historical inventory observation for that tool.
 
-Classification is deliberately conservative: **12 functional**, **33 partial** (including 3 external-dependent), **51 UI only**, and **17 broken**. The most important distinction is that 68 routes are either UI only or broken even though all 113 are presented as available tools.
+Classification is deliberately conservative: **12 functional**, **33 partial** (including 3 external-dependent), **51 UI only**, and **17 broken**. Since the public catalog now presents only the 12 functional tools, the distinction matters most for planning: 101 hidden routes are either UI only, partial, or broken even though all 113 remain addressable for direct-route availability checks.

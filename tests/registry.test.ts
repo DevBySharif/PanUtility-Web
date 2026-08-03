@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isToolId, TOOL_BY_ID, TOOL_REGISTRY } from '../src/toolsData';
+import { FUNCTIONAL_TOOLS, HIDDEN_TOOLS, INDEXABLE_TOOLS, PUBLIC_TOOLS, PUBLIC_TOOL_IDS, TOOL_BY_ID, TOOL_REGISTRY, isToolId } from '../src/toolsData';
 
 describe('typed tool registry', () => {
   it('contains exactly 113 unique route definitions', () => {
@@ -49,5 +49,25 @@ describe('typed tool registry', () => {
 
   it('provides a reason for every disabled tool', () => {
     for (const tool of TOOL_REGISTRY.filter((candidate) => candidate.status === 'disabled')) expect(tool.statusReason).toBeTruthy();
+  });
+
+  it('exposes public catalog selectors limited to the 12 functional tools', () => {
+    expect(FUNCTIONAL_TOOLS).toHaveLength(12);
+    expect(PUBLIC_TOOLS).toHaveLength(12);
+    expect(HIDDEN_TOOLS).toHaveLength(101);
+    expect(PUBLIC_TOOLS.every((tool) => tool.status === 'functional')).toBe(true);
+    expect(HIDDEN_TOOLS.every((tool) => tool.status !== 'functional')).toBe(true);
+    expect(PUBLIC_TOOLS.length + HIDDEN_TOOLS.length).toBe(TOOL_REGISTRY.length);
+  });
+
+  it('only functional tools are indexable, featured, and in the public id set', () => {
+    expect(PUBLIC_TOOL_IDS.size).toBe(PUBLIC_TOOLS.length);
+    for (const tool of TOOL_REGISTRY) {
+      const isPublic = tool.status === 'functional';
+      expect(PUBLIC_TOOL_IDS.has(tool.id)).toBe(isPublic);
+      expect(tool.isIndexable).toBe(isPublic);
+      expect(tool.isFeatured).toBe(isPublic && Boolean(tool.badge));
+    }
+    expect(INDEXABLE_TOOLS.map((tool) => tool.id).sort()).toEqual(PUBLIC_TOOLS.map((tool) => tool.id).sort());
   });
 });

@@ -6,6 +6,8 @@ let base;
 try { base = new URL(input); } catch { console.error('Invalid base URL.'); process.exit(2); }
 if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.pathname !== '/') { console.error('Base URL must be an origin without credentials or a path.'); process.exit(2); }
 const allowedOrigin = value('--allowed-origin') || base.origin;
+const { INDEXABLE_TOOLS } = await import('../src/toolsData.ts');
+const expectedSitemapUrls = 1 + INDEXABLE_TOOLS.length;
 const checks = [];
 const record = (name, pass, detail = '') => checks.push({ name, pass, detail });
 async function get(path, init = {}) { return fetch(new URL(path, base), { ...init, redirect: 'manual', signal: AbortSignal.timeout(8000) }); }
@@ -27,7 +29,7 @@ try {
   record('HTML cache', /must-revalidate/.test(home.headers.get('cache-control') || ''));
   const cors = await get('/api/health', { headers: { Origin: allowedOrigin } }); record('allowed CORS', cors.headers.get('access-control-allow-origin') === allowedOrigin && /Origin/i.test(cors.headers.get('vary') || ''));
   const rejected = await get('/api/health', { headers: { Origin: 'https://evil.example' } }); record('rejected CORS', rejected.status === 403 && !rejected.headers.get('access-control-allow-origin'));
-  const sitemap = await get('/sitemap.xml'); const sitemapText = await sitemap.text(); record('sitemap', sitemap.ok && (sitemapText.match(/<loc>/g) || []).length === 43);
+  const sitemap = await get('/sitemap.xml'); const sitemapText = await sitemap.text(); record('sitemap', sitemap.ok && (sitemapText.match(/<loc>/g) || []).length === expectedSitemapUrls);
   const robots = await get('/robots.txt'); record('robots', robots.ok && (await robots.text()).includes('Sitemap:'));
 } catch (error) { record('verification execution', false, error instanceof Error ? error.message.slice(0, 120) : 'unknown error'); }
 

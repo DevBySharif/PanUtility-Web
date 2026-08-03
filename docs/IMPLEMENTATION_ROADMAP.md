@@ -1,5 +1,22 @@
 # PanUtility-Web implementation roadmap
 
+## P1-B2 status — 2026-08-04
+
+**P1-B2 Text & Writing Tools production-quality pass is Complete.** Case Converter
+(+PascalCase/kebab-case, Unicode-safe), Word Counter (paragraphs restored,
+punctuation-only → 0 words, code-point counts, reading-time estimate), Lorem Ipsum
+(deterministic, no `Math.random`, UI 1–20 aligned with library), Duplicate Line Remover
+(no silent trim/blank-drop; explicit trim/blank/case controls), and JSON Formatter
+(format/minify, 5 MB limit, safe errors) are implemented and verified.
+- 247/247 Vitest (16 files), 14/14 Playwright, typecheck, lint, all builds, and `check` pass.
+- Bonus transforms hardened: `percentageOf`, `splitTip`, `secureRandom`, `rollDie`,
+  `playRockPaperScissors`.
+- Route IDs and status totals (12/30/51/20 = 113) unchanged; public visibility, zero-cost
+  mode, and `social-downloader` untouched.
+- **P1-B3 has NOT started.** Next: apply the same production-quality pattern to the
+  remaining partial text/code tools (diff, markdown, regex, slug, sorter, find/replace,
+  morse, binary, base64, url, entities, reverser), then revisit P1 scope.
+
 ## P1-A & P1-A2 status — 2026-08-03
 
 **P1-A Technical SEO Foundation & P1-A2 Production SEO Rendering Verification are Complete.**

@@ -1,5 +1,13 @@
 # PanUtility-Web tool inventory
 
+> P1-B2 update (2026-08-04): text-tool production-quality pass complete. Case Converter
+> (Unicode-safe title/sentence, +PascalCase/kebab-case), Word Counter (paragraphs,
+> punctuation-only → 0 words, code-point counts, reading-time estimate), Lorem Ipsum
+> (deterministic, no `Math.random`, UI bound 1–20 aligned with library), Duplicate Line
+> Remover (no silent trim/blank-drop; explicit trim/blank/case controls; first-occurrence
+> + order preserved), and JSON Formatter (format/minify, 5 MB limit, safe errors) are all
+> verified. See `docs/P1B2_TEXT_TOOLS_REPORT.md`.
+
 > P0-B update (2026-08-03): security review moved `social-downloader` from Beta to disabled because no safe deterministic provider survived removal of remote-script execution, unofficial scraping, and arbitrary proxying. Current enforced totals are 12 `functional`, 30 `beta`, 51 `coming-soon`, and 20 `disabled` across exactly 113 stable routes. `video-splitter` remains disabled. Public visibility update: only the 12 functional tools are presented in the public catalog (see `docs/PUBLIC_TOOL_VISIBILITY_POLICY.md`); beta, coming-soon, and disabled routes remain directly accessible and truthful.
 
 Audit date: 2026-08-03. Source of truth: `src/toolsData.ts` (113 catalog entries), route selection in `src/App.tsx`, dedicated components, `GenericUtilityWorkspace.tsx`, and `api/index.ts`. A route rendering a workspace is **not** counted as working unless its advertised operation is implemented.
@@ -96,9 +104,9 @@ Issue/state codes (each row's codes cover validation, states, mobile, privacy/se
 
 | Tool (route id) | Main | Status | Input → output | Processing | Verified defects / risks / missing states | Tests |
 |---|---|---|---|---|---|---|
-| Text Case Converter (`case-converter`) | GW | **Functional** | text → upper/lower/title/sentence/camel/snake text | Browser | C; simplistic Unicode/word-boundary behavior. | T0 |
-| Word & Character Counter (`word-counter`) | GW | **Functional** | text → counts text | Browser | C; “word” split is whitespace-based, reading time heuristic only. | T0 |
-| Lorem Ipsum Generator (`lorem-ipsum`) | GW | **Functional** | paragraph count 1–10 → text | Browser | C; output is very short/nonstandard randomized filler. | T0 |
+| Text Case Converter (`case-converter`) | GW | **Functional** | text → upper/lower/title/sentence/camel/pascal/snake/kebab text | Browser | C; identifier modes do not split existing camelCase boundaries; title/sentence are Unicode-aware. | T0 |
+| Word & Character Counter (`word-counter`) | GW | **Functional** | text → counts text | Browser | C; 200-wpm reading estimate only; grapheme-cluster (ZWJ) grouping not applied; Unicode code-point counting, paragraphs, and punctuation-only → 0 words verified. | T0 |
+| Lorem Ipsum Generator (`lorem-ipsum`) | GW | **Functional** | paragraph count 1–20 → deterministic text | Browser | C; fixed 8-sentence Latin pool (cycles by index); output deterministic and copy-ready. | T0 |
 | Text Diff Checker (`text-diff`) | GW | **UI only** | one text area → none | None | No second input/diff algorithm. C,K. | T0 |
 | Interactive Markdown Editor (`markdown-editor`) | GW | **UI only** | text → none | None | No preview or Markdown transformation. C,K. | T0 |
 | Interactive RegEx Tester (`regex-tester`) | GW | **UI only** | text → none | None | No pattern/flags/matches/errors. C,K. | T0 |
@@ -111,7 +119,7 @@ Issue/state codes (each row's codes cover validation, states, mobile, privacy/se
 | URL Encoder & Decoder (`url-coder`) | GW | **Partial** | text ↔ percent-encoded text | Browser | `decodeURIComponent` throws uncaught on malformed `%` input. C. | T0 |
 | HTML Entity Encoder (`html-entities`) | GW | **Partial** | text → numeric entities | Browser | Encode only despite generic tool wording; misses many ASCII characters by design; no decode. C. | T0 |
 | Text Reverser & Mirror (`text-reverser`) | GW | **Partial** | text → reversed characters/words | Browser | Reversing UTF-16 splits emoji/graphemes; no mirrored glyph output. C,K. | T0 |
-| Duplicate Line Remover (`line-remover`) | GW | **Functional** | lines → trimmed unique non-empty lines | Browser | C; always trims and removes empty lines with no preserve-order/options explanation. | T0 |
+| Duplicate Line Remover (`line-remover`) | GW | **Functional** | lines → deduplicated lines | Browser | C; no silent trim/blank-drop (defaults preserve formatting); explicit trim/remove-blank/case options; first occurrence + order preserved. | T0 |
 | Creative Prompt Generator (`sentence-generator`) | GW | **UI only** | text → none | None | No generation logic/API/offline prompt set. C,K. | T0 |
 
 ## Developer tools (15)
@@ -119,7 +127,7 @@ Issue/state codes (each row's codes cover validation, states, mobile, privacy/se
 | Tool (route id) | Main | Status | Input → output | Processing | Verified defects / risks / missing states | Tests |
 |---|---|---|---|---|---|---|
 | QR Code Generator (`qr-generator`) | QR | **Partial, External** | text/URL/phone + size/colors → PNG | External `api.qrserver.com` render/download | User payload is sent in query string to third party; no privacy notice/length validation; remote image is not locally generated; fallback opens third-party URL. G; loading and toast exist, no inline error. | T0 |
-| JSON Beautifier & Validator (`json-formatter`) | GW | **Functional** | JSON text → formatted JSON/error text | Browser | C; no schema/large-input guard. | T0 |
+| JSON Beautifier & Validator (`json-formatter`) | GW | **Functional** | JSON text → formatted/minified JSON/error text | Browser | C; format + minify, 5 MB safety limit, safe syntax errors; no schema validation. | T0 |
 | Cryptographic Hash Solver (`hash-generator`) | GW | **Broken** | text → DJB2/SDBM text | Browser | Labels non-cryptographic 32-bit hashes as “cryptographic”; no SHA family/Web Crypto. C,K; security-misleading. | T0 |
 | UUID Batch Generator (`uuid-generator`) | GW | **UI only** | generic workspace → none | None | No UUID generation. B/K. | T0 |
 | YAML to JSON Converter (`yaml-to-json`) | GW | **Broken** | any text → hard-coded JSON | Simulation | Does not parse YAML; always returns a canned success object. C,I,K. | T0 |

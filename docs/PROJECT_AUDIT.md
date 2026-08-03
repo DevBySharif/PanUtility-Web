@@ -1,5 +1,31 @@
 # PanUtility-Web project audit
 
+## P1-B2 Text & Writing Tools Production Quality — 2026-08-04
+
+P1-B2 is complete: the five shared text/code transform tools (Case Converter, Word
+Counter, Lorem Ipsum, Duplicate Line Remover, JSON Formatter) are production-quality and
+fully verified. This is the second P1-B sub-milestone (P1-B1 covered the image tools;
+P1-B3 is not started).
+
+What changed:
+- `src/lib/toolTransforms.ts` and `src/components/GenericUtilityWorkspace.tsx` — the
+  transform library and its text-tool wiring (see `P1B2_TEXT_TOOLS_REPORT.md`). The
+  pre-existing in-flight diffs in these two files were completed, extended, and verified
+  here rather than reverted.
+- `tests/functional-tools.test.tsx` (+28 deterministic tests) and new
+  `tests/text-tools-workspace.test.tsx` (7 UI-level tests).
+
+Verification (clean rebuild): typecheck, lint, and `npm run check` pass; `npm run test`
+passes 247/247 across 16 files (was 210 / 15); Playwright passes 14/14; all client, server,
+and combined production builds pass; the sitemap remains 13 URLs / 12 indexable tools.
+`npm audit --json` reports 1 pre-existing moderate (dev-only `postcss <=8.5.22`), 0 high,
+0 critical.
+
+Confirmed untouched: image tools, SEO/prerendering, public-visibility selectors,
+API/security, `social-downloader`, unrelated Beta/Disabled tools, route IDs, and the
+enforced status totals (12 functional / 30 beta / 51 coming-soon / 20 disabled = 113
+routes). Zero-cost production mode is unchanged.
+
 ## P1-A & P1-A2 Production Technical SEO & Prerendering — 2026-08-03
 
 Technical SEO foundation (P1-A) and live production rendering verification with build-time static HTML prerendering (P1-A2) are complete and fully verified on `https://panutility.vercel.app`.

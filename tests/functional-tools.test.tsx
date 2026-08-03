@@ -14,6 +14,7 @@ import {
   playRockPaperScissors,
   removeDuplicateLines,
   rollDie,
+  secureRandom,
   splitTip
 } from '../src/lib/toolTransforms';
 
@@ -135,6 +136,51 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
       expect(convertCase('hello world test', 'camel')).toBe('helloWorldTest');
       expect(convertCase('hello world test', 'snake')).toBe('hello_world_test');
     });
+
+    it('transforms text to PascalCase and kebab-case', () => {
+      expect(convertCase('hello world test', 'pascal')).toBe('HelloWorldTest');
+      expect(convertCase('hello world test', 'kebab')).toBe('hello-world-test');
+      expect(convertCase('hello, world!', 'pascal')).toBe('HelloWorld');
+      expect(convertCase('hello, world!', 'kebab')).toBe('hello-world');
+    });
+
+    it('handles emoji without corrupting preserved modes', () => {
+      expect(convertCase('🎉 hello 🎉', 'upper')).toBe('🎉 HELLO 🎉');
+      expect(convertCase('🎉 hello 🎉', 'lower')).toBe('🎉 hello 🎉');
+      expect(convertCase('🎉 hello 🎉', 'title')).toBe('🎉 Hello 🎉');
+    });
+
+    it('drops emoji for identifier-style cases', () => {
+      expect(convertCase('hello 🎉 world', 'camel')).toBe('helloWorld');
+      expect(convertCase('hello 🎉 world', 'pascal')).toBe('HelloWorld');
+      expect(convertCase('hello 🎉 world', 'snake')).toBe('hello_world');
+      expect(convertCase('hello 🎉 world', 'kebab')).toBe('hello-world');
+    });
+
+    it('handles mixed scripts and Unicode accents across all modes', () => {
+      expect(convertCase('héllo wörld', 'upper')).toBe('HÉLLO WÖRLD');
+      expect(convertCase('HÉLLO WÖRLD', 'lower')).toBe('héllo wörld');
+      expect(convertCase('héllo wörld', 'title')).toBe('Héllo Wörld');
+      expect(convertCase('héllo wörld', 'camel')).toBe('hélloWörld');
+      expect(convertCase('héllo wörld', 'pascal')).toBe('HélloWörld');
+      expect(convertCase('héllo wörld', 'snake')).toBe('héllo_wörld');
+      expect(convertCase('héllo wörld', 'kebab')).toBe('héllo-wörld');
+      expect(convertCase('你好 世界', 'camel')).toBe('你好世界');
+      expect(convertCase('你好 世界', 'snake')).toBe('你好_世界');
+    });
+
+    it('returns empty string for empty input across all modes', () => {
+      const modes = ['upper', 'lower', 'title', 'sentence', 'camel', 'pascal', 'snake', 'kebab'] as const;
+      for (const mode of modes) {
+        expect(convertCase('', mode)).toBe('');
+      }
+    });
+
+    it('preserves punctuation-only input unchanged for word-based modes', () => {
+      expect(convertCase('!!!', 'camel')).toBe('!!!');
+      expect(convertCase('!!!', 'snake')).toBe('!!!');
+      expect(convertCase('!!!', 'pascal')).toBe('!!!');
+    });
   });
 
   // --- 5. WORD COUNTER ---
@@ -164,6 +210,47 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
       expect(res.readingTimeMinutes).toBe(2);
       expect(res.readingTimeLabel).toContain('2 min read');
     });
+
+    it('counts punctuation-only input as zero words', () => {
+      const res = countText('!!! ... ??? ---');
+      expect(res.words).toBe(0);
+      expect(res.readingTimeLabel).toBe('0 min read');
+    });
+
+    it('counts whitespace-only input as zero words and zero paragraphs', () => {
+      const res = countText('   \n  \n   ');
+      expect(res.words).toBe(0);
+      expect(res.lines).toBe(3);
+      expect(res.paragraphs).toBe(0);
+      expect(res.charactersWithoutSpaces).toBe(0);
+    });
+
+    it('counts paragraphs as non-empty blocks separated by blank lines', () => {
+      expect(countText('a\nb\n\nc').paragraphs).toBe(2);
+      expect(countText('a\nb').paragraphs).toBe(1);
+      expect(countText('a\n\n\nb\nc').paragraphs).toBe(2);
+      expect(countText('\n\na\n\n').paragraphs).toBe(1);
+      expect(countText('').paragraphs).toBe(0);
+    });
+
+    it('counts CJK script runs as words', () => {
+      const res = countText('你好世界 中文');
+      expect(res.words).toBe(2);
+      expect(res.characters).toBe(7);
+    });
+
+    it('counts emoji-only input as zero words', () => {
+      const res = countText('🎉🎉🎉');
+      expect(res.words).toBe(0);
+      expect(res.characters).toBe(3);
+    });
+
+    it('handles large bounded inputs without error', () => {
+      const res = countText(Array.from({ length: 10000 }, (_, i) => `word${i}`).join(' '));
+      expect(res.words).toBe(10000);
+      expect(res.readingTimeMinutes).toBe(50);
+      expect(res.readingTimeLabel).toContain('50 min read (est.)');
+    });
   });
 
   // --- 6. LOREM IPSUM ---
@@ -178,6 +265,41 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
       const paragraphs = generateLorem(3).split('\n\n');
       expect(paragraphs[0]).toContain('Lorem ipsum');
       expect(paragraphs[1]).not.toBe(paragraphs[0]);
+    });
+
+    it('is deterministic for the same input', () => {
+      expect(generateLorem(3)).toBe(generateLorem(3));
+      expect(generateLorem(5)).toBe(generateLorem(5));
+      expect(generateLorem(1)).toBe(generateLorem(1));
+      expect(generateLorem(20)).toBe(generateLorem(20));
+    });
+
+    it('clamps min/max and non-numeric inputs to the 1..20 bound', () => {
+      expect(generateLorem(-5).split('\n\n')).toHaveLength(1);
+      expect(generateLorem(0).split('\n\n')).toHaveLength(1);
+      expect(generateLorem(0.5).split('\n\n')).toHaveLength(1);
+      expect(generateLorem(NaN).split('\n\n')).toHaveLength(1);
+      expect(generateLorem(21).split('\n\n')).toHaveLength(20);
+      expect(generateLorem(1000).split('\n\n')).toHaveLength(20);
+    });
+
+    it('separates paragraphs with exactly a blank line and no trailing newline', () => {
+      const output = generateLorem(4);
+      expect(output).toMatch(/^[^\n]+\n\n[^\n]+/);
+      expect(output.endsWith('\n\n')).toBe(false);
+      expect(output.split('\n\n')).toHaveLength(4);
+      for (const paragraph of output.split('\n\n')) {
+        expect(paragraph.trim()).toBe(paragraph);
+        expect(paragraph).not.toBe('');
+        expect(paragraph.split('. ').length).toBeGreaterThanOrEqual(2);
+      }
+    });
+
+    it('produces a stable, self-contained string suitable for copy', () => {
+      const output = generateLorem(2);
+      expect(typeof output).toBe('string');
+      expect(output.length).toBeGreaterThan(100);
+      expect(output).toContain('Lorem ipsum');
     });
   });
 
@@ -196,6 +318,37 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
       const input = '  Alpha  \nalpha\n\nBeta';
       expect(removeDuplicateLines(input, { trim: true, removeEmpty: true, caseSensitive: false })).toBe('Alpha\nBeta');
       expect(removeDuplicateLines(input, { trim: false, removeEmpty: false, caseSensitive: true })).toBe('  Alpha  \nalpha\n\nBeta');
+    });
+
+    it('does not trim or drop blank lines by default', () => {
+      const input = '  alpha  \n\n  alpha  \n\nbeta';
+      expect(removeDuplicateLines(input)).toBe('  alpha  \n\nbeta');
+    });
+
+    it('preserves first occurrence and original order', () => {
+      expect(removeDuplicateLines('b\na\nb\na\nc')).toBe('b\na\nc');
+      expect(removeDuplicateLines('gamma\nalpha\nbeta\ngamma')).toBe('gamma\nalpha\nbeta');
+    });
+
+    it('removes blank lines only when requested', () => {
+      expect(removeDuplicateLines('a\n\nb\n\n\nc', { removeEmpty: true })).toBe('a\nb\nc');
+    });
+
+    it('trims surrounding whitespace only when requested', () => {
+      expect(removeDuplicateLines('  a  \n a', { trim: true })).toBe('a');
+      expect(removeDuplicateLines('  a  \n a', { trim: false })).toBe('  a  \n a');
+    });
+
+    it('honors case sensitivity options', () => {
+      expect(removeDuplicateLines('Alpha\nalpha', { caseSensitive: true })).toBe('Alpha\nalpha');
+      expect(removeDuplicateLines('Alpha\nalpha', { caseSensitive: false })).toBe('Alpha');
+      expect(removeDuplicateLines('ÁLPHA\nálpha', { caseSensitive: false })).toBe('ÁLPHA');
+    });
+
+    it('deduplicates Unicode lines while preserving first occurrence', () => {
+      expect(removeDuplicateLines('café\ncafé\ncafe')).toBe('café\ncafe');
+      expect(removeDuplicateLines('Кириллица\nКириллица')).toBe('Кириллица');
+      expect(removeDuplicateLines('日本語\n日本語')).toBe('日本語');
     });
   });
 
@@ -219,6 +372,28 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
 
     it('throws explicit SyntaxError message for malformed JSON', () => {
       expect(() => formatJson('{"invalid": }')).toThrow(/JSON Syntax Error/);
+    });
+
+    it('preserves Unicode content when formatting', () => {
+      const formatted = formatJson('{"msg":"héllo 🎉 世界"}', 'format');
+      expect(formatted).toContain('héllo 🎉 世界');
+    });
+
+    it('round-trips format and minify through JSON.parse', () => {
+      const input = '{"a":[1,2,3],"b":{"c":true},"d":null}';
+      expect(JSON.parse(formatJson(input, 'format'))).toEqual(JSON.parse(input));
+      expect(JSON.parse(formatJson(input, 'minify'))).toEqual(JSON.parse(input));
+    });
+
+    it('formats top-level non-object JSON values', () => {
+      expect(formatJson('[1,2,3]', 'format')).toBe('[\n  1,\n  2,\n  3\n]');
+      expect(formatJson('"hello"', 'format')).toBe('"hello"');
+      expect(formatJson('42', 'minify')).toBe('42');
+    });
+
+    it('enforces the 5MB input safety limit', () => {
+      const huge = `{"data":"${'x'.repeat(5 * 1024 * 1024)}"}`;
+      expect(() => formatJson(huge)).toThrow(/5MB safety limit/);
     });
   });
 
@@ -265,7 +440,25 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
     });
   });
 
-  // --- 11. DICE ROLLER ---
+  // --- 11. SECURE RANDOM ---
+  describe('secure-random (secureRandom)', () => {
+    it('returns values within [0, 1)', () => {
+      for (let i = 0; i < 100; i++) {
+        const value = secureRandom();
+        expect(value).toBeGreaterThanOrEqual(0);
+        expect(value).toBeLessThan(1);
+      }
+    });
+
+    it('uses the Web Crypto fallback within range for rollDie and RPS', () => {
+      for (let i = 0; i < 50; i++) {
+        expect(rollDie(6)).toBeGreaterThanOrEqual(1);
+        expect(rollDie(6)).toBeLessThanOrEqual(6);
+      }
+    });
+  });
+
+  // --- 12. DICE ROLLER ---
   describe('dice-roller (rollDie)', () => {
     it('rolls die within selected range [1, sides]', () => {
       for (const sides of [4, 6, 8, 10, 12, 20]) {
@@ -287,7 +480,7 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
     });
   });
 
-  // --- 12. ROCK PAPER SCISSORS ---
+  // --- 13. ROCK PAPER SCISSORS ---
   describe('rock-paper-scissors (playRockPaperScissors)', () => {
     it('evaluates complete win/lose/draw outcome matrix', () => {
       // computer returns choice index based on random value

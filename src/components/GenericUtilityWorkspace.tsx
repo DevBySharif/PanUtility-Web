@@ -55,7 +55,7 @@ import {
 } from '@phosphor-icons/react';
 import type { ToolDefinition } from '../types';
 import gifshot from 'gifshot';
-import { decodeBase64Safely, decodeUrlSafely } from '../lib/toolTransforms';
+import { convertCase, countText, decodeBase64Safely, decodeUrlSafely, formatJson, generateLorem, percentageOf, playRockPaperScissors, removeDuplicateLines, rollDie, splitTip } from '../lib/toolTransforms';
 
 interface GenericUtilityWorkspaceProps {
   tool: ToolDefinition;
@@ -76,6 +76,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     opt3: false,
     opt4: false,
   });
+  const [lineDedupOptions, setLineDedupOptions] = useState({ trim: false, removeEmpty: false, caseSensitive: true });
   
   // Game & interactive app states
   const [gameScore, setGameScore] = useState(0);
@@ -235,22 +236,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   };
 
   // 4. Case Converter
-  const runCaseConvert = (mode: string) => {
-    if (!inputText) return;
-    let converted = '';
-    if (mode === 'upper') converted = inputText.toUpperCase();
-    else if (mode === 'lower') converted = inputText.toLowerCase();
-    else if (mode === 'title') {
-      converted = inputText.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    } else if (mode === 'sentence') {
-      converted = inputText.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
-    } else if (mode === 'camel') {
-      converted = inputText.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
-    } else if (mode === 'snake') {
-      converted = inputText.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  const runCaseConvert = (mode: 'upper' | 'lower' | 'title' | 'sentence' | 'camel' | 'pascal' | 'snake' | 'kebab') => {
+    if (!inputText) {
+      setOutputText('');
+      return;
     }
+    const converted = convertCase(inputText, mode);
     setOutputText(converted);
-    addLog(`Converted to ${mode} case`);
+    addLog(`Converted text to ${mode} case.`);
   };
 
   // 5. Binary Translator
@@ -364,21 +357,27 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   // 8. Word Counter
   const runWordCount = (text: string) => {
-    const charCount = text.length;
-    const cleanText = text.trim();
-    const words = cleanText ? cleanText.split(/\s+/) : [];
-    const wordCount = words.length;
-    const lines = text.split('\n').filter(Boolean).length;
-    const paragraphs = text.split(/\n\s*\n/).filter(Boolean).length;
-    const readingTime = Math.ceil(wordCount / 200); // 200 wpm standard
-
+    const counts = countText(text);
     setOutputText(
-      `Characters: ${charCount}\n` +
-      `Words: ${wordCount}\n` +
-      `Lines: ${lines}\n` +
-      `Paragraphs: ${paragraphs}\n` +
-      `Avg Reading Duration: ~${readingTime} minute${readingTime !== 1 ? 's' : ''}`
+      `Words: ${counts.words}\n` +
+      `Characters: ${counts.characters}\n` +
+      `Characters (no spaces): ${counts.charactersWithoutSpaces}\n` +
+      `Lines: ${counts.lines}\n` +
+      `Paragraphs: ${counts.paragraphs}\n` +
+      `Reading Time: ${counts.readingTimeLabel}`
     );
+  };
+
+  // Line Remover (deduplicate lines with explicit options)
+  const runRemoveDuplicates = () => {
+    const result = removeDuplicateLines(inputText, lineDedupOptions);
+    setOutputText(result);
+    const behavior = [
+      lineDedupOptions.trim ? 'trim whitespace' : 'keep raw whitespace',
+      lineDedupOptions.removeEmpty ? 'remove blank lines' : 'keep blank lines',
+      lineDedupOptions.caseSensitive ? 'case-sensitive' : 'case-insensitive',
+    ].join(', ');
+    addLog(`Deduplicated lines (${behavior}).`);
   };
 
   // 9. Hash Generator
@@ -427,12 +426,15 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const runDiceRoll = (sides: number) => {
     setGameActive(true);
     addLog(`Rolling D${sides}...`);
-    setTimeout(() => {
-      const roll = Math.floor(Math.random() * sides) + 1;
-      setOutputText(`Rolled: ${roll}`);
+    try {
+      const roll = rollDie(sides);
+      setOutputText(`Rolled D${sides}: ${roll}`);
       addLog(`Rolled D${sides} and got: ${roll}`);
+    } catch (err: any) {
+      setOutputText(err.message || 'Error rolling die.');
+    } finally {
       setGameActive(false);
-    }, 600);
+    }
   };
 
   // 12. Pomodoro Focus Timer
@@ -559,27 +561,24 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     }
   };
 
-  // 15. Rock Paper Scissors against smart AI
+  // 15. Rock Paper Scissors
   const runRpsGame = (playerChoice: 'rock' | 'paper' | 'scissors') => {
-    const choices: Array<'rock' | 'paper' | 'scissors'> = ['rock', 'paper', 'scissors'];
-    const botChoice = choices[Math.floor(Math.random() * 3)];
-    
-    let result = '';
-    if (playerChoice === botChoice) {
-      result = `It's a tie! Both chose ${playerChoice.toUpperCase()}.`;
-    } else if (
-      (playerChoice === 'rock' && botChoice === 'scissors') ||
-      (playerChoice === 'paper' && botChoice === 'rock') ||
-      (playerChoice === 'scissors' && botChoice === 'paper')
-    ) {
-      result = `You WIN! ${playerChoice.toUpperCase()} beats ${botChoice.toUpperCase()}.`;
-      setGameScore(prev => prev + 1);
-    } else {
-      result = `You lose. ${botChoice.toUpperCase()} beats ${playerChoice.toUpperCase()}.`;
+    try {
+      const { player, computer, result } = playRockPaperScissors(playerChoice);
+      let outcomeText = '';
+      if (result === 'draw') {
+        outcomeText = `DRAW! Both chose ${player.toUpperCase()}.`;
+      } else if (result === 'win') {
+        outcomeText = `YOU WIN! ${player.toUpperCase()} beats ${computer.toUpperCase()}.`;
+        setGameScore(prev => prev + 1);
+      } else {
+        outcomeText = `YOU LOSE. ${computer.toUpperCase()} beats ${player.toUpperCase()}.`;
+      }
+      setOutputText(`Player: ${player.toUpperCase()} | Computer: ${computer.toUpperCase()}\nResult: ${outcomeText}`);
+      addLog(`RPS Round: You: ${player} | Computer: ${computer} => ${result}`);
+    } catch (err: any) {
+      setOutputText(err.message || 'Error playing RPS.');
     }
-
-    setOutputText(result);
-    addLog(`RPS Round: You: ${playerChoice} | Bot: ${botChoice}`);
   };
 
   // GPA Calculator Helper Functions
@@ -636,14 +635,17 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   };
 
   // 16. JSON Formatter
-  const runJsonFormatter = () => {
-    if (!inputText) return;
+  const runJsonFormatter = (mode: 'format' | 'minify' = 'format') => {
+    if (!inputText || !inputText.trim()) {
+      setOutputText('Please enter valid JSON text to format.');
+      return;
+    }
     try {
-      const parsed = JSON.parse(inputText);
-      setOutputText(JSON.stringify(parsed, null, 2));
-      addLog('JSON syntax formatted and verified successfully.');
-    } catch(e: any) {
-      setOutputText(`JSON parsing failed:\n${e.message}`);
+      const formatted = formatJson(inputText, mode);
+      setOutputText(formatted);
+      addLog(`JSON syntax ${mode === 'minify' ? 'minified' : 'formatted'} successfully.`);
+    } catch (err: any) {
+      setOutputText(err.message || 'JSON parsing failed.');
       addLog('JSON Syntax Verification Failed.');
     }
   };
@@ -1527,7 +1529,9 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     <button onClick={() => runCaseConvert('title')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">Title Case</button>
                     <button onClick={() => runCaseConvert('sentence')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">Sentence case</button>
                     <button onClick={() => runCaseConvert('camel')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">camelCase</button>
+                    <button onClick={() => runCaseConvert('pascal')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">PascalCase</button>
                     <button onClick={() => runCaseConvert('snake')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">snake_case</button>
+                    <button onClick={() => runCaseConvert('kebab')} className="px-3 py-1.5 bg-[#151515] border border-[#2a2a2a] hover:bg-[#1f1f1f] text-white text-xs rounded transition-all cursor-pointer font-bold">kebab-case</button>
                   </>
                 )}
                 
@@ -1573,20 +1577,11 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 {tool.id === 'lorem-ipsum' && (
                   <div className="flex items-center gap-4">
                     <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Paragraph count:</span>
-                    <input type="number" min="1" max="10" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="w-14 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-1 rounded font-mono text-center" />
+                    <input type="number" min="1" max="20" value={sliderVal} onChange={(e) => setSliderVal(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))} className="w-14 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-1 rounded font-mono text-center" />
                     <button 
                       onClick={() => {
-                        const words = ['lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'curabitur', 'sed', 'diam', 'id', 'nisi', 'interdum', 'faucibus', 'tempor', 'nec', 'purus'];
-                        let p = '';
-                        for (let k = 0; k < sliderVal; k++) {
-                          let s = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. ';
-                          for (let i = 0; i < 4; i++) {
-                            s += words[Math.floor(Math.random() * words.length)] + ' ';
-                          }
-                          p += s.trim() + '.\n\n';
-                        }
-                        setOutputText(p.trim());
-                        addLog(`Generated ${sliderVal} paragraphs of Lorem Ipsum.`);
+                        setOutputText(generateLorem(sliderVal));
+                        addLog(`Generated ${Math.max(1, Math.min(20, sliderVal))} paragraphs of deterministic Lorem Ipsum.`);
                       }} 
                       className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold"
                     >
@@ -1607,23 +1602,39 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 )}
 
                 {tool.id === 'line-remover' && (
-                  <>
-                    <button 
-                      onClick={() => {
-                        const lines = inputText.split('\n');
-                        const uniqueLines = Array.from(new Set(lines.map(l => l.trim()))).filter(Boolean);
-                        setOutputText(uniqueLines.join('\n'));
-                        addLog('Removed duplicate empty strings.');
-                      }} 
-                      className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold"
-                    >
-                      Deduplicate Lines
-                    </button>
-                  </>
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Deduplication options:</span>
+                      <label className="flex items-center gap-1.5 text-[10px] text-gray-400 font-mono cursor-pointer">
+                        <input type="checkbox" checked={lineDedupOptions.trim} onChange={(e) => setLineDedupOptions(o => ({ ...o, trim: e.target.checked }))} className="accent-[#10b981]" />
+                        Trim whitespace
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] text-gray-400 font-mono cursor-pointer">
+                        <input type="checkbox" checked={lineDedupOptions.removeEmpty} onChange={(e) => setLineDedupOptions(o => ({ ...o, removeEmpty: e.target.checked }))} className="accent-[#10b981]" />
+                        Remove blank lines
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[10px] text-gray-400 font-mono cursor-pointer">
+                        <input type="checkbox" checked={lineDedupOptions.caseSensitive} onChange={(e) => setLineDedupOptions(o => ({ ...o, caseSensitive: e.target.checked }))} className="accent-[#10b981]" />
+                        Case-sensitive
+                      </label>
+                      <button 
+                        onClick={runRemoveDuplicates} 
+                        className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold"
+                      >
+                        Deduplicate Lines
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-mono italic">
+                      Preserves first occurrence and original order. Current behavior: {lineDedupOptions.trim ? 'trims whitespace' : 'keeps raw whitespace'}, {lineDedupOptions.removeEmpty ? 'removes blank lines' : 'keeps blank lines'}, {lineDedupOptions.caseSensitive ? 'case-sensitive' : 'case-insensitive'}.
+                    </span>
+                  </div>
                 )}
 
                 {tool.id === 'json-formatter' && (
-                  <button onClick={runJsonFormatter} className="px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-all cursor-pointer font-bold">Verify & Format JSON</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => runJsonFormatter('format')} className="px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-all cursor-pointer font-bold">Verify & Format JSON</button>
+                    <button onClick={() => runJsonFormatter('minify')} className="px-4 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs rounded transition-all cursor-pointer font-bold border border-gray-700">Minify JSON</button>
+                  </div>
                 )}
 
                 {tool.id === 'yaml-to-json' && (
@@ -1829,11 +1840,18 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                       onChange={(e) => {
                         const val = parseInt(e.target.value) || 0;
                         setSliderVal(val);
-                        setOutputText(
-                          `${val}% of $500 = $${((val / 100) * 500).toFixed(2)}\n\n` +
-                          `If $500 increases by ${val}%, new sum is $${(500 * (1 + val/100)).toFixed(2)}\n` +
-                          `If $500 decreases by ${val}%, discounted sum is $${(500 * (1 - val/100)).toFixed(2)}`
-                        );
+                        try {
+                          const result = percentageOf(val, 500);
+                          const inc = percentageOf(100 + val, 500);
+                          const dec = percentageOf(100 - val, 500);
+                          setOutputText(
+                            `${val}% of $500 = $${result.toFixed(2)}\n\n` +
+                            `If $500 increases by ${val}%, total is $${inc.toFixed(2)}\n` +
+                            `If $500 decreases by ${val}%, discounted total is $${dec.toFixed(2)}`
+                          );
+                        } catch (err: any) {
+                          setOutputText(err.message || 'Calculation error.');
+                        }
                       }}
                       className="accent-[#10b981] w-full"
                     />
@@ -1853,13 +1871,13 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Bill Amount ($)</span>
-                      <input type="number" min="1" value={sliderVal} onChange={(e) => setSliderVal(parseInt(e.target.value) || 1)} className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
+                      <input type="number" min="0" value={sliderVal} onChange={(e) => setSliderVal(Math.max(0, parseInt(e.target.value) || 0))} className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Number of People</span>
                       <input type="number" min="1" value={checkboxState.opt1 ? 2 : checkboxState.opt2 ? 3 : checkboxState.opt3 ? 4 : 5} 
                         onChange={(e) => {
-                          const val = parseInt(e.target.value) || 2;
+                          const val = Math.max(1, parseInt(e.target.value) || 1);
                           setCheckboxState({ opt1: val === 2, opt2: val === 3, opt3: val === 4, opt4: val >= 5 });
                         }} 
                         className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" 
@@ -1873,14 +1891,16 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                         key={p}
                         onClick={() => {
                           const size = checkboxState.opt1 ? 2 : checkboxState.opt2 ? 3 : checkboxState.opt3 ? 4 : 5;
-                          const tip = sliderVal * (p / 100);
-                          const total = sliderVal + tip;
-                          const share = total / size;
-                          setOutputText(
-                            `Tip Subtotal (${p}%): $${tip.toFixed(2)}\n` +
-                            `Combined Total: $${total.toFixed(2)}\n\n` +
-                            `Individual Share: $${share.toFixed(2)} per person`
-                          );
+                          try {
+                            const { tip, total, perPerson } = splitTip(sliderVal, p, size);
+                            setOutputText(
+                              `Tip Subtotal (${p}%): $${tip.toFixed(2)}\n` +
+                              `Combined Total: $${total.toFixed(2)}\n\n` +
+                              `Individual Share (${size} people): $${perPerson.toFixed(2)} per person`
+                            );
+                          } catch (err: any) {
+                            setOutputText(err.message || 'Tip calculation error.');
+                          }
                         }}
                         className="flex-grow p-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 hover:bg-[#1a1a1a] text-white text-xs font-bold rounded font-mono cursor-pointer"
                       >

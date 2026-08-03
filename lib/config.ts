@@ -1,4 +1,4 @@
-import { ApiError } from './security/errors.ts';
+import { ApiError } from './security/errors';
 
 export interface AppConfig {
   environment: 'development' | 'test' | 'production';

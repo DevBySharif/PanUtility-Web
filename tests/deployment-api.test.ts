@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createApp } from '../api/index';
-import type { AppConfig } from '../api/config';
+import type { AppConfig } from '../lib/config';
 
 const origin = 'https://panutility.vercel.app';
 const config: AppConfig = { environment: 'production', vercel: true, vercelEnvironment: 'production', transcriptionEnabled: false, allowedOrigins: new Set([origin]) };

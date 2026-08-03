@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from '../api/config';
-import { clientIp, hashIdentity, normalizeIp } from '../api/security/clientIdentity';
+import { loadConfig } from '../lib/config';
+import { clientIp, hashIdentity, normalizeIp } from '../lib/security/clientIdentity';
 
 const production = { NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production', ALLOWED_ORIGINS: 'https://panutility.vercel.app' };
 const developmentTranscription = { NODE_ENV: 'development', ENABLE_TRANSCRIPTION: 'true', GEMINI_API_KEY: 'key', UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 'token', RATE_LIMIT_IDENTITY_SECRET: 'x'.repeat(32) };

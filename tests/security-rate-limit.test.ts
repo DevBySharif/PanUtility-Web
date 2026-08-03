@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware } from '../api/security/rateLimit';
+import { createRateLimitMiddleware, MemoryRateLimitStore, UpstashRateLimitStore } from '../lib/security/rateLimit';
 
 describe('rate-limit stores', () => {
   it('increments atomically by identity/endpoint, expires TTL, and bounds memory', async () => {

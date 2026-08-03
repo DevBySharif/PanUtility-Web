@@ -1,8 +1,11 @@
 import request from 'supertest';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createApp } from '../api/index';
-import { redact } from '../api/security/errors';
-import type { AppConfig } from '../api/config';
+import { describe, expect, it } from 'vitest';
+import { AUDIO_MAX_BYTES, createApp } from '../api/index';
+import { loadConfig } from '../lib/config';
+import { MemoryRateLimitStore, UpstashRateLimitStore } from '../lib/security/rateLimit';
+import { afterEach, vi } from 'vitest';
+import { redact } from '../lib/security/errors';
+import type { AppConfig } from '../lib/config';
 
 const origin = 'http://localhost:3000';
 const wav = Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(40)]).toString('base64');

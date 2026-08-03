@@ -14,28 +14,15 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../api/index';
-import type { AppConfig } from '../api/config';
+import type { AppConfig } from '../lib/config';
 
 // ---------------------------------------------------------------------------
 // 1. Vercel function isolation — only api/index.ts should be a handler
 // ---------------------------------------------------------------------------
 describe('Vercel function isolation', () => {
-  it('api/config.ts is a re-export shim only, not standalone logic', () => {
-    const src = readFileSync('api/config.ts', 'utf8');
-    // Must not contain function/class declarations — only re-exports
-    expect(src).not.toMatch(/^export\s+(function|class|const\s+\w+\s*=\s*function)/m);
-    expect(src).toMatch(/export\s+\*\s+from/);
-  });
-
-  it('api/security/*.ts are re-export shims only, not standalone logic', () => {
-    const securityDir = 'api/security';
-    const files = readdirSync(securityDir).filter((f) => f.endsWith('.ts'));
-    expect(files.length).toBeGreaterThan(0);
-    for (const file of files) {
-      const src = readFileSync(join(securityDir, file), 'utf8');
-      expect(src).not.toMatch(/^export\s+(function|class|const\s+\w+\s*=\s*function)/m);
-      expect(src).toMatch(/export\s+\*\s+from/);
-    }
+  it('api/ contains only index.ts', () => {
+    const apiFiles = readdirSync('api');
+    expect(apiFiles).toEqual(['index.ts']);
   });
 
   it('lib/ contains the actual module implementations', () => {

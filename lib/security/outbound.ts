@@ -1,6 +1,6 @@
 import dns from 'node:dns/promises';
 import net from 'node:net';
-import { ApiError } from './errors.ts';
+import { ApiError } from './errors';
 
 type Lookup = (hostname: string) => Promise<Array<{ address: string; family: number }>>;
 const IPV4_BLOCKS: Array<[number, number]> = [[0x00000000,8],[0x0a000000,8],[0x64400000,10],[0x7f000000,8],[0xa9fe0000,16],[0xac100000,12],[0xc0000000,24],[0xc0000200,24],[0xc0586300,24],[0xc0a80000,16],[0xc6120000,15],[0xc6336400,24],[0xcb007100,24],[0xe0000000,4],[0xf0000000,4]];

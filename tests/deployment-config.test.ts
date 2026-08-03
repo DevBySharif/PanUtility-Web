@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig, requireProductionLimiter } from '../api/config';
+import { loadConfig } from '../api/config';
 import { clientIp, hashIdentity, normalizeIp } from '../api/security/clientIdentity';
 
-const production = { NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production', GEMINI_API_KEY: 'key', ALLOWED_ORIGINS: 'https://panutility.vercel.app', UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 'token', RATE_LIMIT_IDENTITY_SECRET: 'x'.repeat(32) };
+const production = { NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production', ALLOWED_ORIGINS: 'https://panutility.vercel.app' };
+const developmentTranscription = { NODE_ENV: 'development', ENABLE_TRANSCRIPTION: 'true', GEMINI_API_KEY: 'key', UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 'token', RATE_LIMIT_IDENTITY_SECRET: 'x'.repeat(32) };
 
 describe('production environment schema', () => {
-  it('accepts valid production and development defaults without exposing secrets', () => {
-    const config = loadConfig(production); expect(config.environment).toBe('production'); expect(config.allowedOrigins.has('https://panutility.vercel.app')).toBe(true);
+  it('boots production with no secrets and defaults to the canonical origin', () => {
+    const config = loadConfig({ NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production' }); expect(config.environment).toBe('production'); expect(config.allowedOrigins.has('https://panutility.vercel.app')).toBe(true);
+    expect(config.transcriptionEnabled).toBe(false); expect(config.geminiApiKey).toBeUndefined(); expect(config.redisUrl).toBeUndefined();
     expect(loadConfig({ NODE_ENV: 'development' }).allowedOrigins.has('http://localhost:3000')).toBe(true);
     expect(loadConfig({ NODE_ENV: 'test' }).environment).toBe('test');
   });
@@ -14,14 +16,16 @@ describe('production environment schema', () => {
     [{ ...production, ALLOWED_ORIGINS: 'not-url' }],
     [{ ...production, ALLOWED_ORIGINS: 'https://panutility.vercel.app/' }],
     [{ ...production, ALLOWED_ORIGINS: 'http://panutility.vercel.app' }],
-    [{ ...production, RATE_LIMIT_IDENTITY_SECRET: 'short' }],
-    [{ ...production, UPSTASH_REDIS_REST_TOKEN: '' }],
     [{ ...production, NODE_ENV: 'staging' }],
     [{ ...production, VERCEL_ENV: 'staging' }],
+    [{ ...production, ENABLE_TRANSCRIPTION: 'true' }],
+    [{ NODE_ENV: 'development', ENABLE_TRANSCRIPTION: 'maybe' }],
+    [{ ...developmentTranscription, RATE_LIMIT_IDENTITY_SECRET: 'short' }],
+    [{ ...developmentTranscription, UPSTASH_REDIS_REST_TOKEN: '' }],
   ])('rejects malformed production configuration %#', (env) => expect(() => loadConfig(env)).toThrow());
-  it('allows missing Gemini configuration but fails closed when production limiter configuration is missing', () => {
-    const config = loadConfig({ NODE_ENV: 'production', ALLOWED_ORIGINS: 'https://panutility.vercel.app' });
-    expect(config.geminiApiKey).toBeUndefined(); expect(() => requireProductionLimiter(config)).toThrowError(expect.objectContaining({ status: 503 }));
+  it('permits explicitly enabled development-only transcription configuration', () => {
+    const config = loadConfig(developmentTranscription);
+    expect(config.transcriptionEnabled).toBe(true); expect(config.geminiApiKey).toBe('key'); expect(config.redisUrl).toBe('https://redis.example');
   });
 });
 

@@ -16,7 +16,7 @@ function originPolicy(config: AppConfig) { return (req: Request, res: Response, 
     res.setHeader('Vary', 'Origin');
     if (origin === 'null' || !config.allowedOrigins.has(origin)) return next(new ApiError(403, 'INVALID_ORIGIN', 'This origin is not allowed.'));
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (config.environment === 'production' && req.originalUrl.split('?')[0] === '/api/transcribe') {
+  } else if (config.transcriptionEnabled && config.environment === 'production' && req.originalUrl.split('?')[0] === '/api/transcribe') {
     return next(new ApiError(403, 'INVALID_ORIGIN', 'This origin is not allowed.'));
   }
   if (req.method === 'OPTIONS') {
@@ -45,9 +45,9 @@ function decodeAudio(body: unknown): { audio: string; mimeType: string } {
 
 export function createApp(options: { generateContent?: (audio: string, mimeType: string) => Promise<string>; providerTimeoutMs?: number; config?: AppConfig; rateLimitStore?: RateLimitStore } = {}) {
   const config = options.config ?? loadConfig();
-  const store = options.rateLimitStore ?? (config.environment === 'production' && config.redisUrl && config.redisToken
+  const store = config.transcriptionEnabled ? options.rateLimitStore ?? (config.environment === 'production' && config.redisUrl && config.redisToken
     ? new UpstashRateLimitStore(config.redisUrl, config.redisToken)
-    : new MemoryRateLimitStore());
+    : new MemoryRateLimitStore()) : undefined;
   const app = express();
   app.set('trust proxy', false);
   app.disable('x-powered-by');
@@ -65,27 +65,30 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
     next();
   });
   app.use('/api', originPolicy(config));
-  app.use('/api', express.json({ limit: BODY_LIMIT, strict: true }));
-  const transcriptionLimit = createRateLimitMiddleware({ store, windowMs: 15 * 60_000, max: 5, endpoint: 'transcribe', identity: (req) => {
-    requireProductionLimiter(config);
-    const secret = config.identitySecret ?? 'local-development-identity-secret-32';
-    return hashIdentity(clientIp(req, config.vercel), secret);
-  } });
-
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', requestId: res.locals.requestId }));
   app.get('/api/readiness', async (_req, res) => {
+    if (!config.transcriptionEnabled) return res.json({ status: 'ready', services: { browserTools: true }, requestId: res.locals.requestId });
     const limiterConfigured = config.environment !== 'production' || Boolean(config.redisUrl && config.redisToken && config.identitySecret);
-    const limiterReady = limiterConfigured && await Promise.race([store.ready(), new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1600))]);
+    const limiterReady = limiterConfigured && await Promise.race([store!.ready(), new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1600))]);
     const ready = Boolean(config.geminiApiKey) && limiterReady;
     res.status(ready ? 200 : 503).json({ status: ready ? 'ready' : 'not-ready', services: { transcription: Boolean(config.geminiApiKey), rateLimit: limiterReady }, requestId: res.locals.requestId });
   });
 
-  app.all('/api/transcribe', (req, res, next) => {
-    if (req.method !== 'POST') return next(new ApiError(405, 'METHOD_NOT_ALLOWED', 'Use POST for this endpoint.'));
-    if (!req.is('application/json')) return next(new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type must be application/json.'));
-    next();
-  });
-  app.post('/api/transcribe', transcriptionLimit, async (req, res, next) => {
+  if (!config.transcriptionEnabled) {
+    app.all('/api/transcribe', (_req, _res, next) => next(new ApiError(410, 'FEATURE_DISABLED', 'Server-based transcription is temporarily unavailable.')));
+  } else {
+    app.use('/api', express.json({ limit: BODY_LIMIT, strict: true }));
+    const transcriptionLimit = createRateLimitMiddleware({ store: store!, windowMs: 15 * 60_000, max: 5, endpoint: 'transcribe', identity: (req) => {
+      requireProductionLimiter(config);
+      const secret = config.identitySecret ?? 'local-development-identity-secret-32';
+      return hashIdentity(clientIp(req, config.vercel), secret);
+    } });
+    app.all('/api/transcribe', (req, res, next) => {
+      if (req.method !== 'POST') return next(new ApiError(405, 'METHOD_NOT_ALLOWED', 'Use POST for this endpoint.'));
+      if (!req.is('application/json')) return next(new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type must be application/json.'));
+      next();
+    });
+    app.post('/api/transcribe', transcriptionLimit, async (req, res, next) => {
     try {
       const { audio, mimeType } = decodeAudio(req.body);
       if (!config.geminiApiKey && !options.generateContent) throw new ApiError(503, 'SERVICE_UNAVAILABLE', 'Transcription is temporarily unavailable.');
@@ -98,7 +101,8 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
       console.log(JSON.stringify({ level: 'info', requestId: res.locals.requestId, provider: 'google-gemini', providerLatencyMs: Date.now() - providerStarted }));
       res.json({ transcription, requestId: res.locals.requestId });
     } catch (error) { next(error instanceof ApiError ? error : new ApiError(502, 'PROVIDER_ERROR', 'The transcription provider could not complete the request.')); }
-  });
+    });
+  }
 
   for (const route of ['/api/resolve-social', '/api/media-proxy']) app.all(route, (_req, _res, next) => next(new ApiError(410, 'FEATURE_DISABLED', 'This feature is temporarily unavailable.')));
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'NOT_FOUND', 'API route not found.')));

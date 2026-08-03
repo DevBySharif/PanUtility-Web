@@ -2,7 +2,7 @@
 
 ## P0-C status — 2026-08-03
 
-Deterministic deployment-readiness work is implemented. Actual Vercel verification is pending owner deployment access, so P0-C remains Partial. Production now fails closed without shared rate limiting, uses Vercel-compatible upload limits, validates environment/origin/client identity, exposes safe health/readiness, verifies production CSP/cache behavior, aligns transcription UI, and includes CI plus a post-deployment verifier. P1 has not started.
+Zero-cost production configuration is implemented. Audio Transcriber is disabled rather than using an insecure per-instance limiter or an unprotected Gemini endpoint. The public Vercel deployment requires no Redis, Gemini key, database, paid API, or custom domain. P1 has not started.
 
 ## P0-B status — 2026-08-03
 

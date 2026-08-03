@@ -2,7 +2,7 @@
 
 `src/toolsData.ts` is the catalog source of truth. Its 113 stable IDs drive routes, cards, search, categories, pins, badges, component selection, SEO, sitemap inclusion, formats, and processing disclosures.
 
-After P0-B the totals are 12 functional, 31 beta, 51 coming soon, and 19 disabled. Security requirements take precedence over retaining Beta status; `social-downloader` is disabled.
+In the zero-cost production catalog the totals are 12 functional, 30 beta, 51 coming soon, and 20 disabled. Security and operational requirements take precedence over retaining Beta status; `social-downloader`, `video-splitter`, and `audio-transcriber` are disabled.
 
 | Status | Meaning | Executable | Featured/indexable |
 |---|---|---:|---:|

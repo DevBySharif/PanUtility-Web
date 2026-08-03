@@ -19,7 +19,7 @@ try {
   const unknownPage = await get('/not-a-page'); record('unknown page 404', unknownPage.status === 404);
   const unknownApi = await get('/api/not-a-route'); const unknownBody = await unknownApi.json(); record('unknown API', unknownApi.status === 404 && safeError(unknownBody));
   for (const path of ['/api/resolve-social', '/api/media-proxy']) { const response = await get(path); const body = await response.json(); record(`${path} disabled`, response.status === 410 && body.error?.code === 'FEATURE_DISABLED' && safeError(body)); }
-  const method = await get('/api/transcribe'); const methodBody = await method.json(); record('transcribe method policy', method.status === 405 && methodBody.error?.code === 'METHOD_NOT_ALLOWED');
+  const transcription = await get('/api/transcribe'); const transcriptionBody = await transcription.json(); record('transcription disabled', transcription.status === 410 && transcriptionBody.error?.code === 'FEATURE_DISABLED' && safeError(transcriptionBody));
   const health = await get('/api/health'); record('health', health.status === 200 && (await health.json()).status === 'ok');
   const readiness = await get('/api/readiness'); record('readiness', readiness.status === 200 && (await readiness.json()).status === 'ready');
   const csp = home.headers.get('content-security-policy') || ''; record('production CSP', csp.includes("script-src 'self'") && !csp.includes('unsafe-eval') && !/script-src[^;]*unsafe-inline/.test(csp));
@@ -27,7 +27,7 @@ try {
   record('HTML cache', /must-revalidate/.test(home.headers.get('cache-control') || ''));
   const cors = await get('/api/health', { headers: { Origin: allowedOrigin } }); record('allowed CORS', cors.headers.get('access-control-allow-origin') === allowedOrigin && /Origin/i.test(cors.headers.get('vary') || ''));
   const rejected = await get('/api/health', { headers: { Origin: 'https://evil.example' } }); record('rejected CORS', rejected.status === 403 && !rejected.headers.get('access-control-allow-origin'));
-  const sitemap = await get('/sitemap.xml'); const sitemapText = await sitemap.text(); record('sitemap', sitemap.ok && (sitemapText.match(/<loc>/g) || []).length === 44);
+  const sitemap = await get('/sitemap.xml'); const sitemapText = await sitemap.text(); record('sitemap', sitemap.ok && (sitemapText.match(/<loc>/g) || []).length === 43);
   const robots = await get('/robots.txt'); record('robots', robots.ok && (await robots.text()).includes('Sitemap:'));
 } catch (error) { record('verification execution', false, error instanceof Error ? error.message.slice(0, 120) : 'unknown error'); }
 

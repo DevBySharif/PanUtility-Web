@@ -1,5 +1,9 @@
 # P0-C deployment-readiness report
 
+## Zero-cost production addendum
+
+The free public deployment intentionally disables Audio Transcriber. Production requires no Gemini, Redis, shared-rate-limit configuration, identity secret, database, paid API, custom domain, or paid hosting. The route remains stable but is disabled/non-indexable without an executable component. `/api/transcribe` returns structured `410 FEATURE_DISABLED`; `/api/health` and `/api/readiness` return 200 without provider checks. Re-enablement requires a separate reviewed milestone with a shared production limiter and provider controls.
+
 Date: 2026-08-03. Milestone status: **Partial until an owner-accessible Vercel URL passes the deployment verifier**. All deterministic local implementation and verification is complete; no deployment credentials or confirmed deployment URL were available in this workspace.
 
 ## Architecture and routing
@@ -62,4 +66,8 @@ No file was removed specifically by P0-C. Earlier P0-A/P0-B cleanup remains visi
 
 ## Confirmations
 
-All 113 IDs remain unchanged; totals remain 12 functional, 31 beta, 51 coming soon, and 19 disabled. Social downloader and video splitter remain disabled. No tool was promoted and P1 work was not started.
+## Zero-cost verification — 2026-08-03
+
+`npm.cmd install`, clean, typecheck, lint, client build, server build, combined build, aggregate check, and `npm.cmd audit --json` all exited 0. Vitest passed **112/112** tests and Playwright passed **11/11** tests. The generated sitemap has **43 URLs**: the homepage plus 42 indexable tools. The client entry is 637.35 kB (177.01 kB gzip); the server bundle is 20.8 kB. Dependency audit reports zero vulnerabilities.
+
+All 113 IDs remain unchanged; totals are 12 functional, 30 beta, 51 coming soon, and 20 disabled. Social downloader, video splitter, and audio transcriber are disabled. No tool was promoted and P1 work was not started.

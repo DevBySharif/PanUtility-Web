@@ -5,7 +5,6 @@ import { ComingSoonTool, DisabledTool, ProcessingPrivacyBadge, ToolStatusBadge }
 const ImageConverter = lazy(() => import('./ImageConverter'));
 const PdfCompiler = lazy(() => import('./PdfCompiler'));
 const AudioTrimmer = lazy(() => import('./AudioTrimmer'));
-const AudioTranscriber = lazy(() => import('./AudioTranscriber'));
 const QrGenerator = lazy(() => import('./QrGenerator'));
 const ColorExtractor = lazy(() => import('./ColorExtractor'));
 const GenericUtilityWorkspace = lazy(() => import('./GenericUtilityWorkspace'));
@@ -33,7 +32,6 @@ function renderEnabledTool(tool: ToolDefinition, onBack: () => void, initialFile
     case 'image-converter': return <ImageConverter onBack={onBack} initialFile={initialFile} />;
     case 'pdf-compiler': return <PdfCompiler onBack={onBack} initialFile={initialFile} />;
     case 'audio-trimmer': return <AudioTrimmer onBack={onBack} initialFile={initialFile} />;
-    case 'audio-transcriber': return <AudioTranscriber onBack={onBack} initialFile={initialFile} />;
     case 'qr-generator': return <QrGenerator onBack={onBack} />;
     case 'color-extractor': return <ColorExtractor onBack={onBack} initialFile={initialFile} />;
     case 'generic': return <GenericUtilityWorkspace tool={tool} onBack={onBack} initialFile={initialFile} />;

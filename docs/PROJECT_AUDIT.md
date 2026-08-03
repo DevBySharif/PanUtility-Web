@@ -1,8 +1,14 @@
 # PanUtility-Web project audit
 
+## Zero-cost production update — 2026-08-03
+
+The public production catalog now deliberately disables Audio Transcriber. This removes the only paid/server-backed tool from the free deployment: no Gemini key, Redis, database, rate-limit secret, custom domain, or paid service is required to boot. The route remains stable but has no component key, is non-indexable, and displays a truthful unavailable state. `/api/transcribe` returns safe structured `410 FEATURE_DISABLED`; health and readiness remain 200 for browser-local tools.
+
+Current catalog totals are 12 functional, 30 beta, 51 coming soon, and 20 disabled (113 total). Social Downloader and Video Splitter remain disabled; P1 has not started.
+
 ## P0-C final local verification — 2026-08-03
 
-P0-C deterministic local work is complete and the milestone remains **Partial** only because no owner-accessible Vercel deployment URL was available for the non-paid post-deployment verifier. Final results: TypeScript 0 errors, ESLint 0 errors, Vitest 108/108, Playwright 10/10 against the production bundle, client/server/combined builds passed, aggregate check passed, and npm audit reported 0 vulnerabilities. The client build retains a non-failing 638.77 kB main-chunk warning, tracked as performance/maintainability work rather than a P0 deployment blocker.
+P0-C deterministic local work is complete and the milestone remains **Partial** only because no owner-accessible Vercel deployment URL was available for the non-paid post-deployment verifier. Zero-cost final results: TypeScript 0 errors, ESLint 0 errors, Vitest 112/112, Playwright 11/11 against the production bundle, client/server/combined builds passed, aggregate check passed, and npm audit reported 0 vulnerabilities. The client build retains a non-failing 637.35 kB main-chunk warning, tracked as performance/maintainability work rather than a P0 deployment blocker.
 
 Production now uses centralized validated configuration, exact API-only CORS, a required shared atomic TTL limiter for transcription, HMAC-derived client identities, Vercel-specific client IP handling, safe health/readiness endpoints, platform-compatible upload limits, production security/cache headers, a tested CSP, non-public server artifacts, CI checks, and a non-paid deployment verifier. Exact commands, architecture, changed files, and the remaining deployment-access blocker are recorded in `P0_C_DEPLOYMENT_REPORT.md`.
 

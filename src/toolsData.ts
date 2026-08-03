@@ -982,7 +982,7 @@ const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
   'json-to-csv': 'beta',
   'markdown-to-html': 'beta',
   'audio-trimmer': 'beta',
-  'audio-transcriber': 'beta',
+  'audio-transcriber': 'disabled',
   'sound-recorder': 'coming-soon',
   'audio-merger': 'coming-soon',
   'voice-changer': 'coming-soon',
@@ -1061,6 +1061,7 @@ const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
 
 const DISABLED_REASONS: Partial<Record<ToolId, string>> = {
   'social-downloader': 'The previous resolver depended on unsafe remote-script execution, unofficial scraping providers, and arbitrary media proxying. It is disabled until a safe documented provider is available.',
+  'audio-transcriber': 'Server-based transcription is temporarily unavailable in the free deployment.',
   'video-splitter': 'The current export method can create structurally invalid video files. It is disabled until a real media pipeline is available.',
   'video-speed': 'The current implementation previews speed changes but does not create an adjusted video file.',
   'video-muter': 'The current implementation only mutes preview playback and does not create a muted video file.',
@@ -1085,7 +1086,6 @@ const DEDICATED_COMPONENTS: Partial<Record<ToolId, ToolComponentKey>> = {
   'image-converter': 'image-converter',
   'pdf-compiler': 'pdf-compiler',
   'audio-trimmer': 'audio-trimmer',
-  'audio-transcriber': 'audio-transcriber',
   'qr-generator': 'qr-generator',
   'color-extractor': 'color-extractor',
 };
@@ -1130,7 +1130,7 @@ export const TOOL_REGISTRY = TOOL_CATALOG.map((seed): ToolDefinition & { id: Too
     status,
     statusReason: DISABLED_REASONS[seed.id],
     processingType: processingFor(seed.id, status),
-    privacyNotice: privacyFor(seed.id),
+    privacyNotice: unavailable ? undefined : privacyFor(seed.id),
     supportedInputTypes: unavailable ? [] : formats.input,
     supportedOutputTypes: unavailable ? [] : formats.output,
     isFeatured: !unavailable && Boolean(badge),

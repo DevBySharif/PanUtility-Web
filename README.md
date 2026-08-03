@@ -14,7 +14,9 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` only when testing server-backed transcription. Local development uses a bounded in-memory limiter. Production transcription requires Gemini, an explicitly allowed production origin, shared Redis REST configuration, and a 32+ character identity-hashing secret; it fails closed when those controls are absent. Never expose server secrets to client code.
+The free production deployment requires no secrets, database, Redis, Gemini key, custom domain, or paid API. Browser-local tools remain available. Audio Transcriber is intentionally disabled and its route shows a truthful unavailable state. `ALLOWED_ORIGINS` is optional in production and defaults to `https://panutility.vercel.app`.
+
+Server transcription can be exercised only in development or tests through the explicit `ENABLE_TRANSCRIPTION=true` flag and separate local credentials; production rejects that flag.
 
 ## Verification
 
@@ -45,4 +47,4 @@ npm run verify:deployment -- --base-url=https://your-deployment.example
 
 See `docs/PRIVACY_PROCESSING_MATRIX.md`, `docs/TOOL_STATUS_POLICY.md`, and `docs/TESTING.md` for the complete policy and verification model.
 
-Deployment and incident procedures are in `docs/DEPLOYMENT.md` and `docs/OPERATIONS.md`.
+Deployment and incident procedures are in `docs/DEPLOYMENT.md`, `docs/OPERATIONS.md`, and `docs/ZERO_COST_DEPLOYMENT.md`.

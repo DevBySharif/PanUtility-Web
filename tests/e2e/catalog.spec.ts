@@ -45,6 +45,13 @@ test('opens a disabled route without mounting its implementation', async ({ page
   await expect(page.getByRole('button', { name: '=' })).toHaveCount(0);
 });
 
+test('shows the audio transcriber as unavailable in the free deployment', async ({ page }) => {
+  await page.goto('/tools/audio-transcriber');
+  await expect(page.getByText('Temporarily Unavailable', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Server-based transcription is temporarily unavailable in the free deployment/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /transcribe|start recording|upload audio/i })).toHaveCount(0);
+});
+
 test('shows not found for an unknown route', async ({ page }) => {
   await page.goto('/tools/not-a-real-tool');
   await expect(page.getByRole('heading', { name: 'Tool not found' })).toBeVisible();

@@ -2,9 +2,9 @@
 
 ## P0-C production addendum
 
-Vercel documents a 4.5 MB function payload ceiling. Production JSON is therefore capped at 4.25 MiB and decoded audio at 3 MiB after accounting for Base64 expansion. Gemini has one attempt and a 20-second application timeout below the 30-second function limit.
+The zero-cost production deployment does not accept transcription payloads. The retained development/test transcription path caps JSON at 4.25 MiB and decoded audio at 3 MiB after accounting for Base64 expansion; its provider timeout is 20 seconds below the 30-second function limit.
 
-Local development uses a bounded memory rate-limit store. Production requires the shared TTL-backed adapter plus a 32+ character HMAC identity secret and returns controlled 503 rather than falling back. Only Vercel's overwritten, single `x-vercel-forwarded-for` value is accepted in Vercel mode; local mode ignores forwarding headers. Raw IPs are not stored or logged.
+Local development uses a bounded memory rate-limit store when transcription is explicitly enabled. A future production transcription release must use the shared TTL-backed adapter plus a 32+ character HMAC identity secret rather than falling back per instance. Only Vercel's overwritten, single `x-vercel-forwarded-for` value is accepted in Vercel mode; local mode ignores forwarding headers. Raw IPs are not stored or logged.
 
 Production origins are exact HTTPS origins. Loopback defaults exist only outside production, missing transcription origins are rejected in production, and arbitrary Vercel previews are never automatically accepted.
 
@@ -14,13 +14,19 @@ Production origins are exact HTTPS origins. Loopback defaults exist only outside
 - `/api/resolve-social`: disabled with HTTP 410.
 - `/api/media-proxy`: disabled with HTTP 410; arbitrary or unsigned URLs cannot be relayed.
 
-The site does not require accounts. Anonymous public access is appropriate for the retained transcription flow, but it is protected by five requests per IP per rolling 15 minutes. The bounded in-memory limiter is suitable for local/single-instance protection; production serverless deployments should use a shared TTL store such as managed Redis to enforce a global quota across instances.
+The site does not require accounts. Browser-local tools are anonymously available. The retained development/test transcription path is protected by five requests per identity per rolling 15 minutes. Any future production transcription release must use a shared TTL store such as managed Redis to enforce a global quota across instances.
+
+## Zero-cost production mode
+
+Production defaults to browser-local tools only. `ENABLE_TRANSCRIPTION` is false by default and rejected when true in production. `/api/transcribe` returns `410 FEATURE_DISABLED` before body parsing, rate-limit-store creation, Gemini initialization, or any provider request. Health and readiness remain successful without Gemini, Redis, a database, or an identity secret.
+
+The retained transcription implementation is available only through an explicit development/test configuration and remains protected by strict validation, exact origins, and rate limiting. It must not be re-enabled in production without a reviewed shared global limiter.
 
 ## Request policy
 
 Browser origins are exact-match values from `ALLOWED_ORIGINS`; defaults are the production origin and loopback development origins. Origins are never reflected unless allowed, wildcard CORS is not used, and origin-dependent responses set `Vary: Origin`. Transcription permits POST JSON only. API responses are `no-store`.
 
-Transcription JSON is limited to 4.25 MiB. Decoded audio is limited to 3 MiB, must be non-empty strict Base64, use an allowed audio MIME, and match a supported MP3/WAV/Ogg/WebM/MP4/AAC/FLAC signature where practical. Unknown fields—including `fileUrl`—are rejected. Gemini has one attempt and a 20-second application timeout. Missing configuration produces controlled HTTP 503.
+When explicitly enabled outside production, transcription JSON is limited to 4.25 MiB. Decoded audio is limited to 3 MiB, must be non-empty strict Base64, use an allowed audio MIME, and match a supported MP3/WAV/Ogg/WebM/MP4/AAC/FLAC signature where practical. Unknown fields—including `fileUrl`—are rejected. Gemini has one attempt and a 20-second application timeout. Missing development configuration produces controlled HTTP 503.
 
 ## Outbound policy
 

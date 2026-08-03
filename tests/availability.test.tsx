@@ -37,6 +37,13 @@ describe('truthful route availability', () => {
     expect(screen.queryByTestId('generic-workspace')).not.toBeInTheDocument();
   });
 
+  it('shows the zero-cost transcription unavailable state without loading its component', () => {
+    render(<ToolWorkspace tool={TOOL_BY_ID['audio-transcriber']} onBack={back} />);
+    expect(screen.getByText('Temporarily Unavailable')).toBeInTheDocument();
+    expect(screen.getByText(/Server-based transcription is temporarily unavailable in the free deployment/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('enabled-tool-workspace')).not.toBeInTheDocument();
+  });
+
   it('shows a not-found page for an unknown direct route', async () => {
     window.history.pushState({}, '', '/tools/not-a-real-tool');
     render(<Suspense><App /></Suspense>);

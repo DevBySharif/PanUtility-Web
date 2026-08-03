@@ -184,4 +184,8 @@ Issue/state codes (each row's codes cover validation, states, mobile, privacy/se
 
 ## Inventory totals
 
+## Zero-cost production update
+
+`audio-transcriber` is currently **Disabled** in the deployed catalog. It has no processing, supported formats, executable component, or sitemap entry. Its route presents: “Server-based transcription is temporarily unavailable in the free deployment.” The retained implementation is not loaded by the disabled route. This supersedes the historical inventory observation for that tool.
+
 Classification is deliberately conservative: **12 functional**, **33 partial** (including 3 external-dependent), **51 UI only**, and **17 broken**. The most important distinction is that 68 routes are either UI only or broken even though all 113 are presented as available tools.

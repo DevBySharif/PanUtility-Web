@@ -1288,32 +1288,6 @@ function AppContent() {
                   </div>
                 </div>
 
-                <div
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsGlobalDragging(false);
-                    dragCounter.current = 0;
-                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                      handleRoute(e.dataTransfer.files[0], 'audio-transcriber');
-                    }
-                  }}
-                  className="flex-1 min-w-[240px] max-w-[320px] bg-[#0f1115] border-2 border-dashed border-zinc-800 hover:border-emerald-500 hover:bg-[#111114] p-6 rounded-xl transition-all flex flex-col items-center justify-between gap-4 cursor-pointer group"
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="p-3 rounded-lg bg-[#111114] border border-zinc-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <Sparkle className="w-8 h-8" />
-                    </div>
-                    <div>
-                      <h3 className="font-sans font-semibold text-base text-white group-hover:text-emerald-400 transition-colors">AI Audio Transcriber</h3>
-                      <p className="text-gray-500 text-xs mt-1">Transcribe speech & timestamps with AI</p>
-                    </div>
-                  </div>
-                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-2 border border-emerald-500/20 px-2.5 py-1 rounded bg-emerald-950/20">
-                    Drop here to Transcribe
-                  </div>
-                </div>
               </>
             )}
 

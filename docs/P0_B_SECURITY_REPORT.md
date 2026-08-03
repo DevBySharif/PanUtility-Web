@@ -36,7 +36,7 @@ Remaining limitations: anonymous rate limits are per process and not globally co
 
 ## 21–23. Catalog confirmations
 
-`social-downloader` is now disabled, not Beta. `video-splitter` remains disabled. All 113 stable route IDs remain present and unique. Updated totals are 12 functional, 31 beta, 51 coming soon, and 19 disabled; sitemap eligibility becomes 43 tool routes plus the homepage.
+`social-downloader` is now disabled, not Beta. `video-splitter` remains disabled. The later zero-cost deployment decision also disables `audio-transcriber`. All 113 stable route IDs remain present and unique. Current totals are 12 functional, 30 beta, 51 coming soon, and 20 disabled; sitemap eligibility is 42 tool routes plus the homepage.
 
 ## Final command evidence
 

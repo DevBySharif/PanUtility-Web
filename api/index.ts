@@ -1,5 +1,4 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { GoogleGenAI } from '@google/genai';
 import { ApiError, errorMiddleware, requestId, sendError } from './security/errors.ts';
 import { clientIp, hashIdentity } from './security/clientIdentity.ts';
 import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from './security/rateLimit.ts';
@@ -95,7 +94,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
       const providerStarted = Date.now();
       const operation = options.generateContent
         ? options.generateContent(audio, mimeType)
-        : new GoogleGenAI({ apiKey: config.geminiApiKey! }).models.generateContent({ model: 'gemini-2.5-flash', contents: [{ inlineData: { data: audio, mimeType } }, 'Transcribe the audio with [MM:SS] timestamps. Return only the transcription.'] }).then((result) => result.text || '');
+        : import('@google/genai').then(({ GoogleGenAI }) => new GoogleGenAI({ apiKey: config.geminiApiKey! }).models.generateContent({ model: 'gemini-2.5-flash', contents: [{ inlineData: { data: audio, mimeType } }, 'Transcribe the audio with [MM:SS] timestamps. Return only the transcription.'] }).then((result) => result.text || ''));
       const transcription = await Promise.race([operation, new Promise<never>((_, reject) => setTimeout(() => reject(new ApiError(504, 'PROVIDER_TIMEOUT', 'The transcription provider timed out.')), options.providerTimeoutMs ?? PROVIDER_TIMEOUT_MS))]);
       if (!transcription) throw new ApiError(502, 'PROVIDER_ERROR', 'The transcription provider returned no text.');
       console.log(JSON.stringify({ level: 'info', requestId: res.locals.requestId, provider: 'google-gemini', providerLatencyMs: Date.now() - providerStarted }));

@@ -1,5 +1,17 @@
 # PanUtility-Web implementation roadmap
 
+## P1-A & P1-A2 status — 2026-08-03
+
+**P1-A Technical SEO Foundation & P1-A2 Production SEO Rendering Verification are Complete.**
+- Sitemap contains exactly 43 canonical URLs (`https://panutility.vercel.app/`).
+- `robots.txt` points directly to production sitemap.
+- Build-time static HTML prerenderer (`scripts/prerender.ts`) generates static HTML for Homepage and all 42 indexable tools.
+- Raw HTTP GET responses verified live on production (`https://panutility.vercel.app`).
+- All 135 unit/SEO tests passed, 17/17 live deployment checks passed.
+- 113 total route IDs preserved (12 functional, 30 beta, 51 coming soon, 20 disabled).
+- Audio Transcriber, Social Downloader, and Video Splitter remain disabled.
+- P1-B has NOT started.
+
 ## P0-C status — 2026-08-03
 
 Zero-cost production configuration is implemented. Audio Transcriber is disabled rather than using an insecure per-instance limiter or an unprotected Gemini endpoint. The public Vercel deployment requires no Redis, Gemini key, database, paid API, or custom domain. P1 has not started.

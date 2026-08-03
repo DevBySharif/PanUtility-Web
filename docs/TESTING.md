@@ -6,9 +6,9 @@ Use npm from the repository root (on restricted Windows PowerShell, invoke `npm.
 |---|---|
 | `npm run typecheck` | Strict TypeScript validation |
 | `npm run lint` | ESLint for TypeScript, React, and Hooks |
-| `npm run test` | 112 deterministic Vitest unit/component, API-security, and deployment tests in 11 files |
+| `npm run test` | 135 deterministic Vitest unit/component, API-security, deployment, and P1-A2 SEO tests in 14 files |
 | `npm run test:e2e` | 11 Playwright Chromium tests against the production Express build |
-| `npm run build:client` | Generate the registry sitemap and build Vite client |
+| `npm run build:client` | Generate registry sitemap, build Vite client, and run build-time static HTML prerenderer (`scripts/prerender.ts`) |
 | `npm run build:server` | Build the Express server |
 | `npm run check` | Typecheck, lint, Vitest, then production build |
 

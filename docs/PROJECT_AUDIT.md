@@ -1,5 +1,18 @@
 # PanUtility-Web project audit
 
+## P1-A & P1-A2 Production Technical SEO & Prerendering — 2026-08-03
+
+Technical SEO foundation (P1-A) and live production rendering verification with build-time static HTML prerendering (P1-A2) are complete and fully verified on `https://panutility.vercel.app`.
+
+Key Highlights:
+- **Build-Time Static Prerenderer:** `scripts/prerender.ts` generates static HTML files in `dist/tools/{toolId}/index.html` for all 42 indexable tools and updates `dist/index.html` with rich homepage metadata and structured data.
+- **Sitemap & Robots:** Exactly 43 canonical `https://panutility.vercel.app/` URLs in `public/sitemap.xml`; `robots.txt` points directly to sitemap.
+- **Structured Data:** Homepage contains `WebSite` and `Organization` JSON-LD; Tool pages contain `WebApplication` and `BreadcrumbList` JSON-LD.
+- **Raw HTML Verification:** Verified live using HTTP GET fetches (`scratch/check_raw_html.mjs`). Raw HTML responses contain unique title, meta description, canonical link, `index, follow` directive, Open Graph, Twitter Cards, JSON-LD schemas, `<h1>` heading, and related tools internal links.
+- **Hydration Safety:** Zero console warnings or duplicate head/JSON-LD tags upon React hydration.
+- **Catalog Totals Preserved:** Exactly 113 routes (12 functional, 30 beta, 51 coming soon, 20 disabled). Audio Transcriber, Social Downloader, and Video Splitter remain disabled. Zero-cost architecture preserved.
+- **Verification Results:** 14 passed Vitest test files (135 tests), clean builds, ESLint 0 errors, TypeScript 0 errors, and 17/17 live deployment checks passed (`verify-deployment.mjs`).
+
 ## Zero-cost production update — 2026-08-03
 
 The public production catalog now deliberately disables Audio Transcriber. This removes the only paid/server-backed tool from the free deployment: no Gemini key, Redis, database, rate-limit secret, custom domain, or paid service is required to boot. The route remains stable but has no component key, is non-indexable, and displays a truthful unavailable state. `/api/transcribe` returns safe structured `410 FEATURE_DISABLED`; health and readiness remain 200 for browser-local tools.

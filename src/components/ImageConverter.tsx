@@ -15,6 +15,14 @@ import {
 import { ImageFile } from '../types';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
+import {
+  IMAGE_TOOL_LIMITS,
+  buildConvertedFileName,
+  computeOutputDimensions,
+  formatFileSize,
+  formatSizeDelta,
+  validateImageFile
+} from '../lib/imageTools';
 
 interface ImageConverterProps {
   onBack: () => void;
@@ -31,6 +39,11 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
   const [maintainAspectRatio, setMaintainAspectRatio] = useState<boolean>(true);
   const [isProcessingAll, setIsProcessingAll] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imagesRef = useRef<ImageFile[]>([]);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
 
   // Load initial file if provided
   useEffect(() => {
@@ -65,14 +78,55 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
     }
   };
 
+  // Unmount cleanup for object URLs
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach(img => {
+        if (img.previewUrl) {
+          try { URL.revokeObjectURL(img.previewUrl); } catch (e) {}
+        }
+        if (img.convertedUrl) {
+          try { URL.revokeObjectURL(img.convertedUrl); } catch (e) {}
+        }
+      });
+    };
+  }, []);
+
   const handleFiles = (fileList: File[]) => {
-    const validImageFiles = fileList.filter(file => file.type.startsWith('image/'));
-    
-    const newImages: ImageFile[] = validImageFiles.map(file => {
+    const MAX_SINGLE_BYTES = IMAGE_TOOL_LIMITS.maxSingleBytes;
+    const MAX_TOTAL_BATCH = IMAGE_TOOL_LIMITS.maxBatchItems;
+
+    const currentCount = imagesRef.current.length;
+    if (currentCount >= MAX_TOTAL_BATCH) {
+      toast.error('Batch Limit Reached', `Maximum ${MAX_TOTAL_BATCH} images can be processed at once.`);
+      return;
+    }
+
+    const validImageFiles: File[] = [];
+
+    for (const file of fileList) {
+      const validation = validateImageFile(file);
+      if (!validation.ok) {
+        const title = validation.code === 'empty'
+          ? 'Empty File Skipped'
+          : validation.code === 'too-large'
+            ? 'File Too Large'
+            : 'Unsupported Format';
+        toast.error(title, validation.message);
+        continue;
+      }
+      validImageFiles.push(file);
+    }
+
+    if (validImageFiles.length === 0) return;
+
+    const availableSlots = MAX_TOTAL_BATCH - currentCount;
+    const filesToProcess = validImageFiles.slice(0, availableSlots);
+
+    const newImages: ImageFile[] = filesToProcess.map(file => {
       const id = Math.random().toString(36).substring(2, 9);
       const previewUrl = URL.createObjectURL(file);
       
-      // Load dimensions
       const img = window.Image ? new window.Image() : null;
       let width = 0;
       let height = 0;
@@ -86,6 +140,10 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             return item;
           }));
         };
+        img.onerror = () => {
+          toast.error('Image Decode Error', `Failed to decode image data from "${file.name}".`);
+          setImages(prev => prev.map(item => item.id === id ? { ...item, status: 'failed' } : item));
+        };
       }
 
       return {
@@ -93,7 +151,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
         file,
         name: file.name,
         size: file.size,
-        type: file.type,
+        type: file.type || 'image/png',
         previewUrl,
         width,
         height,
@@ -108,26 +166,37 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
   const removeImage = (id: string) => {
     setImages(prev => {
       const target = prev.find(img => img.id === id);
-      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
-      if (target?.convertedUrl) URL.revokeObjectURL(target.convertedUrl);
+      if (target?.previewUrl) {
+        try { URL.revokeObjectURL(target.previewUrl); } catch (e) {}
+      }
+      if (target?.convertedUrl) {
+        try { URL.revokeObjectURL(target.convertedUrl); } catch (e) {}
+      }
       return prev.filter(img => img.id !== id);
     });
   };
 
   const clearAll = () => {
     images.forEach(img => {
-      URL.revokeObjectURL(img.previewUrl);
-      if (img.convertedUrl) URL.revokeObjectURL(img.convertedUrl);
+      if (img.previewUrl) {
+        try { URL.revokeObjectURL(img.previewUrl); } catch (e) {}
+      }
+      if (img.convertedUrl) {
+        try { URL.revokeObjectURL(img.convertedUrl); } catch (e) {}
+      }
     });
     setImages([]);
   };
 
   const convertSingleImage = (imgFile: ImageFile): Promise<ImageFile> => {
     return new Promise((resolve) => {
-      // Mark as processing
       setImages(prev => prev.map(img => 
         img.id === imgFile.id ? { ...img, status: 'processing', progress: 30 } : img
       ));
+
+      if (imgFile.convertedUrl) {
+        try { URL.revokeObjectURL(imgFile.convertedUrl); } catch (e) {}
+      }
 
       const imgElement = new window.Image();
       imgElement.src = imgFile.previewUrl;
@@ -141,52 +210,39 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             throw new Error('Could not get 2D context');
           }
 
-          // Calculate output dimensions
-          let outWidth = imgFile.width || imgElement.naturalWidth;
-          let outHeight = imgFile.height || imgElement.naturalHeight;
+          const naturalW = imgElement.naturalWidth || imgFile.width || 100;
+          const naturalH = imgElement.naturalHeight || imgFile.height || 100;
 
-          const userW = parseInt(globalWidth);
-          const userH = parseInt(globalHeight);
-
-          if (userW && userH) {
-            outWidth = userW;
-            outHeight = userH;
-          } else if (userW && maintainAspectRatio) {
-            const aspect = imgElement.naturalHeight / imgElement.naturalWidth;
-            outWidth = userW;
-            outHeight = Math.round(userW * aspect);
-          } else if (userH && maintainAspectRatio) {
-            const aspect = imgElement.naturalWidth / imgElement.naturalHeight;
-            outHeight = userH;
-            outWidth = Math.round(userH * aspect);
-          } else {
-            if (userW) outWidth = userW;
-            if (userH) outHeight = userH;
-          }
+          const { width: outWidth, height: outHeight } = computeOutputDimensions(
+            naturalW,
+            naturalH,
+            globalWidth,
+            globalHeight,
+            maintainAspectRatio
+          );
 
           canvas.width = outWidth;
           canvas.height = outHeight;
           
-          // Draw image
+          // Fill background with white for JPEG format to avoid transparent pixels turning black
+          if (globalFormat === 'image/jpeg') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, outWidth, outHeight);
+          }
+
           ctx.drawImage(imgElement, 0, 0, outWidth, outHeight);
 
-          // Convert to blob
           const format = globalFormat;
           const quality = globalQuality / 100;
 
-          // Set progress
           setImages(prev => prev.map(img => 
             img.id === imgFile.id ? { ...img, progress: 70 } : img
           ));
 
           canvas.toBlob((blob) => {
-            if (blob) {
+            if (blob && blob.size > 0) {
               const convertedUrl = URL.createObjectURL(blob);
-              const extension = format.split('/')[1];
-              
-              // Remove original extension and append new one
-              const baseName = imgFile.name.substring(0, imgFile.name.lastIndexOf('.')) || imgFile.name;
-              const convertedName = `${baseName}_converted.${extension}`;
+              const convertedName = buildConvertedFileName(imgFile.name, format);
 
               const updatedImage: ImageFile = {
                 ...imgFile,
@@ -203,12 +259,12 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
               ));
               resolve(updatedImage);
             } else {
-              throw new Error('Blob generation failed');
+              throw new Error('Canvas blob output generation failed');
             }
           }, format, format === 'image/png' ? undefined : quality);
 
         } catch (err) {
-          console.error(err);
+          console.error('Image conversion error:', err);
           const failedImage: ImageFile = {
             ...imgFile,
             status: 'failed',
@@ -237,9 +293,10 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
 
   const handleConvertAll = async () => {
     if (images.length === 0) return;
+    const pendingImages = images.filter(img => img.status !== 'completed' && img.status !== 'processing');
+    if (pendingImages.length === 0) return;
     setIsProcessingAll(true);
 
-    const pendingImages = images.filter(img => img.status !== 'completed');
     let successCount = 0;
     let errorCount = 0;
     
@@ -294,14 +351,6 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
     completed.forEach(img => {
       triggerDownload(img);
     });
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   const getFormatLabel = (mime: string) => {
@@ -372,10 +421,11 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
           {globalFormat !== 'image/png' && (
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quality</label>
+                <label htmlFor="image-quality" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quality</label>
                 <span className="text-xs font-bold text-[#10b981]">{globalQuality}%</span>
               </div>
               <input
+                id="image-quality"
                 type="range"
                 min="10"
                 max="100"
@@ -409,6 +459,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Width (px)</span>
                 <input
                   type="number"
+                  aria-label="Output width in pixels"
                   placeholder="Original"
                   value={globalWidth}
                   onChange={(e) => setGlobalWidth(e.target.value)}
@@ -419,6 +470,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Height (px)</span>
                 <input
                   type="number"
+                  aria-label="Output height in pixels"
                   placeholder="Original"
                   value={globalHeight}
                   onChange={(e) => setGlobalHeight(e.target.value)}
@@ -472,7 +524,16 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[220px] ${
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Upload images to convert. Drop files or press Enter to browse."
+            className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[220px] focus:outline-none focus:border-[#10b981]/70 ${
               isDragging
                 ? 'border-[#10b981] bg-[#10b981]/10'
                 : 'border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d]'
@@ -529,7 +590,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                         {img.name}
                       </h4>
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400 font-medium">
-                        <span>{formatSize(img.size)}</span>
+                        <span>{formatFileSize(img.size)}</span>
                         <span className="opacity-40">&bull;</span>
                         {img.width > 0 && (
                           <span>{img.width}x{img.height} px</span>
@@ -545,6 +606,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                         onClick={() => convertSingleImage(img)}
                         className="p-1.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-gray-400 hover:text-[#10b981] transition-colors cursor-pointer"
                         title="Convert this image"
+                        aria-label={`Convert ${img.name}`}
                       >
                         <ArrowsCounterClockwise className="w-4 h-4" />
                       </button>
@@ -571,9 +633,9 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                           </div>
                           {img.convertedSize && (
                             <div className="text-[10px] text-gray-400 font-semibold mt-0.5">
-                              {formatSize(img.convertedSize)} 
+                              {formatFileSize(img.convertedSize)} 
                               <span className="text-emerald-400 ml-1">
-                                ({Math.round(((img.convertedSize - img.size) / img.size) * 100)}%)
+                                ({formatSizeDelta(img.size, img.convertedSize)})
                               </span>
                             </div>
                           )}
@@ -582,6 +644,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                           onClick={() => triggerDownload(img)}
                           className="p-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-white shadow-sm transition-colors cursor-pointer"
                           title="Download converted file"
+                          aria-label={`Download ${img.convertedName || img.name}`}
                         >
                           <Download className="w-3.5 h-3.5" />
                         </button>
@@ -599,6 +662,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                       onClick={() => removeImage(img.id)}
                       className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer"
                       title="Remove from queue"
+                      aria-label={`Remove ${img.name} from queue`}
                     >
                       <Trash className="w-4 h-4" />
                     </button>

@@ -14,26 +14,22 @@ import {
 } from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
+import { extractDominantColors, isFullyTransparent, validateImageFile, type ColorSwatch } from '../lib/imageTools';
 
 interface ColorExtractorProps {
   onBack: () => void;
   initialFile?: File;
 }
 
-interface Swatch {
-  hex: string;
-  rgb: string;
-  percentage: number;
-}
-
 export default function ColorExtractor({ onBack, initialFile }: ColorExtractorProps) {
   const toast = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [palette, setPalette] = useState<Swatch[]>([]);
+  const [palette, setPalette] = useState<ColorSwatch[]>([]);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const processingTokenRef = useRef(0);
 
   // Load initial file if provided
   useEffect(() => {
@@ -42,6 +38,15 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
     }
   }, [initialFile]);
 
+  // Unmount cleanup for preview URL
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        try { URL.revokeObjectURL(previewUrl); } catch (e) {}
+      }
+    };
+  }, [previewUrl]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       processImage(e.target.files[0]);
@@ -49,8 +54,22 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
   };
 
   const processImage = (imageFile: File) => {
-    if (!imageFile.type.startsWith('image/')) return;
+    const validation = validateImageFile(imageFile);
+    if (!validation.ok) {
+      const title = validation.code === 'empty'
+        ? 'Empty File'
+        : validation.code === 'too-large'
+          ? 'File Too Large'
+          : 'Invalid Image';
+      toast.error(title, validation.message);
+      return;
+    }
     
+    if (previewUrl) {
+      try { URL.revokeObjectURL(previewUrl); } catch (e) {}
+    }
+
+    const token = ++processingTokenRef.current;
     setFile(imageFile);
     const url = URL.createObjectURL(imageFile);
     setPreviewUrl(url);
@@ -61,10 +80,13 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
     img.src = url;
     
     img.onload = () => {
+      if (token !== processingTokenRef.current) return;
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx) {
+          throw new Error('Could not initialize 2D context.');
+        }
 
         // Downscale image heavily for super-fast, clustered processing
         canvas.width = 40;
@@ -72,56 +94,15 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const imgData = ctx.getImageData(0, 0, 40, 40).data;
-        const colorBuckets: { [key: string]: number } = {};
 
-        // Loop pixels, group colors to nearest 32-bits to perform simple, high-quality clustering/bucket grouping
-        for (let i = 0; i < imgData.length; i += 4) {
-          const r = imgData[i];
-          const g = imgData[i+1];
-          const b = imgData[i+2];
-          const a = imgData[i+3];
-
-          // Skip completely transparent pixels
-          if (a < 128) continue;
-
-          // Round RGB to cluster similar shades together
-          const clusterFactor = 32;
-          const groupedR = Math.round(r / clusterFactor) * clusterFactor;
-          const groupedG = Math.round(g / clusterFactor) * clusterFactor;
-          const groupedB = Math.round(b / clusterFactor) * clusterFactor;
-
-          const key = `${groupedR},${groupedG},${groupedB}`;
-          colorBuckets[key] = (colorBuckets[key] || 0) + 1;
+        if (isFullyTransparent(imgData)) {
+          toast.warning('Transparent Image', 'The image consists entirely of transparent pixels.');
+          setIsExtracting(false);
+          return;
         }
 
-        // Sort colors by frequency count
-        const sortedBuckets = Object.entries(colorBuckets)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 6); // Grab top 6 dominant colors
-
-        const totalPixels = 40 * 40;
-        const swatches: Swatch[] = sortedBuckets.map(([key, count]) => {
-          const [r, g, b] = key.split(',').map(Number);
-          
-          // Clamp values to valid rgb range
-          const clamp = (val: number) => Math.min(255, Math.max(0, val));
-          const cr = clamp(r);
-          const cg = clamp(g);
-          const cb = clamp(b);
-
-          const toHex = (num: number) => {
-            const hex = num.toString(16);
-            return hex.length === 1 ? '0' + hex : hex;
-          };
-
-          const hexStr = `#${toHex(cr)}${toHex(cg)}${toHex(cb)}`;
-          
-          return {
-            hex: hexStr,
-            rgb: `rgb(${cr}, ${cg}, ${cb})`,
-            percentage: Math.round((count / totalPixels) * 100)
-          };
-        });
+        // Cluster similar shades into the top 6 dominant colors
+        const swatches = extractDominantColors(imgData, { clusterFactor: 32, topCount: 6 });
 
         setPalette(swatches);
         confetti({ particleCount: 30, spread: 35, origin: { y: 0.8 } });
@@ -133,20 +114,45 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
         setIsExtracting(false);
       }
     };
+
+    img.onerror = () => {
+      if (token !== processingTokenRef.current) return;
+      toast.error('Decode Error', 'Failed to load and decode image data.');
+      setIsExtracting(false);
+    };
   };
 
-  const copyToClipboard = (hex: string) => {
-    navigator.clipboard.writeText(hex);
-    setCopiedColor(hex);
-    toast.success('Color Copied', `${hex} is copied to your clipboard.`);
-    setTimeout(() => setCopiedColor(null), 1500);
+  const copyToClipboard = async (hex: string) => {
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopiedColor(hex);
+      toast.success('Color Copied', `${hex} is copied to your clipboard.`);
+    } catch {
+      toast.error('Copy Failed', `Unable to copy ${hex}. Your browser blocked clipboard access.`);
+    } finally {
+      window.setTimeout(() => setCopiedColor(null), 1500);
+    }
   };
 
   const clearWorkspace = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrl) {
+      try { URL.revokeObjectURL(previewUrl); } catch (e) {}
+    }
+    processingTokenRef.current++;
     setFile(null);
     setPreviewUrl('');
     setPalette([]);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processImage(e.dataTransfer.files[0]);
+    }
   };
 
   return (
@@ -182,7 +188,18 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
         /* Dropzone */
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[250px]"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload an image to extract colors. Drop a file or press Enter to browse."
+          className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[250px] focus:outline-none focus:border-[#10b981]/70"
         >
           <input
             type="file"
@@ -241,7 +258,16 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => copyToClipboard(swatch.hex)}
-                    className="border border-[#1a1a1a] hover:border-[#10b981]/40 bg-[#151515] rounded p-3.5 flex items-center justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer group active:scale-98 transition-all"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        copyToClipboard(swatch.hex);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Copy color ${swatch.hex} (${swatch.percentage}% of image)`}
+                    className="border border-[#1a1a1a] hover:border-[#10b981]/40 bg-[#151515] rounded p-3.5 flex items-center justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer group active:scale-98 transition-all focus:outline-none focus:border-[#10b981]/70"
                   >
                     <div className="flex items-center gap-3">
                       {/* Color Block */}

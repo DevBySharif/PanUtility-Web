@@ -19,6 +19,14 @@ import { PDFImageItem } from '../types';
 import { jsPDF } from 'jspdf';
 import confetti from 'canvas-confetti';
 import { useToast } from './Toast';
+import {
+  IMAGE_TOOL_LIMITS,
+  computeDrawRect,
+  computePageDimensions,
+  formatFileSize,
+  sanitizePdfTitle,
+  validateImageFile
+} from '../lib/imageTools';
 
 interface PdfCompilerProps {
   onBack: () => void;
@@ -35,6 +43,30 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const [compiledUrl, setCompiledUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const itemsRef = useRef<PDFImageItem[]>([]);
+  const compiledUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    compiledUrlRef.current = compiledUrl;
+  }, [compiledUrl]);
+
+  // Unmount cleanup for object URLs
+  useEffect(() => {
+    return () => {
+      itemsRef.current.forEach(item => {
+        if (item.previewUrl) {
+          try { URL.revokeObjectURL(item.previewUrl); } catch (e) {}
+        }
+      });
+      if (compiledUrlRef.current) {
+        try { URL.revokeObjectURL(compiledUrlRef.current); } catch (e) {}
+      }
+    };
+  }, []);
 
   // Load initial file if provided
   useEffect(() => {
@@ -70,9 +102,37 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
   };
 
   const handleFiles = (fileList: File[]) => {
-    const validFiles = fileList.filter(file => file.type.startsWith('image/'));
-    
-    const newItems: PDFImageItem[] = validFiles.map(file => {
+    const MAX_SINGLE_BYTES = IMAGE_TOOL_LIMITS.maxSingleBytes;
+    const MAX_TOTAL_ITEMS = IMAGE_TOOL_LIMITS.maxBatchItems;
+
+    const currentCount = itemsRef.current.length;
+    if (currentCount >= MAX_TOTAL_ITEMS) {
+      toast.error('Limit Reached', `Maximum ${MAX_TOTAL_ITEMS} images can be compiled into a single PDF.`);
+      return;
+    }
+
+    const validFiles: File[] = [];
+
+    for (const file of fileList) {
+      const validation = validateImageFile(file);
+      if (!validation.ok) {
+        const title = validation.code === 'empty'
+          ? 'Empty File Skipped'
+          : validation.code === 'too-large'
+            ? 'File Too Large'
+            : 'Unsupported Format';
+        toast.error(title, validation.message);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    const availableSlots = MAX_TOTAL_ITEMS - currentCount;
+    const filesToProcess = validFiles.slice(0, availableSlots);
+
+    const newItems: PDFImageItem[] = filesToProcess.map(file => {
       const id = Math.random().toString(36).substring(2, 9);
       const previewUrl = URL.createObjectURL(file);
       return {
@@ -91,16 +151,24 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
   const removeItem = (id: string) => {
     setItems(prev => {
       const target = prev.find(item => item.id === id);
-      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      if (target?.previewUrl) {
+        try { URL.revokeObjectURL(target.previewUrl); } catch (e) {}
+      }
       return prev.filter(item => item.id !== id);
     });
     setCompiledUrl(null);
   };
 
   const clearAll = () => {
-    items.forEach(item => URL.revokeObjectURL(item.previewUrl));
+    items.forEach(item => {
+      if (item.previewUrl) {
+        try { URL.revokeObjectURL(item.previewUrl); } catch (e) {}
+      }
+    });
     setItems([]);
-    if (compiledUrl) URL.revokeObjectURL(compiledUrl);
+    if (compiledUrl) {
+      try { URL.revokeObjectURL(compiledUrl); } catch (e) {}
+    }
     setCompiledUrl(null);
   };
 
@@ -117,38 +185,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
   };
 
   const getPageDimensions = (itemWidth: number, itemHeight: number) => {
-    let w = itemWidth;
-    let h = itemHeight;
-
-    if (pageSize === 'a4') {
-      // Standard A4 dimensions in pixels/points (roughly 595.27 x 841.89)
-      w = 595;
-      h = 842;
-    } else if (pageSize === 'letter') {
-      // Letter dimensions (roughly 612 x 792)
-      w = 612;
-      h = 792;
-    }
-
-    // Handle orientation adjustments
-    if (pageSize !== 'original') {
-      const isItemLandscape = itemWidth > itemHeight;
-      const forceLandscape = orientation === 'landscape' || (orientation === 'auto' && isItemLandscape);
-      const forcePortrait = orientation === 'portrait' || (orientation === 'auto' && !isItemLandscape);
-
-      if (forceLandscape && w < h) {
-        // Swap width and height to make landscape
-        const temp = w;
-        w = h;
-        h = temp;
-      } else if (forcePortrait && w > h) {
-        const temp = w;
-        w = h;
-        h = temp;
-      }
-    }
-
-    return { pageW: w, pageH: h };
+    return computePageDimensions(itemWidth, itemHeight, pageSize, orientation);
   };
 
   const compilePdf = async () => {
@@ -156,7 +193,6 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
     setIsCompiling(true);
 
     try {
-      // Helper to load image as HTMLImageElement
       const loadImage = (url: string): Promise<HTMLImageElement> => {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -166,12 +202,9 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         });
       };
 
-      // Create initial PDF
-      // jsPDF accepts coordinates in points/pixels ('pt' or 'px')
-      // Let's load the first image to determine sizing
       const firstImg = await loadImage(items[0].previewUrl);
-      const firstW = firstImg.naturalWidth;
-      const firstH = firstImg.naturalHeight;
+      const firstW = firstImg.naturalWidth || 100;
+      const firstH = firstImg.naturalHeight || 100;
 
       const { pageW: initW, pageH: initH } = getPageDimensions(firstW, firstH);
       const isFirstLandscape = initW > initH;
@@ -183,16 +216,25 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         compress: true
       });
 
-      // Map margins
       let marginVal = 0;
       if (margin === 'small') marginVal = 15;
       else if (margin === 'medium') marginVal = 30;
 
+      let skippedCount = 0;
+
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const img = await loadImage(item.previewUrl);
-        const origW = img.naturalWidth;
-        const origH = img.naturalHeight;
+        let img: HTMLImageElement;
+        try {
+          img = await loadImage(item.previewUrl);
+        } catch (e) {
+          console.warn(`Failed to load image for PDF item ${item.name}`, e);
+          skippedCount++;
+          continue;
+        }
+
+        const origW = img.naturalWidth || 100;
+        const origH = img.naturalHeight || 100;
 
         const { pageW, pageH } = getPageDimensions(origW, origH);
         const isLandscape = pageW > pageH;
@@ -201,46 +243,23 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
           doc.addPage([pageW, pageH], isLandscape ? 'landscape' : 'portrait');
         }
 
-        // Calculate size to draw image in page with margin
-        const maxDrawW = pageW - marginVal * 2;
-        const maxDrawH = pageH - marginVal * 2;
+        const drawRect = computeDrawRect(origW, origH, pageW, pageH, marginVal);
 
-        const imgRatio = origW / origH;
-        const drawRatio = maxDrawW / maxDrawH;
-
-        let drawW = maxDrawW;
-        let drawH = maxDrawH;
-
-        if (imgRatio > drawRatio) {
-          // Fit to width
-          drawH = maxDrawW / imgRatio;
-        } else {
-          // Fit to height
-          drawW = maxDrawH * imgRatio;
-        }
-
-        // Center the image in the drawing region
-        const drawX = marginVal + (maxDrawW - drawW) / 2;
-        const drawY = marginVal + (maxDrawH - drawH) / 2;
-
-        // Draw onto canvas to compress and generate JPEG
         const canvas = document.createElement('canvas');
         canvas.width = origW;
         canvas.height = origH;
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          // Fill canvas with solid white background to avoid transparent sections of PNG turning black in JPEG output
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, origW, origH);
           ctx.drawImage(img, 0, 0);
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          doc.addImage(compressedDataUrl, 'JPEG', drawX, drawY, drawW, drawH, undefined, 'FAST');
+          doc.addImage(compressedDataUrl, 'JPEG', drawRect.x, drawRect.y, drawRect.width, drawRect.height, undefined, 'FAST');
         } else {
-          doc.addImage(img, 'JPEG', drawX, drawY, drawW, drawH, undefined, 'FAST');
+          doc.addImage(img, 'JPEG', drawRect.x, drawRect.y, drawRect.width, drawRect.height, undefined, 'FAST');
         }
       }
 
-      // Output as blob
       const pdfBlob = doc.output('blob');
       const url = URL.createObjectURL(pdfBlob);
       setCompiledUrl(url);
@@ -251,10 +270,20 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
         origin: { y: 0.6 }
       });
 
-      toast.success(
-        'PDF Compiled Successfully',
-        `Sorted and compiled ${items.length} image${items.length !== 1 ? 's' : ''} into a single document.`
-      );
+      const compiledCount = items.length - skippedCount;
+
+      if (skippedCount > 0) {
+        toast.toast({
+          title: 'PDF Compiled with Warnings',
+          description: `Compiled ${compiledCount} image${compiledCount !== 1 ? 's' : ''} into a single document, but skipped ${skippedCount} file${skippedCount !== 1 ? 's' : ''} that could not be decoded.`,
+          type: 'warning'
+        });
+      } else {
+        toast.success(
+          'PDF Compiled Successfully',
+          `Sorted and compiled ${compiledCount} image${compiledCount !== 1 ? 's' : ''} into a single document.`
+        );
+      }
     } catch (err: any) {
       console.error('PDF creation error:', err);
       toast.error(
@@ -270,19 +299,13 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
     if (!compiledUrl) return;
     const a = document.createElement('a');
     a.href = compiledUrl;
-    a.download = `${pdfTitle.trim() || 'compiled_document'}.pdf`;
+    a.download = `${sanitizePdfTitle(pdfTitle)}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
+  const formatSize = formatFileSize;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6" id="pdf-compiler-tool">
@@ -323,9 +346,10 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
 
           {/* PDF File Name */}
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">File Name</label>
+            <label htmlFor="pdf-file-name" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">File Name</label>
             <div className="flex rounded border border-[#2a2a2a] bg-[#151515] text-white focus-within:border-[#10b981] overflow-hidden text-sm">
               <input
+                id="pdf-file-name"
                 type="text"
                 placeholder="compiled_document"
                 value={pdfTitle}
@@ -463,7 +487,16 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[180px] ${
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Upload images to compile into a PDF. Drop files or press Enter to browse."
+            className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[180px] focus:outline-none focus:border-[#10b981]/70 ${
               isDragging
                 ? 'border-[#10b981] bg-[#10b981]/10'
                 : 'border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d]'
@@ -539,6 +572,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                       disabled={index === 0}
                       className="p-1.5 bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       title="Move Page Up"
+                      aria-label={`Move ${item.name} up`}
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
@@ -548,6 +582,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                       disabled={index === items.length - 1}
                       className="p-1.5 bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       title="Move Page Down"
+                      aria-label={`Move ${item.name} down`}
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
@@ -556,6 +591,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                       onClick={() => removeItem(item.id)}
                       className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer ml-1"
                       title="Delete Page"
+                      aria-label={`Delete ${item.name}`}
                     >
                       <Trash className="w-4 h-4" />
                     </button>

@@ -3,7 +3,7 @@ import process from 'node:process';
 
 const commands = [
   ['scripts/build-client.mjs'],
-  ['node_modules/esbuild/bin/esbuild', 'server.ts', '--bundle', '--platform=node', '--format=cjs', '--packages=external', '--sourcemap', '--outfile=server-dist/server.cjs'],
+  ['scripts/build-server.mjs'],
 ];
 
 for (const args of commands) {

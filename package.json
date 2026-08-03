@@ -13,7 +13,7 @@
     "preview": "node node_modules/vite/bin/vite.js preview",
     "clean": "node node_modules/rimraf/dist/esm/bin.mjs dist server-dist coverage playwright-report test-results",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
-    "lint": "node node_modules/eslint/bin/eslint.js src api server.ts vite.config.ts vitest.config.ts playwright.config.ts tests",
+    "lint": "node node_modules/eslint/bin/eslint.js src api lib server.ts vite.config.ts vitest.config.ts playwright.config.ts tests",
     "test": "node node_modules/vitest/vitest.mjs run",
     "test:watch": "node node_modules/vitest/vitest.mjs",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",

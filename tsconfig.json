@@ -28,6 +28,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "api/**/*.ts",
+    "lib/**/*.ts",
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx",

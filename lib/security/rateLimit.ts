@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ApiError } from './errors';
+import { ApiError } from './errors.js';
 
 export interface RateLimitStore { increment(key: string, ttlMs: number): Promise<{ count: number; resetAt: number }>; ready(): Promise<boolean>; reset?(): Promise<void> }
 interface Entry { count: number; resetAt: number }

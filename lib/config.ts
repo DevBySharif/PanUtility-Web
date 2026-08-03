@@ -1,4 +1,4 @@
-import { ApiError } from './security/errors';
+import { ApiError } from './security/errors.js';
 
 export interface AppConfig {
   environment: 'development' | 'test' | 'production';

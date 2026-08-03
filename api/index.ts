@@ -1,8 +1,8 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { ApiError, errorMiddleware, requestId, sendError } from '../lib/security/errors';
-import { clientIp, hashIdentity } from '../lib/security/clientIdentity';
-import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from '../lib/security/rateLimit';
-import { loadConfig, requireProductionLimiter, type AppConfig } from '../lib/config';
+import { ApiError, errorMiddleware, requestId, sendError } from '../lib/security/errors.js';
+import { clientIp, hashIdentity } from '../lib/security/clientIdentity.js';
+import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from '../lib/security/rateLimit.js';
+import { loadConfig, requireProductionLimiter, type AppConfig } from '../lib/config.js';
 
 export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
 export const BODY_LIMIT = '4.25mb';

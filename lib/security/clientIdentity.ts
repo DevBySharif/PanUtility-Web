@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import net from 'node:net';
 import type { Request } from 'express';
-import { ApiError } from './errors';
+import { ApiError } from './errors.js';
 
 export function normalizeIp(raw: string): string {
   const value = raw.trim().toLowerCase();

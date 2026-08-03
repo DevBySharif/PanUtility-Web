@@ -55,7 +55,7 @@ import {
 } from '@phosphor-icons/react';
 import type { ToolDefinition } from '../types';
 import gifshot from 'gifshot';
-import { convertCase, countText, decodeBase64Safely, decodeUrlSafely, formatJson, generateLorem, percentageOf, playRockPaperScissors, removeDuplicateLines, rollDie, splitTip } from '../lib/toolTransforms';
+import { convertCase, countText, decodeBase64Safely, decodeUrlSafely, formatJson, formatResult, generateLorem, parseFiniteNumber, percentageOf, playRockPaperScissors, removeDuplicateLines, rollDie, splitTip } from '../lib/toolTransforms';
 
 interface GenericUtilityWorkspaceProps {
   tool: ToolDefinition;
@@ -84,6 +84,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const [gameActive, setGameActive] = useState(false);
   const [timerCount, setTimerCount] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+
+  // P1-B3 calculator & game tool states (percent-calc, tip-calc)
+  const [percentInput, setPercentInput] = useState('');
+  const [baseInput, setBaseInput] = useState('');
+  const [tipBillInput, setTipBillInput] = useState('');
+  const [tipPercentInput, setTipPercentInput] = useState('15');
+  const [tipPeopleInput, setTipPeopleInput] = useState('2');
+  const [toolError, setToolError] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(initialFile || null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [gpaCourses, setGpaCourses] = useState<Array<{ id: string; name: string; credits: number; grade: string }>>([
@@ -424,17 +432,21 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
   // 11. Dice Roller
   const runDiceRoll = (sides: number) => {
-    setGameActive(true);
-    addLog(`Rolling D${sides}...`);
     try {
       const roll = rollDie(sides);
       setOutputText(`Rolled D${sides}: ${roll}`);
+      setToolError('');
       addLog(`Rolled D${sides} and got: ${roll}`);
     } catch (err: any) {
-      setOutputText(err.message || 'Error rolling die.');
-    } finally {
-      setGameActive(false);
+      setOutputText('');
+      setToolError(err.message || 'Error rolling die.');
     }
+  };
+
+  const resetDice = () => {
+    setOutputText('');
+    setToolError('');
+    addLog('Dice roller reset.');
   };
 
   // 12. Pomodoro Focus Timer
@@ -574,11 +586,80 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
       } else {
         outcomeText = `YOU LOSE. ${computer.toUpperCase()} beats ${player.toUpperCase()}.`;
       }
-      setOutputText(`Player: ${player.toUpperCase()} | Computer: ${computer.toUpperCase()}\nResult: ${outcomeText}`);
+      setOutputText(
+        `Player: ${player.toUpperCase()} | Computer: ${computer.toUpperCase()}\n` +
+        `Result: ${outcomeText}`
+      );
+      setToolError('');
       addLog(`RPS Round: You: ${player} | Computer: ${computer} => ${result}`);
     } catch (err: any) {
-      setOutputText(err.message || 'Error playing RPS.');
+      setOutputText('');
+      setToolError(err.message || 'Error playing RPS.');
     }
+  };
+
+  const resetRps = () => {
+    setOutputText('');
+    setToolError('');
+    setGameScore(0);
+    addLog('RPS game reset.');
+  };
+
+  // Percentage Calculator (P1-B3)
+  const runPercentCalc = () => {
+    try {
+      const percent = parseFiniteNumber(percentInput, 'Percentage');
+      const base = parseFiniteNumber(baseInput, 'Base value');
+      const result = percentageOf(percent, base);
+      setOutputText(`${formatResult(percent)}% of ${formatResult(base)} = ${formatResult(result)}`);
+      setToolError('');
+      addLog(`Calculated ${percent}% of ${base} = ${result}.`);
+    } catch (err: any) {
+      setOutputText('');
+      setToolError(err.message || 'Calculation error.');
+    }
+  };
+
+  const resetPercentCalc = () => {
+    setPercentInput('');
+    setBaseInput('');
+    setOutputText('');
+    setToolError('');
+    addLog('Percentage calculator reset.');
+  };
+
+  // Tip Calculator (P1-B3)
+  const runTipCalc = (tipPercentOverride?: number) => {
+    try {
+      const bill = parseFiniteNumber(tipBillInput, 'Bill amount', { min: 0, max: 1e9 });
+      const tipPercent = tipPercentOverride ?? parseFiniteNumber(tipPercentInput, 'Tip percentage', { min: 0, max: 1e6 });
+      const people = parseFiniteNumber(tipPeopleInput, 'Number of people', { min: 1, max: 1e6, integer: true });
+      const { tip, total, perPerson } = splitTip(bill, tipPercent, people);
+      setOutputText(
+        `Tip Subtotal (${formatResult(tipPercent)}%): $${tip.toFixed(2)}\n` +
+        `Combined Total: $${total.toFixed(2)}\n\n` +
+        `Individual Share (${people} people): $${perPerson.toFixed(2)} per person`
+      );
+      setToolError('');
+      addLog(`Split tip ${tipPercent}% over ${people} people on $${bill}.`);
+    } catch (err: any) {
+      setOutputText('');
+      setToolError(err.message || 'Tip calculation error.');
+    }
+  };
+
+  const selectTipPercent = (percent: number) => {
+    setTipPercentInput(String(percent));
+    runTipCalc(percent);
+  };
+
+  const resetTipCalc = () => {
+    setTipBillInput('');
+    setTipPercentInput('15');
+    setTipPeopleInput('2');
+    setOutputText('');
+    setToolError('');
+    addLog('Tip calculator reset.');
   };
 
   // GPA Calculator Helper Functions
@@ -1830,89 +1911,183 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
               {tool.id === 'percent-calc' && (
                 <div className="flex flex-col gap-4 text-left">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs text-white font-mono">What is {sliderVal}% of $500?</span>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="100" 
-                      value={sliderVal} 
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setSliderVal(val);
-                        try {
-                          const result = percentageOf(val, 500);
-                          const inc = percentageOf(100 + val, 500);
-                          const dec = percentageOf(100 - val, 500);
-                          setOutputText(
-                            `${val}% of $500 = $${result.toFixed(2)}\n\n` +
-                            `If $500 increases by ${val}%, total is $${inc.toFixed(2)}\n` +
-                            `If $500 decreases by ${val}%, discounted total is $${dec.toFixed(2)}`
-                          );
-                        } catch (err: any) {
-                          setOutputText(err.message || 'Calculation error.');
-                        }
-                      }}
-                      className="accent-[#10b981] w-full"
-                    />
-                  </div>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      runPercentCalc();
+                    }}
+                    noValidate
+                    className="flex flex-col gap-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="percent-calc-percent" className="text-[10px] font-bold text-gray-500 uppercase font-mono">
+                          Percentage (%)
+                        </label>
+                        <input
+                          id="percent-calc-percent"
+                          type="number"
+                          step="any"
+                          value={percentInput}
+                          onChange={(e) => {
+                            setPercentInput(e.target.value);
+                            setToolError('');
+                          }}
+                          placeholder="e.g. 25"
+                          className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="percent-calc-base" className="text-[10px] font-bold text-gray-500 uppercase font-mono">
+                          Base value
+                        </label>
+                        <input
+                          id="percent-calc-base"
+                          type="number"
+                          step="any"
+                          value={baseInput}
+                          onChange={(e) => {
+                            setBaseInput(e.target.value);
+                            setToolError('');
+                          }}
+                          placeholder="e.g. 200"
+                          className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="submit" className="flex-grow py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">
+                        Calculate
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetPercentCalc}
+                        className="px-4 py-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 text-white text-xs font-bold rounded uppercase tracking-wider cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </form>
 
-                  <div className="bg-black border border-[#222] p-4 rounded-xl">
-                    <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Proportional Math Output</span>
-                    <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
-                      {outputText || 'Drag the percentage slider to solve.'}
-                    </pre>
+                  {toolError && (
+                    <div role="alert" className="bg-rose-950/30 border border-rose-500/30 text-rose-300 p-3 rounded-xl text-xs font-mono">
+                      {toolError}
+                    </div>
+                  )}
+
+                  <div aria-live="polite" className="bg-black border border-[#222] p-4 rounded-xl">
+                    <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Percentage Result</span>
+                    <p className="text-sm font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
+                      {outputText || 'Enter a percentage and base value, then press Calculate.'}
+                    </p>
                   </div>
                 </div>
               )}
 
               {tool.id === 'tip-calc' && (
                 <div className="flex flex-col gap-4 text-left">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Bill Amount ($)</span>
-                      <input type="number" min="0" value={sliderVal} onChange={(e) => setSliderVal(Math.max(0, parseInt(e.target.value) || 0))} className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" />
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      runTipCalc();
+                    }}
+                    noValidate
+                    className="flex flex-col gap-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="tip-calc-bill" className="text-[10px] font-bold text-gray-500 uppercase font-mono">
+                          Bill Amount ($)
+                        </label>
+                        <input
+                          id="tip-calc-bill"
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={tipBillInput}
+                          onChange={(e) => {
+                            setTipBillInput(e.target.value);
+                            setToolError('');
+                          }}
+                          placeholder="e.g. 45.50"
+                          className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor="tip-calc-percent" className="text-[10px] font-bold text-gray-500 uppercase font-mono">
+                          Tip Percentage (%)
+                        </label>
+                        <input
+                          id="tip-calc-percent"
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={tipPercentInput}
+                          onChange={(e) => {
+                            setTipPercentInput(e.target.value);
+                            setToolError('');
+                          }}
+                          placeholder="e.g. 15"
+                          className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold"
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase font-mono">Number of People</span>
-                      <input type="number" min="1" value={checkboxState.opt1 ? 2 : checkboxState.opt2 ? 3 : checkboxState.opt3 ? 4 : 5} 
+                      <label htmlFor="tip-calc-people" className="text-[10px] font-bold text-gray-500 uppercase font-mono">
+                        Number of People
+                      </label>
+                      <input
+                        id="tip-calc-people"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={tipPeopleInput}
                         onChange={(e) => {
-                          const val = Math.max(1, parseInt(e.target.value) || 1);
-                          setCheckboxState({ opt1: val === 2, opt2: val === 3, opt3: val === 4, opt4: val >= 5 });
-                        }} 
-                        className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold" 
+                          setTipPeopleInput(e.target.value);
+                          setToolError('');
+                        }}
+                        placeholder="e.g. 2"
+                        className="bg-black border border-[#222] text-[#10b981] p-2 rounded text-sm font-mono font-bold"
                       />
                     </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    {[10, 15, 20, 25].map(p => (
-                      <button
-                        key={p}
-                        onClick={() => {
-                          const size = checkboxState.opt1 ? 2 : checkboxState.opt2 ? 3 : checkboxState.opt3 ? 4 : 5;
-                          try {
-                            const { tip, total, perPerson } = splitTip(sliderVal, p, size);
-                            setOutputText(
-                              `Tip Subtotal (${p}%): $${tip.toFixed(2)}\n` +
-                              `Combined Total: $${total.toFixed(2)}\n\n` +
-                              `Individual Share (${size} people): $${perPerson.toFixed(2)} per person`
-                            );
-                          } catch (err: any) {
-                            setOutputText(err.message || 'Tip calculation error.');
-                          }
-                        }}
-                        className="flex-grow p-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 hover:bg-[#1a1a1a] text-white text-xs font-bold rounded font-mono cursor-pointer"
-                      >
-                        {p}% Tip
-                      </button>
-                    ))}
-                  </div>
 
-                  <div className="bg-black border border-[#222] p-4 rounded-xl">
+                    <div className="flex gap-2">
+                      {[10, 15, 20, 25].map(p => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => selectTipPercent(p)}
+                          className="flex-grow p-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 hover:bg-[#1a1a1a] text-white text-xs font-bold rounded font-mono cursor-pointer"
+                        >
+                          {p}% Tip
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button type="submit" className="flex-grow py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">
+                        Calculate Split
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetTipCalc}
+                        className="px-4 py-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 text-white text-xs font-bold rounded uppercase tracking-wider cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </form>
+
+                  {toolError && (
+                    <div role="alert" className="bg-rose-950/30 border border-rose-500/30 text-rose-300 p-3 rounded-xl text-xs font-mono">
+                      {toolError}
+                    </div>
+                  )}
+
+                  <div aria-live="polite" className="bg-black border border-[#222] p-4 rounded-xl">
                     <span className="text-[8px] font-bold text-gray-500 font-mono tracking-wider block mb-2 uppercase">Tip Breakdown Results</span>
                     <pre className="text-xs font-mono text-[#10b981] whitespace-pre-line leading-relaxed">
-                      {outputText || 'Enter bill info and click on tip percentage.'}
+                      {outputText || 'Enter bill info and click a tip percentage or Calculate.'}
                     </pre>
                   </div>
                 </div>
@@ -2404,7 +2579,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               )}
 
               {tool.id === 'dice-roller' && (
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4 w-full">
                   <div className="grid grid-cols-3 gap-2 w-full">
                     {[4, 6, 8, 10, 12, 20].map(sides => (
                       <button
@@ -2417,16 +2592,31 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     ))}
                   </div>
 
-                  {outputText && (
-                    <div className="bg-black border border-red-500/20 text-red-400 p-4 rounded-xl font-mono text-lg font-bold w-full text-center">
-                      {outputText}
+                  {toolError && (
+                    <div role="alert" className="w-full bg-rose-950/30 border border-rose-500/30 text-rose-300 p-3 rounded-xl text-xs font-mono text-center">
+                      {toolError}
                     </div>
                   )}
+
+                  <div aria-live="polite" className="w-full bg-black border border-red-500/20 p-4 rounded-xl font-mono text-lg font-bold text-center">
+                    <span className="text-red-400">{outputText || 'Pick a die to roll.'}</span>
+                  </div>
+
+                  <button
+                    onClick={resetDice}
+                    className="px-4 py-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 text-white text-xs font-bold rounded uppercase tracking-wider cursor-pointer"
+                  >
+                    Reset Roll
+                  </button>
+                  <p className="text-[9px] text-gray-500 font-mono text-center">For casual tabletop entertainment — uniformly random, not for gambling.</p>
                 </div>
               )}
 
               {tool.id === 'rock-paper-scissors' && (
                 <div className="flex flex-col gap-4 text-left">
+                  <p className="text-xs text-gray-400 font-sans">
+                    Play against a random computer opponent. Choose one of the three gestures below.
+                  </p>
                   <div className="grid grid-cols-3 gap-2.5">
                     {(['rock', 'paper', 'scissors'] as const).map(choice => (
                       <button
@@ -2439,11 +2629,25 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     ))}
                   </div>
 
-                  {outputText && (
-                    <div className="bg-black border border-[#222] p-4 rounded-xl font-mono text-sm text-[#10b981] text-center">
-                      {outputText}
+                  {toolError && (
+                    <div role="alert" className="bg-rose-950/30 border border-rose-500/30 text-rose-300 p-3 rounded-xl text-xs font-mono">
+                      {toolError}
                     </div>
                   )}
+
+                  <div aria-live="polite" className="bg-black border border-[#222] p-4 rounded-xl font-mono text-sm text-[#10b981] text-center whitespace-pre-line">
+                    {outputText || 'Choose rock, paper, or scissors to play a round.'}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] text-gray-500 font-mono">Score: {gameScore}</span>
+                    <button
+                      onClick={resetRps}
+                      className="px-4 py-2 bg-[#151515] border border-[#222] hover:border-[#10b981]/40 text-white text-xs font-bold rounded uppercase tracking-wider cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  </div>
                 </div>
               )}
 

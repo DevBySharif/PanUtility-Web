@@ -1,5 +1,37 @@
 # PanUtility-Web project audit
 
+## P1-B3 Calculator & Game Tools Production Quality — 2026-08-04
+
+P1-B3 is complete: the four functional Calculator/Game tools (Percentage Calculator, Tip
+Calculator, Polyhedral Dice Roller, Rock Paper Scissors vs. Computer) are
+production-quality and fully verified. This is the third P1-B sub-milestone (P1-B1 image
+tools; P1-B2 text tools).
+
+What changed:
+- `src/lib/toolTransforms.ts` — shared numeric standards (`parseFiniteNumber`,
+  `formatResult`) and rejection-sampling randomness (`secureIntInRange`); `rollDie` and
+  `playRockPaperScissors` now use it. See `P1B3_CALCULATOR_GAMES_REPORT.md`.
+- `src/components/GenericUtilityWorkspace.tsx` — percent/tip/dice/RPS UI and handlers
+  (dedicated inputs, validation with `role="alert"`, `aria-live` results, resets, truthful
+  entertainment/computer-opponent copy, `noValidate` forms so React messages drive
+  validation).
+- `src/toolsData.ts` — SEO/copy truthfulness fixes for percent/dice/RPS (route IDs
+  unchanged).
+- `tests/functional-tools.test.tsx` (+9 deterministic tests), new
+  `tests/games-workspace.test.tsx` (19 UI-level tests), and `tests/e2e/catalog.spec.ts`
+  (+7 Playwright tests).
+
+Verification (clean rebuild): typecheck, lint, and `npm run check` pass; `npm run test`
+passes 275/275 across 17 files (was 247 / 16); Playwright passes 21/21 (was 14); all
+client, server, and combined production builds pass; the sitemap remains 13 URLs /
+12 indexable tools. `npm audit --json` reports 1 pre-existing moderate (dev-only
+`postcss <=8.5.22`), 0 high, 0 critical.
+
+Confirmed untouched: image tools, text tools, SEO/prerendering, public-visibility
+selectors, API/security, `social-downloader`, unrelated Beta/Disabled tools, route IDs,
+and the enforced status totals (12 functional / 30 beta / 51 coming-soon / 20 disabled =
+113 routes). Zero-cost production mode is unchanged.
+
 ## P1-B2 Text & Writing Tools Production Quality — 2026-08-04
 
 P1-B2 is complete: the five shared text/code transform tools (Case Converter, Word

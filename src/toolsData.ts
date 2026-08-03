@@ -698,7 +698,7 @@ const TOOL_CATALOG = [
   {
     id: 'percent-calc',
     title: 'Percentage Calculator',
-    description: 'Resolve percent gains, margin discounts, fraction densities, and ratios instantly.',
+    description: 'Find what X% of any number equals with an instant, accurate percentage calculator.',
     category: 'Math & Finance',
     icon: 'Percent',
     color: 'border-emerald-500/20 hover:border-emerald-500/60 text-emerald-400 bg-emerald-500/5'
@@ -862,7 +862,7 @@ const TOOL_CATALOG = [
   {
     id: 'dice-roller',
     title: 'Polyhedral Dice Roller',
-    description: 'Roll d4, d6, d8, d10, d12, or d20 game dice with simulated physics rolls.',
+    description: 'Roll d4, d6, d8, d10, d12, or d20 game dice instantly for tabletop entertainment.',
     category: 'Fun & Games',
     icon: 'Dice',
     color: 'border-red-500/20 hover:border-red-500/60 text-red-400 bg-red-500/5'
@@ -877,8 +877,8 @@ const TOOL_CATALOG = [
   },
   {
     id: 'rock-paper-scissors',
-    title: 'RPS Arena vs. AI Bot',
-    description: 'Match wits with a smart AI opponent in a classic game of Rock, Paper, Scissors.',
+    title: 'Rock Paper Scissors vs. Computer',
+    description: 'Play classic Rock, Paper, Scissors against a random computer opponent for quick, fun rounds.',
     category: 'Fun & Games',
     icon: 'Shield',
     color: 'border-orange-500/20 hover:border-orange-500/60 text-orange-400 bg-orange-500/5'

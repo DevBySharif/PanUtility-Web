@@ -1,5 +1,25 @@
 # PanUtility-Web implementation roadmap
 
+## P1-B3 status — 2026-08-04
+
+**P1-B3 Calculator & Game Tools production-quality pass is Complete.** Percentage
+Calculator (text inputs for % and base, blank/finite validation, zero + decimals,
+trailing-zero stripping, Enter submit, reset, announced results), Tip Calculator
+(dedicated bill/tip%/people inputs, positive-integer people, bounded values, 2-decimal
+currency, reset), Polyhedral Dice Roller (exact d4–d20 set, reset, entertainment copy),
+and Rock Paper Scissors vs. Computer (random computer opponent, score, reset) are
+implemented and verified.
+- Shared standards added in `src/lib/toolTransforms.ts`: `parseFiniteNumber`,
+  `formatResult`, and rejection-sampling `secureIntInRange` (eliminates modulo bias);
+  `rollDie`/`playRockPaperScissors` now use it with crypto-backed randomness and an
+  entertainment-only fallback.
+- 275/275 Vitest (17 files), 21/21 Playwright, typecheck, lint, all builds, and `check` pass.
+- Metadata overclaims removed (percent "gains/margins/ratios", dice "simulated physics",
+  RPS "AI Bot" → computer opponent); route IDs and status totals (12/30/51/20 = 113)
+  unchanged; public visibility, zero-cost mode, and `social-downloader` untouched.
+- **Next:** apply the same production-quality pattern to the remaining partial tools,
+  then revisit P1 scope.
+
 ## P1-B2 status — 2026-08-04
 
 **P1-B2 Text & Writing Tools production-quality pass is Complete.** Case Converter
@@ -13,9 +33,6 @@ punctuation-only → 0 words, code-point counts, reading-time estimate), Lorem I
   `playRockPaperScissors`.
 - Route IDs and status totals (12/30/51/20 = 113) unchanged; public visibility, zero-cost
   mode, and `social-downloader` untouched.
-- **P1-B3 has NOT started.** Next: apply the same production-quality pattern to the
-  remaining partial text/code tools (diff, markdown, regex, slug, sorter, find/replace,
-  morse, binary, base64, url, entities, reverser), then revisit P1 scope.
 
 ## P1-A & P1-A2 status — 2026-08-03
 

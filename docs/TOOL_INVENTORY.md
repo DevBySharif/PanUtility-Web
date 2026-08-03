@@ -1,5 +1,15 @@
 # PanUtility-Web tool inventory
 
+> P1-B3 update (2026-08-04): calculator/game production-quality pass complete. Percentage
+> Calculator (text %/base inputs, blank/finite validation, zero + decimals, stripped
+> display, Enter submit, reset, announced results), Tip Calculator (dedicated
+> bill/tip%/people inputs, positive-integer people, bounded values, 2-decimal currency,
+> presets + custom tip, reset), Polyhedral Dice Roller (exact d4–d20 set, reset,
+> entertainment framing), and Rock Paper Scissors vs. Computer (random computer opponent,
+> score, reset) are all verified. Shared `parseFiniteNumber`/`formatResult` standards and
+> rejection-sampling `secureIntInRange` randomness added to `src/lib/toolTransforms.ts`.
+> See `docs/P1B3_CALCULATOR_GAMES_REPORT.md`.
+
 > P1-B2 update (2026-08-04): text-tool production-quality pass complete. Case Converter
 > (Unicode-safe title/sentence, +PascalCase/kebab-case), Word Counter (paragraphs,
 > punctuation-only → 0 words, code-point counts, reading-time estimate), Lorem Ipsum

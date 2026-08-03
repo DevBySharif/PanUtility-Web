@@ -187,21 +187,56 @@ export function splitTip(bill: number, tipPercent: number, people: number) {
   return { tip, total, perPerson };
 }
 
+/**
+ * Returns a uniformly distributed number in [0, 1) from Web Crypto when
+ * available. When Web Crypto is unavailable (older embedded webviews), it
+ * falls back to Math.random — an isolated, entertainment-only fallback that is
+ * fine for dice/RPS play but must never be claimed as cryptographically secure.
+ */
 export function secureRandom(): number {
-  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.getRandomValues === 'function') {
+  const cryptoObj =
+    (typeof window !== 'undefined' && window.crypto) ||
+    (typeof globalThis !== 'undefined' && (globalThis as { crypto?: { getRandomValues: (array: Uint32Array) => void } }).crypto) ||
+    undefined;
+  if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
     const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
+    cryptoObj.getRandomValues(array);
     return array[0] / (0xFFFFFFFF + 1);
   }
   return Math.random();
+}
+
+const UINT32_MAX = 0xFFFFFFFF;
+
+function secureUint32(random: () => number): number {
+  const r = typeof random === 'function' ? random() : Math.random();
+  return Math.min(Math.floor(r * (UINT32_MAX + 1)), UINT32_MAX);
+}
+
+/**
+ * Uniform integer in [0, maxExclusive) using rejection sampling over the full
+ * uint32 range, which removes the modulo bias of a naive `value % max`
+ * mapping. The `random` source is injectable so tests stay deterministic.
+ */
+export function secureIntInRange(maxExclusive: number, random = secureRandom): number {
+  if (!Number.isInteger(maxExclusive) || maxExclusive <= 0) {
+    throw new Error('Upper bound must be a positive integer.');
+  }
+  const maxAllowed = Math.floor((UINT32_MAX + 1) / maxExclusive) * maxExclusive;
+  let u = secureUint32(random);
+  let guard = 0;
+  while (u >= maxAllowed && guard < 1000) {
+    u = secureUint32(random);
+    guard += 1;
+  }
+  return u % maxExclusive;
 }
 
 export function rollDie(sides: number, random = secureRandom): number {
   if (!Number.isInteger(sides) || sides < 2) {
     throw new Error('Die sides must be a positive integer of at least 2.');
   }
-  const r = typeof random === 'function' ? random() : Math.random();
-  return Math.floor(r * sides) + 1;
+  return secureIntInRange(sides, random) + 1;
 }
 
 export function playRockPaperScissors(player: 'rock' | 'paper' | 'scissors', random = secureRandom) {
@@ -209,8 +244,7 @@ export function playRockPaperScissors(player: 'rock' | 'paper' | 'scissors', ran
   if (!choices.includes(player)) {
     throw new Error('Player choice must be "rock", "paper", or "scissors".');
   }
-  const r = typeof random === 'function' ? random() : Math.random();
-  const computer = choices[Math.floor(r * choices.length)];
+  const computer = choices[secureIntInRange(choices.length, random)];
   const result = player === computer 
     ? 'draw' 
     : (player === 'rock' && computer === 'scissors') || 
@@ -219,6 +253,54 @@ export function playRockPaperScissors(player: 'rock' | 'paper' | 'scissors', ran
       ? 'win' 
       : 'lose';
   return { player, computer, result };
+}
+
+/**
+ * Shared numeric standards for calculator-style tools.
+ * - Rejects blank/whitespace input (blank is never treated as 0).
+ * - Rejects NaN and non-finite values (no Infinity/-Infinity).
+ * - Optional min/max/integer constraints with explicit error messages.
+ * - Throws so callers can surface a precise validation message.
+ */
+export interface NumericConstraints {
+  min?: number;
+  max?: number;
+  integer?: boolean;
+}
+
+export function parseFiniteNumber(value: string, label: string, constraints: NumericConstraints = {}): number {
+  const trimmed = value.trim();
+  if (trimmed === '') {
+    throw new Error(`${label} is required.`);
+  }
+  const parsed = Number(trimmed);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`${label} must be a valid number.`);
+  }
+  if (!Number.isFinite(parsed)) {
+    throw new Error(`${label} must be a valid finite number.`);
+  }
+  if (constraints.integer && !Number.isInteger(parsed)) {
+    throw new Error(`${label} must be a whole number.`);
+  }
+  if (constraints.min !== undefined && parsed < constraints.min) {
+    throw new Error(`${label} must be at least ${constraints.min}.`);
+  }
+  if (constraints.max !== undefined && parsed > constraints.max) {
+    throw new Error(`${label} must be no more than ${constraints.max}.`);
+  }
+  return parsed;
+}
+
+/**
+ * Display formatter that strips trailing zeros while keeping up to 6 decimals
+ * (the rounding precision used by percentageOf). e.g. 50 -> "50", 10.5 -> "10.5".
+ */
+export function formatResult(value: number): string {
+  if (!Number.isFinite(value)) return String(value);
+  const asString = value.toString();
+  if (!asString.includes('.')) return asString;
+  return asString.replace(/0+$/, '').replace(/\.$/, '');
 }
 
 export function decodeUrlSafely(value: string): { value?: string; error?: string } {

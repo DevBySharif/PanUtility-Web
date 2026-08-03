@@ -89,6 +89,7 @@ test('interacts with functional tools without console errors', async ({ page }) 
 
   // Tip Calculator E2E
   await page.goto('/tools/tip-calc');
+  await page.getByLabel(/Bill Amount/).fill('100');
   await page.getByRole('button', { name: /20% Tip/i }).click();
   await expect(page.getByText(/Tip Subtotal \(20%\):/i)).toBeVisible();
 
@@ -97,6 +98,80 @@ test('interacts with functional tools without console errors', async ({ page }) 
   await page.getByRole('button', { name: /Roll D6/i }).click();
   await expect(page.getByText(/Rolled D6:/i)).toBeVisible();
 
+  assertNoErrors();
+});
+
+test('percentage calculator validates, computes, and resets', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+  await page.goto('/tools/percent-calc');
+
+  await page.getByRole('button', { name: /Calculate/i }).click();
+  await expect(page.getByRole('alert')).toContainText('Percentage is required.');
+
+  await page.getByLabel(/Percentage/).fill('25');
+  await page.getByLabel(/Base value/).fill('200');
+  await page.getByRole('button', { name: /Calculate/i }).click();
+  await expect(page.getByText('25% of 200 = 50', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: /Reset/i }).click();
+  await expect(page.getByText('25% of 200 = 50', { exact: true })).toHaveCount(0);
+  assertNoErrors();
+});
+
+test('percentage calculator submits the form via the Enter key', async ({ page }) => {
+  await page.goto('/tools/percent-calc');
+  await page.getByLabel(/Percentage/).fill('12.5');
+  await page.getByLabel(/Base value/).fill('80');
+  await page.getByLabel(/Percentage/).press('Enter');
+  await expect(page.getByText('12.5% of 80 = 10', { exact: true })).toBeVisible();
+});
+
+test('tip calculator computes split with a custom tip percentage', async ({ page }) => {
+  await page.goto('/tools/tip-calc');
+  await page.getByLabel(/Bill Amount/).fill('45.50');
+  await page.getByLabel(/Number of People/).fill('3');
+  await page.getByLabel(/Tip Percentage/).fill('15');
+  await page.getByRole('button', { name: /Calculate Split/i }).click();
+  await expect(page.getByText(/Tip Subtotal \(15%\): \$6\.83/)).toBeVisible();
+  await expect(page.getByText(/Combined Total: \$52\.33/)).toBeVisible();
+  await expect(page.getByText(/Individual Share \(3 people\): \$17\.44 per person/)).toBeVisible();
+});
+
+test('tip calculator rejects a fractional person count', async ({ page }) => {
+  await page.goto('/tools/tip-calc');
+  await page.getByLabel(/Bill Amount/).fill('50');
+  await page.getByLabel(/Number of People/).fill('2.5');
+  await page.getByRole('button', { name: /Calculate Split/i }).click();
+  await expect(page.getByRole('alert')).toContainText('whole number');
+});
+
+test('dice roller rolls supported dice and resets', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+  await page.goto('/tools/dice-roller');
+  await page.getByRole('button', { name: /Roll D12/i }).click();
+  await expect(page.getByText(/Rolled D12: \d+/)).toBeVisible();
+  await page.getByRole('button', { name: /Reset Roll/i }).click();
+  await expect(page.getByText(/Rolled D12:/)).toHaveCount(0);
+  assertNoErrors();
+});
+
+test('rock paper scissors plays a round against a computer opponent', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+  await page.goto('/tools/rock-paper-scissors');
+  await page.getByRole('button', { name: 'rock' }).click();
+  await expect(page.getByText(/Player: ROCK \| Computer: (ROCK|PAPER|SCISSORS)/)).toBeVisible();
+  await expect(page.getByText(/Result: (YOU WIN!|YOU LOSE|DRAW!)/)).toBeVisible();
+  await expect(page.getByText(/Score: \d/)).toBeVisible();
+  assertNoErrors();
+});
+
+test('calculator and game tools render on a mobile viewport without console errors', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+  await page.setViewportSize({ width: 375, height: 667 });
+  for (const route of ['/tools/percent-calc', '/tools/tip-calc', '/tools/dice-roller', '/tools/rock-paper-scissors']) {
+    await page.goto(route);
+    await expect(page.locator('#root')).not.toBeEmpty();
+  }
   assertNoErrors();
 });
 

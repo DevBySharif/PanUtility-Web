@@ -9,11 +9,14 @@ import {
   convertCase,
   countText,
   formatJson,
+  formatResult,
   generateLorem,
+  parseFiniteNumber,
   percentageOf,
   playRockPaperScissors,
   removeDuplicateLines,
   rollDie,
+  secureIntInRange,
   secureRandom,
   splitTip
 } from '../src/lib/toolTransforms';
@@ -456,6 +459,22 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
         expect(rollDie(6)).toBeLessThanOrEqual(6);
       }
     });
+
+    it('still yields valid [0,1) values when window crypto is unavailable', () => {
+      const original = window.crypto;
+      Object.defineProperty(window, 'crypto', { value: undefined, configurable: true });
+      try {
+        for (let i = 0; i < 50; i++) {
+          const value = secureRandom();
+          expect(value).toBeGreaterThanOrEqual(0);
+          expect(value).toBeLessThan(1);
+        }
+        expect(rollDie(6)).toBeGreaterThanOrEqual(1);
+        expect(rollDie(6)).toBeLessThanOrEqual(6);
+      } finally {
+        Object.defineProperty(window, 'crypto', { value: original, configurable: true });
+      }
+    });
   });
 
   // --- 12. DICE ROLLER ---
@@ -469,9 +488,11 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
     });
 
     it('is deterministic when provided a custom random function', () => {
+      // Rejection sampling maps the injected [0,1) value to a uint32 first.
+      // u=0 -> 0 % 6 = 0 -> die 1; u=5 -> 5 % 6 = 5 -> die 6.
       expect(rollDie(6, () => 0.0)).toBe(1);
-      expect(rollDie(6, () => 0.999)).toBe(6);
-      expect(rollDie(20, () => 0.5)).toBe(11);
+      expect(rollDie(6, () => 5 / 4294967296)).toBe(6);
+      expect(rollDie(20, () => 10 / 4294967296)).toBe(11);
     });
 
     it('rejects invalid die sides (< 2 or non-integer)', () => {
@@ -480,27 +501,88 @@ describe('P1-B Functional Tools Comprehensive Test Suite', () => {
     });
   });
 
+  // --- 12b. SECURE INT IN RANGE (rejection sampling) ---
+  describe('secure-int-in-range (secureIntInRange)', () => {
+    it('is uniformly bounded within [0, maxExclusive)', () => {
+      for (const max of [2, 3, 6, 10, 20]) {
+        for (let i = 0; i < 100; i++) {
+          const value = secureIntInRange(max);
+          expect(value).toBeGreaterThanOrEqual(0);
+          expect(value).toBeLessThan(max);
+          expect(Number.isInteger(value)).toBe(true);
+        }
+      }
+    });
+
+    it('maps injected deterministic values without bias', () => {
+      expect(secureIntInRange(6, () => 0.0)).toBe(0);
+      expect(secureIntInRange(6, () => 5 / 4294967296)).toBe(5);
+      expect(secureIntInRange(3, () => 2 / 4294967296)).toBe(2);
+    });
+
+    it('rejects an invalid upper bound', () => {
+      expect(() => secureIntInRange(0)).toThrow(/positive integer/);
+      expect(() => secureIntInRange(3.5)).toThrow(/positive integer/);
+    });
+  });
+
   // --- 13. ROCK PAPER SCISSORS ---
   describe('rock-paper-scissors (playRockPaperScissors)', () => {
     it('evaluates complete win/lose/draw outcome matrix', () => {
-      // computer returns choice index based on random value
-      const mockRandom = (idx: 0 | 1 | 2) => () => idx / 3 + 0.01; // 0: rock, 1: paper, 2: scissors
+      // Rejection sampling maps the injected [0,1) value to a uint32; choice
+      // index = u % 3, so u = 0 -> rock, u = 1 -> paper, u = 2 -> scissors.
+      const u32 = (n: number) => n / 4294967296;
 
-      expect(playRockPaperScissors('rock', mockRandom(2))).toMatchObject({ computer: 'scissors', result: 'win' });
-      expect(playRockPaperScissors('rock', mockRandom(1))).toMatchObject({ computer: 'paper', result: 'lose' });
-      expect(playRockPaperScissors('rock', mockRandom(0))).toMatchObject({ computer: 'rock', result: 'draw' });
+      expect(playRockPaperScissors('rock', () => u32(2))).toMatchObject({ computer: 'scissors', result: 'win' });
+      expect(playRockPaperScissors('rock', () => u32(1))).toMatchObject({ computer: 'paper', result: 'lose' });
+      expect(playRockPaperScissors('rock', () => u32(0))).toMatchObject({ computer: 'rock', result: 'draw' });
 
-      expect(playRockPaperScissors('paper', mockRandom(0))).toMatchObject({ computer: 'rock', result: 'win' });
-      expect(playRockPaperScissors('paper', mockRandom(2))).toMatchObject({ computer: 'scissors', result: 'lose' });
-      expect(playRockPaperScissors('paper', mockRandom(1))).toMatchObject({ computer: 'paper', result: 'draw' });
+      expect(playRockPaperScissors('paper', () => u32(0))).toMatchObject({ computer: 'rock', result: 'win' });
+      expect(playRockPaperScissors('paper', () => u32(2))).toMatchObject({ computer: 'scissors', result: 'lose' });
+      expect(playRockPaperScissors('paper', () => u32(1))).toMatchObject({ computer: 'paper', result: 'draw' });
 
-      expect(playRockPaperScissors('scissors', mockRandom(1))).toMatchObject({ computer: 'paper', result: 'win' });
-      expect(playRockPaperScissors('scissors', mockRandom(0))).toMatchObject({ computer: 'rock', result: 'lose' });
-      expect(playRockPaperScissors('scissors', mockRandom(2))).toMatchObject({ computer: 'scissors', result: 'draw' });
+      expect(playRockPaperScissors('scissors', () => u32(1))).toMatchObject({ computer: 'paper', result: 'win' });
+      expect(playRockPaperScissors('scissors', () => u32(0))).toMatchObject({ computer: 'rock', result: 'lose' });
+      expect(playRockPaperScissors('scissors', () => u32(2))).toMatchObject({ computer: 'scissors', result: 'draw' });
     });
 
     it('throws error for invalid player choice', () => {
       expect(() => playRockPaperScissors('lizard' as unknown as 'rock')).toThrow(/Player choice must be/);
+    });
+  });
+
+  // --- 14. SHARED NUMERIC STANDARDS (P1-B3) ---
+  describe('shared numeric standards (parseFiniteNumber / formatResult)', () => {
+    it('rejects blank and whitespace input as required', () => {
+      expect(() => parseFiniteNumber('', 'Percentage')).toThrow(/Percentage is required/);
+      expect(() => parseFiniteNumber('   ', 'Base value')).toThrow(/Base value is required/);
+    });
+
+    it('rejects non-numeric and non-finite input', () => {
+      expect(() => parseFiniteNumber('abc', 'Percentage')).toThrow(/must be a valid number/);
+      expect(() => parseFiniteNumber('1e999', 'Percentage')).toThrow(/must be a valid finite number/);
+    });
+
+    it('parses decimals and integer constraints', () => {
+      expect(parseFiniteNumber('12.5', 'Percentage')).toBe(12.5);
+      expect(parseFiniteNumber('0', 'Percentage')).toBe(0);
+      expect(parseFiniteNumber('200', 'Base value')).toBe(200);
+      expect(() => parseFiniteNumber('2.5', 'People', { integer: true })).toThrow(/whole number/);
+      expect(parseFiniteNumber('3', 'People', { integer: true })).toBe(3);
+    });
+
+    it('enforces min/max bounds with explicit messages', () => {
+      expect(() => parseFiniteNumber('-5', 'Bill amount', { min: 0 })).toThrow(/at least 0/);
+      expect(() => parseFiniteNumber('2000000000', 'Bill amount', { max: 1e9 })).toThrow(/no more than 1000000000/);
+      expect(parseFiniteNumber('0', 'Bill amount', { min: 0, max: 1e9 })).toBe(0);
+    });
+
+    it('strips trailing zeros in display formatting', () => {
+      expect(formatResult(50)).toBe('50');
+      expect(formatResult(0)).toBe('0');
+      expect(formatResult(10.5)).toBe('10.5');
+      expect(formatResult(99.99)).toBe('99.99');
+      expect(formatResult(33.333333)).toBe('33.333333');
     });
   });
 

@@ -1,9 +1,6 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
-import { AUDIO_MAX_BYTES, createApp } from '../api/index';
-import { loadConfig } from '../lib/config';
-import { MemoryRateLimitStore, UpstashRateLimitStore } from '../lib/security/rateLimit';
-import { afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createApp } from '../api/index';
 import { redact } from '../lib/security/errors';
 import type { AppConfig } from '../lib/config';
 

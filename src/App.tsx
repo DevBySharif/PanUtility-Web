@@ -472,8 +472,9 @@ function AppContent() {
         toolTitle={activeToolObj?.name} 
         toolDescription={activeToolObj?.description} 
         category={activeToolObj?.category} 
-        isIndexable={activeToolObj?.isIndexable ?? false}
+        isIndexable={activeToolObj ? activeToolObj.isIndexable : !routeNotFound}
         processingType={activeToolObj?.processingType}
+        routeNotFound={routeNotFound}
       />
       
       {/* Universal Top Nav */}
@@ -973,15 +974,19 @@ function AppContent() {
               {filteredTools.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                   {filteredTools.map((tool, index) => (
-                    <motion.div
+                    <motion.a
                       key={tool.id}
+                      href={`/tools/${tool.id}`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.04 }}
-                      onClick={() => navigateToTool(tool.id as ToolId)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateToTool(tool.id as ToolId);
+                      }}
                       draggable={true}
                       onDragStart={(e) => {
-                        const dataTransfer = (e as unknown as React.DragEvent<HTMLDivElement>).dataTransfer;
+                        const dataTransfer = (e as unknown as React.DragEvent<HTMLAnchorElement>).dataTransfer;
                         dataTransfer.setData('text/plain', tool.id);
                         dataTransfer.setData('source', 'grid-tool');
                         dataTransfer.effectAllowed = 'copyMove';
@@ -1032,12 +1037,17 @@ function AppContent() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           togglePinTool(tool.id);
                         }}
                         className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800 transition-all cursor-pointer opacity-70 group-hover:opacity-100"
                         title={pinnedToolIds.includes(tool.id) ? "Remove from favorite tools" : "Add to favorite tools"}
                       >
-                        <Star className={`w-4 h-4 ${pinnedToolIds.includes(tool.id) ? 'fill-emerald-400 text-emerald-400' : ''}`} />
+                        {pinnedToolIds.includes(tool.id) ? (
+                          <PushPin className="w-4 h-4 text-emerald-400 fill-emerald-400" />
+                        ) : (
+                          <PushPinSlash className="w-4 h-4 text-zinc-500" />
+                        )}
                       </button>
 
                       {tool.badge && (
@@ -1067,7 +1077,7 @@ function AppContent() {
                       <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:translate-x-1 transition-transform w-fit">
                         {tool.status === 'coming-soon' ? 'View availability' : tool.status === 'disabled' ? 'View status' : 'Launch Workspace'} &rarr;
                       </div>
-                    </motion.div>
+                    </motion.a>
                   ))}
                 </div>
               ) : (
@@ -1104,6 +1114,7 @@ function AppContent() {
                 <ToolWorkspace
                   tool={TOOL_BY_ID[activeTool]}
                   onBack={handleBack}
+                  onNavigate={navigateToTool}
                   initialFile={droppedFile || undefined}
                 />
               )}

@@ -1,217 +1,217 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://panutility.com/</loc>
+    <loc>https://panutility.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/gif-maker</loc>
+    <loc>https://panutility.vercel.app/tools/gif-maker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/video-to-audio</loc>
+    <loc>https://panutility.vercel.app/tools/video-to-audio</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/frame-extractor</loc>
+    <loc>https://panutility.vercel.app/tools/frame-extractor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/image-converter</loc>
+    <loc>https://panutility.vercel.app/tools/image-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/color-extractor</loc>
+    <loc>https://panutility.vercel.app/tools/color-extractor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/image-compressor</loc>
+    <loc>https://panutility.vercel.app/tools/image-compressor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/meme-generator</loc>
+    <loc>https://panutility.vercel.app/tools/meme-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/image-filters</loc>
+    <loc>https://panutility.vercel.app/tools/image-filters</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/image-resizer</loc>
+    <loc>https://panutility.vercel.app/tools/image-resizer</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/ascii-art</loc>
+    <loc>https://panutility.vercel.app/tools/ascii-art</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/pdf-compiler</loc>
+    <loc>https://panutility.vercel.app/tools/pdf-compiler</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/csv-to-json</loc>
+    <loc>https://panutility.vercel.app/tools/csv-to-json</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/json-to-csv</loc>
+    <loc>https://panutility.vercel.app/tools/json-to-csv</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/markdown-to-html</loc>
+    <loc>https://panutility.vercel.app/tools/markdown-to-html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/audio-trimmer</loc>
+    <loc>https://panutility.vercel.app/tools/audio-trimmer</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/case-converter</loc>
+    <loc>https://panutility.vercel.app/tools/case-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/word-counter</loc>
+    <loc>https://panutility.vercel.app/tools/word-counter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/lorem-ipsum</loc>
+    <loc>https://panutility.vercel.app/tools/lorem-ipsum</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/morse-translator</loc>
+    <loc>https://panutility.vercel.app/tools/morse-translator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/binary-translator</loc>
+    <loc>https://panutility.vercel.app/tools/binary-translator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/base64-coder</loc>
+    <loc>https://panutility.vercel.app/tools/base64-coder</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/url-coder</loc>
+    <loc>https://panutility.vercel.app/tools/url-coder</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/html-entities</loc>
+    <loc>https://panutility.vercel.app/tools/html-entities</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/text-reverser</loc>
+    <loc>https://panutility.vercel.app/tools/text-reverser</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/line-remover</loc>
+    <loc>https://panutility.vercel.app/tools/line-remover</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/qr-generator</loc>
+    <loc>https://panutility.vercel.app/tools/qr-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/json-formatter</loc>
+    <loc>https://panutility.vercel.app/tools/json-formatter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/unit-converter</loc>
+    <loc>https://panutility.vercel.app/tools/unit-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/percent-calc</loc>
+    <loc>https://panutility.vercel.app/tools/percent-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/tip-calc</loc>
+    <loc>https://panutility.vercel.app/tools/tip-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/gpa-calc</loc>
+    <loc>https://panutility.vercel.app/tools/gpa-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/age-calc</loc>
+    <loc>https://panutility.vercel.app/tools/age-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/loan-calc</loc>
+    <loc>https://panutility.vercel.app/tools/loan-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/bmi-calc</loc>
+    <loc>https://panutility.vercel.app/tools/bmi-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/noise-maker</loc>
+    <loc>https://panutility.vercel.app/tools/noise-maker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/breath-guide</loc>
+    <loc>https://panutility.vercel.app/tools/breath-guide</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/pomodoro</loc>
+    <loc>https://panutility.vercel.app/tools/pomodoro</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/habit-tracker</loc>
+    <loc>https://panutility.vercel.app/tools/habit-tracker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/water-tracker</loc>
+    <loc>https://panutility.vercel.app/tools/water-tracker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/dice-roller</loc>
+    <loc>https://panutility.vercel.app/tools/dice-roller</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/coin-flipper</loc>
+    <loc>https://panutility.vercel.app/tools/coin-flipper</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.com/tools/rock-paper-scissors</loc>
+    <loc>https://panutility.vercel.app/tools/rock-paper-scissors</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

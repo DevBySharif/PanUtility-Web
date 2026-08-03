@@ -8,6 +8,29 @@ interface SeoManagerProps {
   category?: string;
   isIndexable: boolean;
   processingType?: ProcessingType;
+  routeNotFound?: boolean;
+}
+
+const DOMAIN = 'https://panutility.vercel.app';
+
+function setMetaTag(attribute: 'name' | 'property', attrValue: string, content: string) {
+  let element = document.querySelector(`meta[${attribute}="${attrValue}"]`);
+  if (!element) {
+    element = document.createElement('meta');
+    element.setAttribute(attribute, attrValue);
+    document.head.appendChild(element);
+  }
+  element.setAttribute('content', content);
+}
+
+function setCanonicalUrl(url: string) {
+  let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    document.head.appendChild(link);
+  }
+  link.setAttribute('href', url);
 }
 
 export const SeoManager: React.FC<SeoManagerProps> = ({
@@ -17,37 +40,40 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
   category,
   isIndexable,
   processingType,
+  routeNotFound = false,
 }) => {
   useEffect(() => {
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
-      document.head.appendChild(metaDescription);
-    }
+    // Clean up previous JSON-LD script tags
+    const existingScripts = document.querySelectorAll('script[data-seo="panutility-jsonld"]');
+    existingScripts.forEach((script) => script.remove());
 
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      document.head.appendChild(metaKeywords);
-    }
+    const isToolView = Boolean(toolId && toolTitle && toolDescription && !routeNotFound);
 
-    let metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      metaRobots = document.createElement('meta');
-      metaRobots.setAttribute('name', 'robots');
-      document.head.appendChild(metaRobots);
-    }
+    if (routeNotFound) {
+      const title = 'Page Not Found - PanUtility';
+      const desc = 'The requested page or utility could not be found on PanUtility.';
+      const canonical = `${DOMAIN}/`;
 
-    const existingScript = document.getElementById('panutility-jsonld');
-    if (existingScript) {
-      existingScript.remove();
-    }
+      document.title = title;
+      setCanonicalUrl(canonical);
+      setMetaTag('name', 'description', desc);
+      setMetaTag('name', 'robots', 'noindex, nofollow');
+      setMetaTag('name', 'keywords', 'utility tools, page not found');
+      
+      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:type', 'website');
+      setMetaTag('property', 'og:title', title);
+      setMetaTag('property', 'og:description', desc);
+      setMetaTag('property', 'og:url', canonical);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
 
-    if (toolId && toolTitle && toolDescription) {
-      const titleText = `${toolTitle} - Free Client-Side Tool | PanUtility`;
-      document.title = titleText;
+      setMetaTag('name', 'twitter:card', 'summary_large_image');
+      setMetaTag('name', 'twitter:title', title);
+      setMetaTag('name', 'twitter:description', desc);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
+    } else if (isToolView) {
+      const canonical = `${DOMAIN}/tools/${toolId}`;
+      const titleText = `${toolTitle} - PanUtility`;
       
       const processingCopy = processingType === 'browser'
         ? 'Processed locally in your browser.'
@@ -56,43 +82,134 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
           : processingType === 'external'
             ? 'This operation uses a third-party provider.'
             : 'Processing is currently unavailable.';
-      const descText = `${toolDescription} ${processingCopy}`;
-      metaDescription.setAttribute('content', descText);
-      metaRobots.setAttribute('content', isIndexable ? 'index,follow' : 'noindex,nofollow');
       
-      const keywordText = `${toolTitle.toLowerCase()}, in-browser ${toolTitle.toLowerCase()}, offline ${toolTitle.toLowerCase()}, secure utility`;
-      metaKeywords.setAttribute('content', keywordText);
+      const descText = `${toolDescription} ${processingCopy}`;
+      const keywordText = `${toolTitle?.toLowerCase() || ''}, ${category?.toLowerCase() || 'utility'}, in-browser ${toolTitle?.toLowerCase() || ''}, secure utility tool`;
 
-      const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": toolTitle,
-        "operatingSystem": "Web Browser",
-        "applicationCategory": category || "UtilityApplication",
-        "description": toolDescription,
-        "offers": {
-          "@type": "Offer",
-          "price": "0.00",
-          "priceCurrency": "USD"
-        },
-        "browserRequirements": "Requires HTML5 compatible web browser"
-      };
+      document.title = titleText;
+      setCanonicalUrl(canonical);
+      setMetaTag('name', 'description', descText);
+      setMetaTag('name', 'robots', isIndexable ? 'index, follow' : 'noindex, nofollow');
+      setMetaTag('name', 'keywords', keywordText);
+
+      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:type', 'website');
+      setMetaTag('property', 'og:title', titleText);
+      setMetaTag('property', 'og:description', descText);
+      setMetaTag('property', 'og:url', canonical);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
+
+      setMetaTag('name', 'twitter:card', 'summary_large_image');
+      setMetaTag('name', 'twitter:title', titleText);
+      setMetaTag('name', 'twitter:description', descText);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
 
       if (isIndexable) {
-        const script = document.createElement('script');
-        script.id = 'panutility-jsonld';
-        script.type = 'application/ld+json';
-        script.text = JSON.stringify(schemaData);
-        document.head.appendChild(script);
-      }
+        const webAppSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: toolTitle,
+          url: canonical,
+          operatingSystem: 'Web Browser',
+          applicationCategory: category || 'UtilityApplication',
+          description: toolDescription,
+          offers: {
+            '@type': 'Offer',
+            price: '0.00',
+            priceCurrency: 'USD',
+          },
+          browserRequirements: 'Requires HTML5 compatible web browser',
+        };
 
+        const breadcrumbSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: `${DOMAIN}/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: category || 'Utilities',
+              item: `${DOMAIN}/`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: toolTitle,
+              item: canonical,
+            },
+          ],
+        };
+
+        const appScript = document.createElement('script');
+        appScript.setAttribute('data-seo', 'panutility-jsonld');
+        appScript.type = 'application/ld+json';
+        appScript.text = JSON.stringify(webAppSchema);
+        document.head.appendChild(appScript);
+
+        const breadcrumbScript = document.createElement('script');
+        breadcrumbScript.setAttribute('data-seo', 'panutility-jsonld');
+        breadcrumbScript.type = 'application/ld+json';
+        breadcrumbScript.text = JSON.stringify(breadcrumbSchema);
+        document.head.appendChild(breadcrumbScript);
+      }
     } else {
-      document.title = "PanUtility - Universal Media & Format Workstation";
-      metaDescription.setAttribute('content', "A transparent all-in-one utility catalog with clear availability and browser, server, or third-party processing labels.");
-      metaKeywords.setAttribute('content', "utility tools, browser media converter, pdf compiler, audio tools, qr code generator");
-      metaRobots.setAttribute('content', 'index,follow');
+      const title = 'PanUtility - Universal Media & Format Workstation';
+      const desc = 'A transparent all-in-one utility catalog with clear availability and browser, server, or third-party processing labels.';
+      const canonical = `${DOMAIN}/`;
+
+      document.title = title;
+      setCanonicalUrl(canonical);
+      setMetaTag('name', 'description', desc);
+      setMetaTag('name', 'robots', 'index, follow');
+      setMetaTag('name', 'keywords', 'utility tools, browser media converter, pdf compiler, audio tools, qr code generator, online utilities');
+
+      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:type', 'website');
+      setMetaTag('property', 'og:title', title);
+      setMetaTag('property', 'og:description', desc);
+      setMetaTag('property', 'og:url', canonical);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
+
+      setMetaTag('name', 'twitter:card', 'summary_large_image');
+      setMetaTag('name', 'twitter:title', title);
+      setMetaTag('name', 'twitter:description', desc);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
+
+      const webSiteSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'PanUtility',
+        url: `${DOMAIN}/`,
+        description: desc,
+      };
+
+      const orgSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'PanUtility',
+        url: `${DOMAIN}/`,
+        logo: `${DOMAIN}/favicon.svg`,
+      };
+
+      const siteScript = document.createElement('script');
+      siteScript.setAttribute('data-seo', 'panutility-jsonld');
+      siteScript.type = 'application/ld+json';
+      siteScript.text = JSON.stringify(webSiteSchema);
+      document.head.appendChild(siteScript);
+
+      const orgScript = document.createElement('script');
+      orgScript.setAttribute('data-seo', 'panutility-jsonld');
+      orgScript.type = 'application/ld+json';
+      orgScript.text = JSON.stringify(orgSchema);
+      document.head.appendChild(orgScript);
     }
-  }, [toolId, toolTitle, toolDescription, category, isIndexable, processingType]);
+  }, [toolId, toolTitle, toolDescription, category, isIndexable, processingType, routeNotFound]);
 
   return null;
 };

@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '../lib/security/errors';
 import { isPublicIp, secureFetch, validateOutboundUrl } from '../lib/security/outbound';
 
 const publicLookup = async () => [{ address: '93.184.216.34', family: 4 }];

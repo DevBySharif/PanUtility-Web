@@ -6,6 +6,9 @@ coverage/
 playwright-report/
 test-results/
 .playwright/
+.vercel
+.env.local
+.env.*.local
 *-player-script.js
 fetch_instances.mjs
 parse_invidious_html.mjs
@@ -23,5 +26,3 @@ tmp-media/
 *.media.tmp
 .DS_Store
 *.log
-.env*
-!.env.example

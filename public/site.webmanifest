@@ -1,0 +1,17 @@
+{
+  "name": "PanUtility - Universal Media & Format Workstation",
+  "short_name": "PanUtility",
+  "description": "A transparent all-in-one utility catalog with clear availability and browser, server, or third-party processing labels.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080a",
+  "theme_color": "#07080a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

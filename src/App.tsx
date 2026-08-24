@@ -1,77 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   IconContext,
-  ArrowClockwise,
   ArrowRight,
-  ArrowsCounterClockwise,
-  Binary,
-  BookOpen,
-  Calculator,
-  Calendar,
-  Camera,
-  Circle,
-  Clock,
-  Code,
-  CornersIn,
-  CornersOut,
-  Crop,
-  Database,
-  DiceFive,
-  DotsSixVertical,
-  Download,
-  Drop,
-  Eye,
-  File,
-  FileArrowUp,
   FileCode,
-  FileCsv,
   FileImage,
-  FilePlus,
   FileText,
-  FilmStrip,
-  Gauge,
   Handshake,
-  Hash,
-  Heart,
-  Key,
-  Layout,
-  Lightning,
-  Link,
   ListBullets,
   MagnifyingGlass,
-  Microphone,
   Moon,
   MusicNotes,
   Palette,
   Percent,
-  Play,
-  Pulse,
   PushPin,
   PushPinSlash,
-  QrCode,
-  Question,
-  Radio,
   Scissors,
   Shield,
   ShieldCheck,
-  Shuffle,
-  Sparkle,
-  SpeakerHigh,
-  SpeakerSlash,
   SquaresFour,
-  Stack,
   Star,
   Sun,
-  Terminal,
   TextT,
-  Timer,
   Trash,
-  TrendUp,
-  Trophy,
   Upload,
   Users,
-  Wind,
   X
 } from '@phosphor-icons/react';
 import type { ToolDefinition } from './types';
@@ -331,58 +283,14 @@ function AppContent() {
       Scissors: <Scissors className="w-5 h-5" />,
       FileImage: <FileImage className="w-5 h-5" />,
       FileText: <FileText className="w-5 h-5" />,
-      Download: <Download className="w-5 h-5" />,
-      MusicNotes: <MusicNotes className="w-5 h-5" />,
-      QrCode: <QrCode className="w-5 h-5" />,
       Palette: <Palette className="w-5 h-5" />,
-      Sparkle: <Sparkle className="w-5 h-5" />,
-      FilmStrip: <FilmStrip className="w-5 h-5" />,
-      Radio: <Radio className="w-5 h-5" />,
-      Camera: <Camera className="w-5 h-5" />,
-      Gauge: <Gauge className="w-5 h-5" />,
-      SpeakerSlash: <SpeakerSlash className="w-5 h-5" />,
-      CornersIn: <CornersIn className="w-5 h-5" />,
-      ArrowsCounterClockwise: <ArrowsCounterClockwise className="w-5 h-5" />,
-      ArrowClockwise: <ArrowClockwise className="w-5 h-5" />,
-      Crop: <Crop className="w-5 h-5" />,
-      Stack: <Stack className="w-5 h-5" />,
-      CornersOut: <CornersOut className="w-5 h-5" />,
-      Terminal: <Terminal className="w-5 h-5" />,
-      File: <File className="w-5 h-5" />,
-      FileArrowUp: <FileArrowUp className="w-5 h-5" />,
-      BookOpen: <BookOpen className="w-5 h-5" />,
-      Binary: <Binary className="w-5 h-5" />,
-      FileCsv: <FileCsv className="w-5 h-5" />,
-      FilePlus: <FilePlus className="w-5 h-5" />,
-      ListBullets: <ListBullets className="w-5 h-5" />,
-      Code: <Code className="w-5 h-5" />,
-      Microphone: <Microphone className="w-5 h-5" />,
-      Pulse: <Pulse className="w-5 h-5" />,
-      Timer: <Timer className="w-5 h-5" />,
-      Shuffle: <Shuffle className="w-5 h-5" />,
       TextT: <TextT className="w-5 h-5" />,
-      Link: <Link className="w-5 h-5" />,
-      Link2: <Link className="w-5 h-5" />,
+      ListBullets: <ListBullets className="w-5 h-5" />,
       Trash: <Trash className="w-5 h-5" />,
       FileCode: <FileCode className="w-5 h-5" />,
-      Hash: <Hash className="w-5 h-5" />,
-      Layout: <Layout className="w-5 h-5" />,
-      Database: <Database className="w-5 h-5" />,
-      Clock: <Clock className="w-5 h-5" />,
-      Calculator: <Calculator className="w-5 h-5" />,
       Percent: <Percent className="w-5 h-5" />,
       Users: <Users className="w-5 h-5" />,
-      Trophy: <Trophy className="w-5 h-5" />,
-      Calendar: <Calendar className="w-5 h-5" />,
-      TrendUp: <TrendUp className="w-5 h-5" />,
-      Heart: <Heart className="w-5 h-5" />,
-      Wind: <Wind className="w-5 h-5" />,
-      Drop: <Drop className="w-5 h-5" />,
-      Key: <Key className="w-5 h-5" />,
-      DiceFive: <DiceFive className="w-5 h-5" />,
-      Circle: <Circle className="w-5 h-5" />,
       Shield: <Shield className="w-5 h-5" />,
-      Question: <Question className="w-5 h-5" />,
     };
     return iconMap[name] || <SquaresFour className="w-5 h-5" />;
   };
@@ -526,19 +434,13 @@ function AppContent() {
 
       {/* Main Container */}
       <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-8 relative">
-        <AnimatePresence mode="wait">
-          {routeNotFound ? (
-            <ToolNotFound onBack={handleBack} />
-          ) : !activeTool ? (
-            /* Dashboard View */
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="flex flex-col gap-8"
-            >
+        {routeNotFound ? (
+          <ToolNotFound onBack={handleBack} />
+        ) : !activeTool ? (
+          /* Dashboard View */
+          <div
+            className="flex flex-col gap-8 pan-enter"
+          >
               {/* Promo Banner / Hero greeting */}
               <div className="text-center max-w-2xl mx-auto py-6 flex flex-col gap-4">
                 <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 px-2.5 py-1 rounded w-fit mx-auto uppercase tracking-wider font-mono select-none">
@@ -561,6 +463,7 @@ function AppContent() {
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
+                    aria-label="Search tools"
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search tools by name, description, category... (Press / to focus)"
                     className="w-full bg-[#111114] border border-zinc-800/80 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-inner"
@@ -568,6 +471,7 @@ function AppContent() {
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer p-0.5"
                     >
                       <X className="w-4 h-4" />
@@ -664,6 +568,7 @@ function AppContent() {
                         onClick={() => setDashboardPendingFile(null)}
                         className="text-gray-500 hover:text-white hover:bg-[#1a1a1a] p-1.5 rounded-lg transition-colors cursor-pointer"
                         title="Clear staged file"
+                        aria-label="Clear staged file"
                         id="clear-staged-file-btn"
                       >
                         <X className="w-4 h-4" />
@@ -827,10 +732,9 @@ function AppContent() {
                       const tool = TOOLS_LIST.find(t => t.id === toolId);
                       if (!tool) return null;
                       return (
-                        <motion.div
+                        <div
                           key={`pinned-${tool.id}`}
                           id={`pinned-tool-${tool.id}`}
-                          layoutId={`pinned-layout-${tool.id}`}
                           draggable={true}
                           onDragStart={(e) => {
                             const dataTransfer = (e as unknown as React.DragEvent<HTMLDivElement>).dataTransfer;
@@ -871,15 +775,10 @@ function AppContent() {
                           className="border border-zinc-800 bg-[#111114] rounded-lg p-3 hover:border-emerald-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-3 relative group active:scale-98 shadow-sm animate-in fade-in zoom-in duration-250"
                         >
                           {/* Interactive Subtle Tooltip system for Pinned Workspace */}
-                          <AnimatePresence>
-                            {hoveredToolId === `pinned-${tool.id}` && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                                transition={{ duration: 0.15, ease: 'easeOut' }}
-                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
-                              >
+                          {hoveredToolId === `pinned-${tool.id}` && (
+                            <div
+                              className="pan-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
+                            >
                                 <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
                                   <span className="text-[9px] bg-emerald-950/40 text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                     Pro-Tip & Shortcut
@@ -903,9 +802,8 @@ function AppContent() {
                                 </div>
                                 {/* Mini triangle arrow */}
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                            </div>
+                          )}
 
                           {/* Unpin Button */}
                           <button
@@ -915,6 +813,7 @@ function AppContent() {
                             }}
                             className="absolute top-2.5 right-2.5 z-10 p-1 rounded hover:text-red-400 hover:bg-[#151515] text-gray-500 transition-colors cursor-pointer"
                             title="Unpin tool"
+                            aria-label={`Unpin ${tool.name}`}
                           >
                             <PushPinSlash className="w-3.5 h-3.5" />
                           </button>
@@ -932,7 +831,7 @@ function AppContent() {
                               </span>
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
 
@@ -979,12 +878,9 @@ function AppContent() {
               {filteredTools.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                   {filteredTools.map((tool, index) => (
-                    <motion.a
+                    <a
                       key={tool.id}
                       href={`/tools/${tool.id}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.04 }}
                       onClick={(e) => {
                         e.preventDefault();
                         navigateToTool(tool.id as ToolId);
@@ -998,19 +894,14 @@ function AppContent() {
                       }}
                       onMouseEnter={() => setHoveredToolId(tool.id)}
                       onMouseLeave={() => setHoveredToolId(null)}
-                      className="border border-zinc-800 bg-[#111114] rounded-xl p-5 shadow-xl hover:border-emerald-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
-                      style={{ contentVisibility: 'auto' }}
+                      className="pan-enter border border-zinc-800 bg-[#111114] rounded-xl p-5 shadow-xl hover:border-emerald-500/30 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between gap-6 relative group active:scale-98"
+                      style={{ contentVisibility: 'auto', animationDelay: `${Math.min(index, 12) * 40}ms` }}
                     >
                       {/* Interactive Subtle Tooltip system */}
-                      <AnimatePresence>
-                        {hoveredToolId === tool.id && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                            transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
-                          >
+                      {hoveredToolId === tool.id && (
+                        <div
+                          className="pan-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-72 bg-[#0e0e11] border border-zinc-700/50 rounded-xl p-3 shadow-2xl pointer-events-none text-left"
+                        >
                             <div className="flex items-center justify-between border-b border-zinc-850 pb-1.5 mb-2">
                               <span className="text-[9px] bg-emerald-950/40 text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
                                 Pro-Tip & Shortcut
@@ -1034,9 +925,8 @@ function AppContent() {
                             </div>
                             {/* Mini triangle arrow */}
                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-zinc-800 w-0 h-0" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                        </div>
+                      )}
 
                       {/* Favorite/PushPin Button */}
                       <button
@@ -1047,6 +937,7 @@ function AppContent() {
                         }}
                         className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800 transition-all cursor-pointer opacity-70 group-hover:opacity-100"
                         title={pinnedToolIds.includes(tool.id) ? "Remove from favorite tools" : "Add to favorite tools"}
+                        aria-label={pinnedToolIds.includes(tool.id) ? `Remove ${tool.name} from favorite tools` : `Add ${tool.name} to favorite tools`}
                       >
                         {pinnedToolIds.includes(tool.id) ? (
                           <PushPin className="w-4 h-4 text-emerald-400 fill-emerald-400" />
@@ -1082,7 +973,7 @@ function AppContent() {
                       <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:translate-x-1 transition-transform w-fit">
                         {tool.status === 'coming-soon' ? 'View availability' : tool.status === 'disabled' ? 'View status' : 'Launch Workspace'} &rarr;
                       </div>
-                    </motion.a>
+                    </a>
                   ))}
                 </div>
               ) : (
@@ -1105,16 +996,10 @@ function AppContent() {
                   </button>
                 </div>
               )}
-            </motion.div>
+            </div>
           ) : (
             /* Active Workspace Router */
-            <motion.div
-              key="workspace"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-            >
+            <div className="pan-enter">
               {activeTool && (
                 <ToolWorkspace
                   tool={TOOL_BY_ID[activeTool]}
@@ -1123,9 +1008,8 @@ function AppContent() {
                   initialFile={droppedFile || undefined}
                 />
               )}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </main>
 
       {/* Aesthetic Footer */}
@@ -1305,11 +1189,48 @@ function AppContent() {
   );
 }
 
+class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error('PanUtility UI error boundary caught:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#07080a] text-[#f4f4f5] flex flex-col items-center justify-center gap-4 p-8 text-center" role="alert">
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 px-2.5 py-1 rounded uppercase tracking-wider font-mono select-none">
+            Unexpected Error
+          </span>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Something went wrong</h1>
+          <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
+            A runtime error interrupted this workspace. Please reload the page to continue using PanUtility.
+          </p>
+          <button
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            className="py-2 px-4 bg-emerald-600 text-white font-bold text-xs rounded uppercase tracking-wider hover:bg-emerald-500 transition-all cursor-pointer"
+          >
+            Reload Application
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
     <ToastProvider>
       <IconContext.Provider value={{ weight: "duotone" }}>
-        <AppContent />
+        <AppErrorBoundary>
+          <AppContent />
+        </AppErrorBoundary>
       </IconContext.Provider>
     </ToastProvider>
   );

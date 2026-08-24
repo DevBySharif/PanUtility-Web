@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowClockwise,
   ArrowLeft,
@@ -105,6 +104,10 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const noiseNodeRef = useRef<AudioWorkletNode | ScriptProcessorNode | null>(null);
 
+  // Transient UI timers tracked for cleanup on unmount
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [convertedBlobUrl, setConvertedBlobUrl] = useState<string | null>(null);
   const [convertedFilename, setConvertedFilename] = useState<string>('');
   // Custom states for tailored tools
@@ -153,13 +156,22 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   useEffect(() => {
     return () => {
       stopAudio();
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
     };
   }, []);
 
   const handleCopy = (textToCopy: string) => {
-    navigator.clipboard.writeText(textToCopy);
+    try {
+      navigator.clipboard.writeText(textToCopy).catch(() => {
+        addLog('Clipboard unavailable; copy blocked by browser policy.');
+      });
+    } catch {
+      addLog('Clipboard unavailable; copy blocked by browser policy.');
+    }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
   const addLog = (log: string) => {
@@ -175,6 +187,10 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     if (noiseNodeRef.current) {
       noiseNodeRef.current.disconnect();
       noiseNodeRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch(e){}
+      audioCtxRef.current = null;
     }
     setGameActive(false);
   };
@@ -421,12 +437,14 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const runCoinFlip = () => {
     setGameActive(true);
     addLog('Flipping coin...');
-    setTimeout(() => {
+    if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
+    flipTimeoutRef.current = setTimeout(() => {
       const side = Math.random() > 0.5 ? 'HEADS' : 'TAILS';
       setOutputText(side);
       addLog(`Result: ${side}`);
       setGameActive(false);
       setGameScore(prev => prev + 1);
+      flipTimeoutRef.current = null;
     }, 800);
   };
 
@@ -465,6 +483,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               osc.connect(ctx.destination);
               osc.start();
               osc.stop(ctx.currentTime + 0.3);
+              osc.onended = () => { try { ctx.close(); } catch(e){} };
             } catch(e){}
             return 0;
           }
@@ -2343,16 +2362,16 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 <div className="flex flex-col items-center gap-6">
                   {/* Expanding sphere animation container */}
                   <div className="h-44 flex items-center justify-center">
-                    <motion.div
-                      animate={{
-                        scale: timerRunning ? (breathProgress * 0.8 + 0.6) : 0.8,
-                        boxShadow: timerRunning ? `0 0 ${breathProgress * 30 + 10}px rgba(197, 163, 104, 0.4)` : 'none'
+                    <div
+                      style={{
+                        transform: `scale(${timerRunning ? (breathProgress * 0.8 + 0.6) : 0.8})`,
+                        boxShadow: timerRunning ? `0 0 ${breathProgress * 30 + 10}px rgba(197, 163, 104, 0.4)` : 'none',
+                        transition: 'transform 1s ease-in-out, box-shadow 1s ease-in-out'
                       }}
-                      transition={{ duration: 1, ease: 'easeInOut' }}
                       className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#059669] to-[#10b981] flex items-center justify-center text-black font-bold"
                     >
                       <Wind className="w-8 h-8 text-[#0d0d0d] animate-pulse" />
-                    </motion.div>
+                    </div>
                   </div>
 
                   <div className="text-center">
@@ -2419,13 +2438,15 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 <div className="flex flex-col items-center gap-4">
                   <div className="relative w-28 h-40 bg-black border-2 border-[#333] rounded-b-xl overflow-hidden shadow-inner flex flex-col justify-end">
                     {/* Water Level Wave Overlay */}
-                    <motion.div
-                      animate={{ height: `${Math.min(100, (waterOunces / 80) * 100)}%` }}
-                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                    <div
+                      style={{
+                        height: `${Math.min(100, (waterOunces / 80) * 100)}%`,
+                        transition: 'height 0.5s ease-out'
+                      }}
                       className="w-full bg-cyan-500/30 border-t-2 border-cyan-400/80 relative flex items-center justify-center font-mono text-xs font-bold text-cyan-200"
                     >
                       <span className="absolute">{waterOunces} oz</span>
-                    </motion.div>
+                    </div>
                   </div>
 
                   <div className="flex gap-2 w-full">
@@ -2565,13 +2586,15 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               {tool.id === 'coin-flipper' && (
                 <div className="flex flex-col items-center gap-4">
                   <div className="h-28 flex items-center justify-center">
-                    <motion.div
-                      animate={{ rotateY: gameActive ? 360 * 3 : 0 }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    <div
+                      style={{
+                        transform: gameActive ? 'rotateY(1080deg)' : 'rotateY(0deg)',
+                        transition: 'transform 0.8s ease-out'
+                      }}
                       className="w-20 h-20 bg-gradient-to-tr from-[#059669] to-[#10b981] rounded-full flex items-center justify-center border border-[#10b981]/40 text-black font-sans text-lg font-bold shadow-lg"
                     >
                       {outputText || '$'}
-                    </motion.div>
+                    </div>
                   </div>
                   <button onClick={runCoinFlip} disabled={gameActive} className="w-full py-2 bg-[#10b981] text-black font-bold text-xs rounded uppercase tracking-wider transition-all cursor-pointer">
                     {gameActive ? 'Flipping...' : 'Flip Silver Coin'}

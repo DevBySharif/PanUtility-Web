@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -191,4 +190,81 @@ svg .ph-duotone {
 .group:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* --- LIGHTWEIGHT CSS ANIMATIONS (replaces motion library in App shell) --- */
+@keyframes pan-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pan-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pan-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pan-toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.pan-enter {
+  animation: pan-fade-in-up 0.25s ease-out both;
+}
+
+.pan-tooltip {
+  animation: pan-tooltip-in 0.15s ease-out both;
+}
+
+.pan-toast-in {
+  animation: pan-toast-in 0.3s ease-out both;
+}
+
+.pan-toast-progress {
+  width: 100%;
+  animation-name: pan-toast-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pan-enter,
+  .pan-tooltip,
+  .pan-toast-in,
+  .pan-toast-progress {
+    animation: none;
+  }
+  .group:hover,
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

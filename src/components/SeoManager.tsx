@@ -65,12 +65,12 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('property', 'og:title', title);
       setMetaTag('property', 'og:description', desc);
       setMetaTag('property', 'og:url', canonical);
-      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.svg`);
 
       setMetaTag('name', 'twitter:card', 'summary_large_image');
       setMetaTag('name', 'twitter:title', title);
       setMetaTag('name', 'twitter:description', desc);
-      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.svg`);
     } else if (isToolView) {
       const canonical = `${DOMAIN}/tools/${toolId}`;
       const titleText = `${toolTitle} - PanUtility`;
@@ -97,12 +97,12 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('property', 'og:title', titleText);
       setMetaTag('property', 'og:description', descText);
       setMetaTag('property', 'og:url', canonical);
-      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.svg`);
 
       setMetaTag('name', 'twitter:card', 'summary_large_image');
       setMetaTag('name', 'twitter:title', titleText);
       setMetaTag('name', 'twitter:description', descText);
-      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.svg`);
 
       if (isIndexable) {
         const webAppSchema = {
@@ -174,12 +174,12 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('property', 'og:title', title);
       setMetaTag('property', 'og:description', desc);
       setMetaTag('property', 'og:url', canonical);
-      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('property', 'og:image', `${DOMAIN}/og-image.svg`);
 
       setMetaTag('name', 'twitter:card', 'summary_large_image');
       setMetaTag('name', 'twitter:title', title);
       setMetaTag('name', 'twitter:description', desc);
-      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.png`);
+      setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.svg`);
 
       const webSiteSchema = {
         '@context': 'https://schema.org',

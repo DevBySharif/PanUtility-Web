@@ -2,10 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   IconContext,
   ArrowRight,
+  ArrowsCounterClockwise,
+  Code,
   FileCode,
   FileImage,
   FileText,
   Handshake,
+  Link,
   ListBullets,
   MagnifyingGlass,
   Moon,
@@ -17,6 +20,7 @@ import {
   Scissors,
   Shield,
   ShieldCheck,
+  SpeakerHigh,
   SquaresFour,
   Star,
   Sun,
@@ -291,6 +295,11 @@ function AppContent() {
       Percent: <Percent className="w-5 h-5" />,
       Users: <Users className="w-5 h-5" />,
       Shield: <Shield className="w-5 h-5" />,
+      ShieldCheck: <ShieldCheck className="w-5 h-5" />,
+      Link: <Link className="w-5 h-5" />,
+      Code: <Code className="w-5 h-5" />,
+      ArrowsCounterClockwise: <ArrowsCounterClockwise className="w-5 h-5" />,
+      SpeakerHigh: <SpeakerHigh className="w-5 h-5" />,
     };
     return iconMap[name] || <SquaresFour className="w-5 h-5" />;
   };

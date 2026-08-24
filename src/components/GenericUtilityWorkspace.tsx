@@ -1672,7 +1672,20 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                 {tool.id === 'html-entities' && (
                   <>
-                    <button onClick={() => setOutputText(inputText.replace(/[\u00A0-\u9999<>\&]/g, (i) => '&#'+i.charCodeAt(0)+';'))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode HTML Entities</button>
+                    <button onClick={() => setOutputText(inputText.replace(/[&<>"'\u00A0-\u9999\ud800-\udfff]/g, (ch) => {
+                      if (ch === '&') return '&amp;';
+                      if (ch === '<') return '&lt;';
+                      if (ch === '>') return '&gt;';
+                      if (ch === '"') return '&quot;';
+                      if (ch === "'") return '&#39;';
+                      return '&#' + ch.codePointAt(0)! + ';';
+                    }))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Encode HTML Entities</button>
+                    <button onClick={() => setOutputText(inputText.replace(/&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z]+);/g, (match) => {
+                      if (match.startsWith('&#x')) return String.fromCodePoint(parseInt(match.slice(3, -1), 16));
+                      if (match.startsWith('&#')) return String.fromCodePoint(parseInt(match.slice(2, -1), 10));
+                      const named: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&nbsp;': '\u00A0' };
+                      return named[match] ?? match;
+                    }))} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Decode HTML Entities</button>
                   </>
                 )}
 
@@ -1698,7 +1711,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                 {tool.id === 'text-reverser' && (
                   <>
-                    <button onClick={() => setOutputText(inputText.split('').reverse().join(''))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Reverse Characters</button>
+                    <button onClick={() => setOutputText(Array.from(inputText).reverse().join(''))} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Reverse Characters</button>
                     <button onClick={() => setOutputText(inputText.split(/\s+/).reverse().join(' '))} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Reverse Words</button>
                   </>
                 )}

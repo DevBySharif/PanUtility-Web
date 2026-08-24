@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   CheckCircle,
   Info,
@@ -91,16 +90,16 @@ interface ToastContainerProps {
 
 function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
-    <div 
-      className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
-      id="global-toast-container"
-    >
-      <AnimatePresence>
+      <div 
+        className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+        id="global-toast-container"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onDismiss={() => onRemove(toast.id)} />
         ))}
-      </AnimatePresence>
-    </div>
+      </div>
   );
 }
 
@@ -154,14 +153,10 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const styles = getStyleAndIcon();
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-      className={`pointer-events-auto flex flex-col w-full rounded-xl border ${styles.bg} shadow-2xl backdrop-blur-md overflow-hidden`}
+    <div
+      className={`pan-toast-in pointer-events-auto flex flex-col w-full rounded-xl border ${styles.bg} shadow-2xl backdrop-blur-md overflow-hidden`}
       id={`toast-item-${toast.id}`}
+      role={type === 'error' ? 'alert' : 'status'}
     >
       <div className="p-4 flex items-start gap-3">
         <div className="mt-0.5">{styles.icon}</div>
@@ -175,7 +170,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         </div>
         <button
           onClick={onDismiss}
-          className="text-gray-500 hover:text-gray-300 transition-colors p-0.5 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 mt-0.5"
+          className="text-gray-500 hover:text-gray-300 transition-colors p-2 min-h-10 min-w-10 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 mt-0.5 inline-flex items-center justify-center"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -184,14 +179,12 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
 
       {duration && duration > 0 && (
         <div className="w-full h-1 bg-white/5 mt-auto relative">
-          <motion.div
-            initial={{ width: '100%' }}
-            animate={{ width: '0%' }}
-            transition={{ duration: duration / 1000, ease: 'linear' }}
-            className={`h-full ${styles.progressBg}`}
+          <div
+            className={`pan-toast-progress h-full ${styles.progressBg}`}
+            style={{ animationDuration: `${Math.max(duration, 1) / 1000}s` }}
           />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

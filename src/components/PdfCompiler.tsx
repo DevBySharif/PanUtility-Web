@@ -503,11 +503,13 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
             }`}
           >
             <input
+              id="pdf-compiler-file-input"
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
               multiple
               accept="image/*"
+              aria-label="Choose image files to compile into a PDF"
               className="hidden"
             />
             <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#10b981]">
@@ -570,7 +572,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                     <button
                       onClick={() => moveItem(index, 'up')}
                       disabled={index === 0}
-                      className="p-1.5 bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/40"
                       title="Move Page Up"
                       aria-label={`Move ${item.name} up`}
                     >
@@ -580,7 +582,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                     <button
                       onClick={() => moveItem(index, 'down')}
                       disabled={index === items.length - 1}
-                      className="p-1.5 bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center bg-[#151515] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/40"
                       title="Move Page Down"
                       aria-label={`Move ${item.name} down`}
                     >
@@ -589,7 +591,7 @@ export default function PdfCompiler({ onBack, initialFile }: PdfCompilerProps) {
                     {/* Trash Button */}
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer ml-1"
+                      className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer ml-1 focus:outline-none focus:ring-2 focus:ring-rose-400/40"
                       title="Delete Page"
                       aria-label={`Delete ${item.name}`}
                     >

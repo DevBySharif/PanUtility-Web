@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { INDEXABLE_TOOLS } from '../src/toolsData.ts';
+import { HIDDEN_TOOLS, INDEXABLE_TOOLS } from '../src/toolsData.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,7 +23,7 @@ function escapeHtml(str: string): string {
 function buildMetaAndHead(options: {
   title: string;
   description: string;
-  canonical: string;
+  canonical?: string;
   robots: string;
   keywords: string;
   jsonLdScripts: object[];
@@ -40,17 +40,17 @@ function buildMetaAndHead(options: {
     `<meta name="keywords" content="${escapeHtml(keywords)}" />`,
     `<meta name="author" content="PanUtility" />`,
     `<meta name="robots" content="${escapeHtml(robots)}" />`,
-    `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
+    canonical ? `<link rel="canonical" href="${escapeHtml(canonical)}" />` : '',
     `<meta property="og:site_name" content="PanUtility" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:title" content="${escapeHtml(title)}" />`,
     `<meta property="og:description" content="${escapeHtml(description)}" />`,
-    `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
-    `<meta property="og:image" content="${DOMAIN}/og-image.png" />`,
+    canonical ? `<meta property="og:url" content="${escapeHtml(canonical)}" />` : '',
+    `<meta property="og:image" content="${DOMAIN}/og-image.svg" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
-    `<meta name="twitter:image" content="${DOMAIN}/og-image.png" />`,
+    `<meta name="twitter:image" content="${DOMAIN}/og-image.svg" />`,
     jsonLdTags,
   ].join('\n    ');
 }
@@ -277,4 +277,73 @@ for (const tool of INDEXABLE_TOOLS) {
   prerenderCount++;
 }
 
-console.log(`Prerendered Homepage and ${prerenderCount} indexable tool pages in dist/!`);
+// 3. Generate noindex raw HTML for known hidden routes.
+// These files are intentionally excluded from sitemap/indexability while
+// preventing crawlers from seeing homepage metadata for unavailable tools.
+let hiddenCount = 0;
+for (const tool of HIDDEN_TOOLS) {
+  const canonical = `${DOMAIN}/tools/${tool.id}`;
+  const statusLabel = tool.status === 'beta'
+    ? 'Beta preview'
+    : tool.status === 'coming-soon'
+      ? 'Coming soon'
+      : 'Temporarily unavailable';
+  const description = tool.status === 'disabled'
+    ? (tool.statusReason || 'This tool is temporarily unavailable.')
+    : tool.status === 'coming-soon'
+      ? 'Processing for this tool is not implemented yet. No file is uploaded and no output is created on this page.'
+      : 'This beta tool is not part of the public launch catalog yet. It remains noindex while functionality is being verified.';
+
+  const hiddenHead = buildMetaAndHead({
+    title: `${tool.name} Unavailable - PanUtility`,
+    description,
+    canonical,
+    robots: 'noindex, nofollow',
+    keywords: `${tool.name.toLowerCase()}, unavailable utility, panutility hidden route`,
+    jsonLdScripts: [],
+  });
+
+  const hiddenBody = `
+<div class="min-h-screen bg-[#07080a] text-zinc-100 font-sans selection:bg-emerald-500/30">
+  <main class="mx-auto max-w-3xl px-4 py-12" data-testid="unavailable-tool-raw">
+    <a href="/" class="text-xs font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300">&larr; Back to PanUtility</a>
+    <section class="mt-8 rounded-2xl border border-zinc-800 bg-[#0d0d0f] p-6 shadow-2xl">
+      <span class="inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300">${escapeHtml(statusLabel)}</span>
+      <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-white">${escapeHtml(tool.name)}</h1>
+      <p class="mt-3 text-sm leading-relaxed text-zinc-400">${escapeHtml(description)}</p>
+      <p class="mt-5 text-xs leading-relaxed text-zinc-500">This route is intentionally omitted from the sitemap and marked noindex until the tool is launch-ready.</p>
+    </section>
+  </main>
+</div>
+`;
+
+  const hiddenHtml = injectHeadAndBody(template, hiddenHead, hiddenBody);
+  const toolDir = join(distDir, 'tools', tool.id);
+  await mkdir(toolDir, { recursive: true });
+  await writeFile(join(toolDir, 'index.html'), hiddenHtml, 'utf8');
+  hiddenCount++;
+}
+
+// 4. Generate a noindex 404 document for unknown routes.
+const notFoundHead = buildMetaAndHead({
+  title: 'Page Not Found - PanUtility',
+  description: 'The requested PanUtility page could not be found.',
+  robots: 'noindex, nofollow',
+  keywords: 'panutility not found',
+  jsonLdScripts: [],
+});
+const notFoundBody = `
+<div class="min-h-screen bg-[#07080a] text-zinc-100 font-sans selection:bg-emerald-500/30">
+  <main class="mx-auto max-w-3xl px-4 py-12" data-testid="not-found-raw">
+    <a href="/" class="text-xs font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300">&larr; Back to PanUtility</a>
+    <section class="mt-8 rounded-2xl border border-zinc-800 bg-[#0d0d0f] p-6 shadow-2xl">
+      <span class="inline-flex rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-300">404</span>
+      <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-white">Tool not found</h1>
+      <p class="mt-3 text-sm leading-relaxed text-zinc-400">We could not find a PanUtility tool or page at this URL.</p>
+    </section>
+  </main>
+</div>
+`;
+await writeFile(join(distDir, '404.html'), injectHeadAndBody(template, notFoundHead, notFoundBody), 'utf8');
+
+console.log(`Prerendered Homepage, ${prerenderCount} indexable tool pages, ${hiddenCount} noindex hidden tool pages, and 404.html in dist/!`);

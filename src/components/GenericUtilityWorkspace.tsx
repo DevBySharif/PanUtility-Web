@@ -1535,10 +1535,11 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
               {/* Text area inputs */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                  <label htmlFor={`${tool.id}-source-text`} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
                     Source Text Input
                   </label>
                   <textarea
+                    id={`${tool.id}-source-text`}
                     value={inputText}
                     onChange={(e) => {
                       setInputText(e.target.value);
@@ -1553,7 +1554,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                    <label htmlFor={`${tool.id}-processed-output`} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
                       Processed Content Output
                     </label>
                     {outputText && (
@@ -1593,6 +1594,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                     )}
                   </div>
                   <textarea
+                    id={`${tool.id}-processed-output`}
                     readOnly
                     value={outputText}
                     placeholder="Processed results will compile here..."
@@ -1658,7 +1660,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
                 {tool.id === 'lorem-ipsum' && (
                   <div className="flex items-center gap-4">
                     <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Paragraph count:</span>
-                    <input type="number" min="1" max="20" value={sliderVal} onChange={(e) => setSliderVal(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))} className="w-14 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-1 rounded font-mono text-center" />
+                    <input type="number" min="1" max="20" value={sliderVal} aria-label="Lorem ipsum paragraph count" onChange={(e) => setSliderVal(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))} className="w-16 min-h-10 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-2 rounded font-mono text-center" />
                     <button 
                       onClick={() => {
                         setOutputText(generateLorem(sliderVal));

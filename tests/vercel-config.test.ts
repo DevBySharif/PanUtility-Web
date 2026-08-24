@@ -15,8 +15,8 @@ describe('Vercel deployment contract', () => {
     expect(config.functions['api/index.ts'].maxDuration).toBe(30);
     expect(config.rewrites).toEqual([
       { source: '/api/:path*', destination: '/api/index.ts' },
-      { source: '/tools/:path*', destination: '/index.html' },
     ]);
+    expect(config.rewrites.some((rewrite) => rewrite.source.startsWith('/tools/'))).toBe(false);
   });
 
   it('uses strict document headers and immutable caching only for assets', () => {
@@ -26,6 +26,7 @@ describe('Vercel deployment contract', () => {
     for (const rule of [root, tools]) {
       const headers = Object.fromEntries(rule.headers.map(({ key, value }) => [key.toLowerCase(), value]));
       expect(headers['content-security-policy']).toContain("script-src 'self'");
+      expect(headers['content-security-policy']).toContain("worker-src 'self' blob:");
       expect(headers['content-security-policy']).not.toMatch(/script-src[^;]*unsafe-inline|unsafe-eval/);
       expect(headers['strict-transport-security']).toContain('max-age=31536000');
       expect(headers['cache-control']).toContain('must-revalidate');

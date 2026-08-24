@@ -202,10 +202,12 @@ export default function ColorExtractor({ onBack, initialFile }: ColorExtractorPr
           className="border-2 border-dashed border-[#2a2a2a] hover:border-[#10b981]/40 bg-[#0d0d0d] rounded-xl p-12 text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none group min-h-[250px] focus:outline-none focus:border-[#10b981]/70"
         >
           <input
+            id="color-extractor-file-input"
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
             accept="image/*"
+            aria-label="Choose an image file to extract colors"
             className="hidden"
           />
           <div className="p-4 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-4 group-hover:scale-105 transition-transform text-[#10b981]">

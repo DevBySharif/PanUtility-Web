@@ -2,7 +2,8 @@ import express from "express";
 import path from "path";
 import { createApp } from "./api/index";
 
-const PORT = 3000;
+const configuredPort = Number.parseInt(process.env.PORT || '3000', 10);
+const PORT = Number.isFinite(configuredPort) ? configuredPort : 3000;
 
 export async function bootstrap() {
   const app = createApp();
@@ -10,7 +11,7 @@ export async function bootstrap() {
   app.use((_req, res, next) => {
     const developmentSources = process.env.NODE_ENV !== 'production' ? " 'unsafe-inline'" : '';
     const developmentConnections = process.env.NODE_ENV !== 'production' ? ' ws:' : '';
-    res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'${developmentSources}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://api.qrserver.com https://images.unsplash.com; media-src 'self' blob:; connect-src 'self'${developmentConnections}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`);
+    res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'${developmentSources}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://api.qrserver.com https://images.unsplash.com; media-src 'self' blob:; connect-src 'self'${developmentConnections}; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`);
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'camera=(), geolocation=(), payment=(), usb=()');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -36,9 +37,14 @@ export async function bootstrap() {
       else if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       else res.setHeader('Cache-Control', 'public, max-age=3600');
     } }));
-    app.get("/tools/*", (req, res) => {
+    app.get("/tools/*", (_req, res) => {
       res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-      res.sendFile(path.join(distPath, "index.html"));
+      res.status(404).sendFile(path.join(distPath, "404.html"));
+    });
+    app.get("*", (req, res, next) => {
+      if (!req.accepts('html')) return next();
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      res.status(404).sendFile(path.join(distPath, "404.html"));
     });
   }
 

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { INDEXABLE_TOOLS, TOOL_REGISTRY } from '../src/toolsData';
+import { HIDDEN_TOOLS, INDEXABLE_TOOLS, TOOL_REGISTRY } from '../src/toolsData';
 
 describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
   it('robots.txt points to canonical sitemap URL on panutility.vercel.app', () => {
@@ -110,14 +110,37 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     }
   });
 
-  it('beta, coming-soon and disabled tools are strictly excluded from indexability and static prerendering', () => {
+  it('beta, coming-soon and disabled tools stay noindex and excluded from the sitemap', () => {
     const nonIndexable = TOOL_REGISTRY.filter((t) => t.status !== 'functional');
     expect(nonIndexable.length).toBe(101); // 30 beta + 51 coming-soon + 20 disabled
 
     for (const tool of nonIndexable) {
       expect(tool.isIndexable).toBe(false);
       expect(tool.isFeatured).toBe(false);
-      expect(existsSync(`dist/tools/${tool.id}/index.html`)).toBe(false);
     }
+  });
+
+  it('prerendered hidden tool HTML is noindex and never leaks homepage metadata', () => {
+    if (!existsSync('dist/tools/gif-maker/index.html')) return; // Run after build
+
+    for (const tool of HIDDEN_TOOLS) {
+      const html = readFileSync(`dist/tools/${tool.id}/index.html`, 'utf8');
+      expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
+      expect(html).toContain(`<link rel="canonical" href="https://panutility.vercel.app/tools/${tool.id}" />`);
+      expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
+      expect(html).not.toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
+      expect(html).not.toContain('"@type":"WebSite"');
+    }
+  });
+
+  it('prerendered 404 HTML is noindex and has no canonical URL', () => {
+    if (!existsSync('dist/404.html')) return; // Run after build
+
+    const html = readFileSync('dist/404.html', 'utf8');
+    expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
+    expect(html).toContain('<title>Page Not Found - PanUtility</title>');
+    expect(html).not.toContain('<link rel="canonical"');
+    expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
+    expect(html).not.toContain('"@type":"WebSite"');
   });
 });

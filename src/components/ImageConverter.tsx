@@ -540,11 +540,13 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
             }`}
           >
             <input
+              id="image-converter-file-input"
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
               multiple
               accept="image/*"
+              aria-label="Choose image files to convert"
               className="hidden"
             />
             <div className="p-3 bg-[#151515] border border-[#2a2a2a] rounded-xl shadow-sm mb-3 group-hover:scale-105 transition-transform text-[#10b981]">
@@ -604,7 +606,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                     {img.status === 'pending' && (
                       <button
                         onClick={() => convertSingleImage(img)}
-                        className="p-1.5 bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-gray-400 hover:text-[#10b981] transition-colors cursor-pointer"
+                        className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center bg-[#151515] border border-[#2a2a2a] hover:border-[#10b981]/40 rounded text-gray-400 hover:text-[#10b981] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/40"
                         title="Convert this image"
                         aria-label={`Convert ${img.name}`}
                       >
@@ -642,7 +644,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                         </div>
                         <button
                           onClick={() => triggerDownload(img)}
-                          className="p-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-white shadow-sm transition-colors cursor-pointer"
+                          className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 rounded text-white shadow-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-300/50"
                           title="Download converted file"
                           aria-label={`Download ${img.convertedName || img.name}`}
                         >
@@ -660,7 +662,7 @@ export default function ImageConverter({ onBack, initialFile }: ImageConverterPr
                     {/* Trash Button */}
                     <button
                       onClick={() => removeImage(img.id)}
-                      className="p-1.5 border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer"
+                      className="p-2 min-h-10 min-w-10 inline-flex items-center justify-center border border-transparent hover:bg-rose-950/20 text-gray-500 hover:text-rose-400 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-400/40"
                       title="Remove from queue"
                       aria-label={`Remove ${img.name} from queue`}
                     >

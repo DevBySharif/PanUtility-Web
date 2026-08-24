@@ -1,9 +1,44 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+type GeneratedPngSpec = {
+  name: string;
+  left: string;
+  right: string;
+};
 
 function failOnConsoleErrors(page: Page) {
   const errors: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   return () => expect(errors, `browser console errors: ${errors.join('\n')}`).toEqual([]);
+}
+
+async function uploadGeneratedPngs(page: Page, selector: string, files: GeneratedPngSpec[]) {
+  await page.locator(selector).waitFor({ state: 'attached', timeout: 10_000 });
+  await page.evaluate(async ({ selector, files }) => {
+    const input = document.querySelector(selector);
+    if (!(input instanceof HTMLInputElement)) throw new Error(`Missing file input: ${selector}`);
+
+    const transfer = new DataTransfer();
+    for (const file of files) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 40;
+      canvas.height = 40;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas context unavailable');
+      ctx.fillStyle = file.left;
+      ctx.fillRect(0, 0, 20, 40);
+      ctx.fillStyle = file.right;
+      ctx.fillRect(20, 0, 20, 40);
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((value) => value ? resolve(value) : reject(new Error('PNG generation failed')), 'image/png');
+      });
+      transfer.items.add(new File([blob], file.name, { type: 'image/png' }));
+    }
+
+    input.files = transfer.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, { selector, files });
 }
 
 test('homepage loads without browser errors', async ({ page }) => {
@@ -69,7 +104,8 @@ test('shows the audio transcriber as unavailable in the free deployment', async 
 });
 
 test('shows not found for an unknown route', async ({ page }) => {
-  await page.goto('/tools/not-a-real-tool');
+  const response = await page.goto('/tools/not-a-real-tool');
+  expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { name: 'Tool not found' })).toBeVisible();
 });
 
@@ -175,6 +211,16 @@ test('calculator and game tools render on a mobile viewport without console erro
   assertNoErrors();
 });
 
+test('homepage and tool routes have no horizontal overflow at 320px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  for (const route of ['/', '/tools/percent-calc', '/tools/tip-calc', '/tools/dice-roller', '/tools/rock-paper-scissors']) {
+    await page.goto(route);
+    await expect(page.locator('#root')).not.toBeEmpty();
+    const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+    expect(hasOverflow, `${route} overflows horizontally at 320px`).toBe(false);
+  }
+});
+
 test('theme toggle changes and persists the selected theme', async ({ page }) => {
   await page.goto('/');
   await page.getByTitle(/Switch to Minimalist Light Theme/i).click();
@@ -185,13 +231,111 @@ test('theme toggle changes and persists the selected theme', async ({ page }) =>
 
 test('representative routes run under production CSP without violations', async ({ page }) => {
   const assertNoErrors = failOnConsoleErrors(page);
-  for (const route of ['/', '/tools/image-converter', '/tools/pdf-compiler', '/tools/audio-transcriber', '/tools/qr-generator', '/tools/social-downloader', '/tools/not-a-real-tool']) {
+  for (const route of ['/', '/tools/image-converter', '/tools/pdf-compiler', '/tools/audio-transcriber', '/tools/qr-generator', '/tools/social-downloader']) {
     const response = await page.goto(route);
     expect(response?.headers()['content-security-policy']).toContain("script-src 'self'");
+    expect(response?.headers()['content-security-policy']).toContain("worker-src 'self' blob:");
     expect(response?.headers()['content-security-policy']).not.toMatch(/script-src[^;]*unsafe-inline|unsafe-eval/);
     await expect(page.locator('#root')).not.toBeEmpty();
   }
   assertNoErrors();
+});
+
+test('text functional tools complete core browser workflows without console errors', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+
+  await page.goto('/tools/case-converter');
+  await page.getByLabel('Source Text Input').fill('hello world test');
+  await page.getByRole('button', { name: 'PascalCase' }).click();
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue('HelloWorldTest');
+  await page.getByRole('button', { name: 'kebab-case' }).click();
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue('hello-world-test');
+
+  await page.goto('/tools/word-counter');
+  await page.getByLabel('Source Text Input').fill('One two three\n\nFour five six');
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue(/Words: 6/);
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue(/Paragraphs: 2/);
+
+  await page.goto('/tools/lorem-ipsum');
+  await page.getByLabel('Lorem ipsum paragraph count').fill('2');
+  await page.getByRole('button', { name: /Generate Lorem Ipsum/i }).click();
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue(/Lorem ipsum/);
+
+  await page.goto('/tools/line-remover');
+  await page.getByLabel('Source Text Input').fill('  Alpha  \n\nalpha\n\nBeta');
+  await page.getByRole('checkbox', { name: /Trim whitespace/i }).check();
+  await page.getByRole('checkbox', { name: /Remove blank lines/i }).check();
+  await page.getByRole('checkbox', { name: /Case-sensitive/i }).uncheck();
+  await page.getByRole('button', { name: /Deduplicate Lines/i }).click();
+  await expect(page.getByLabel('Processed Content Output')).toHaveValue('Alpha\nBeta');
+
+  assertNoErrors();
+});
+
+test('image and PDF functional tools produce real downloadable data without CSP violations', async ({ page }) => {
+  const assertNoErrors = failOnConsoleErrors(page);
+
+  await page.goto('/tools/image-converter');
+  await uploadGeneratedPngs(page, '#image-converter-file-input', [
+    { name: 'red-green.png', left: '#ff0000', right: '#00ff00' },
+  ]);
+  await expect(page.getByText('red-green.png')).toBeVisible();
+  await page.getByRole('button', { name: /Convert All Uploaded/i }).click();
+  await expect(page.getByRole('button', { name: /Download red-green_converted\.webp/i })).toBeVisible({ timeout: 10_000 });
+  const imageDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: /Download red-green_converted\.webp/i }).click();
+  const imageDownload = await imageDownloadPromise;
+  const imagePath = await imageDownload.path();
+  expect(imagePath).toBeTruthy();
+  const imageBytes = readFileSync(imagePath!);
+  expect(imageBytes.subarray(0, 4).toString('ascii')).toBe('RIFF');
+  expect(imageBytes.subarray(8, 12).toString('ascii')).toBe('WEBP');
+
+  await page.goto('/tools/color-extractor');
+  await uploadGeneratedPngs(page, '#color-extractor-file-input', [
+    { name: 'palette.png', left: '#ff0000', right: '#00ff00' },
+  ]);
+  await expect(page.getByText('#FF0000')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('#00FF00')).toBeVisible();
+
+  await page.goto('/tools/pdf-compiler');
+  await uploadGeneratedPngs(page, '#pdf-compiler-file-input', [
+    { name: 'page-one.png', left: '#ff0000', right: '#ff0000' },
+    { name: 'page-two.png', left: '#00ff00', right: '#00ff00' },
+  ]);
+  await expect(page.getByText('Pages Layout (2 pages)')).toBeVisible();
+  await page.getByRole('button', { name: /Compile into PDF/i }).click();
+  await expect(page.getByRole('button', { name: /Download PDF Now/i })).toBeVisible({ timeout: 15_000 });
+  const pdfDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: /Download PDF Now/i }).click();
+  const pdfDownload = await pdfDownloadPromise;
+  const pdfPath = await pdfDownload.path();
+  expect(pdfPath).toBeTruthy();
+  const pdfBytes = readFileSync(pdfPath!);
+  expect(pdfBytes.subarray(0, 4).toString('ascii')).toBe('%PDF');
+  expect(pdfBytes.length).toBeGreaterThan(1_000);
+
+  assertNoErrors();
+});
+
+test('raw HTTP HTML for hidden and unknown tool routes is noindex and not homepage metadata', async ({ request }) => {
+  for (const route of ['/tools/gif-maker', '/tools/video-compressor', '/tools/social-downloader']) {
+    const response = await request.get(route);
+    expect(response.status(), `${route} should serve truthful hidden-route HTML`).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
+    expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
+    expect(html).not.toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
+    expect(html).not.toContain('"@type":"WebSite"');
+  }
+
+  const unknown = await request.get('/tools/not-a-real-tool');
+  expect(unknown.status()).toBe(404);
+  const unknownHtml = await unknown.text();
+  expect(unknownHtml).toContain('<meta name="robots" content="noindex, nofollow" />');
+  expect(unknownHtml).toContain('<title>Page Not Found - PanUtility</title>');
+  expect(unknownHtml).not.toContain('<link rel="canonical"');
+  expect(unknownHtml).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
 });
 
 test('production output applies cache policy and does not expose server artifacts', async ({ page, request }) => {

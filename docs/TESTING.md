@@ -6,8 +6,8 @@ Use npm from the repository root (on restricted Windows PowerShell, invoke `npm.
 |---|---|
 | `npm run typecheck` | Strict TypeScript validation |
 | `npm run lint` | ESLint for TypeScript, React, and Hooks |
-| `npm run test` | 275 deterministic Vitest unit/component, API-security, deployment, P1-A2 SEO, P1-B1 image, P1-B2 text-tool, and P1-B3 calculator/game tests in 17 files |
-| `npm run test:e2e` | 21 Playwright Chromium tests against the production Express build |
+| `npm run test` | 311 deterministic Vitest unit/component, API-security, deployment, P1-A2 SEO, P1-B1 image, P1-B2 text-tool, P1-B3 calculator/game, and P2-A2 tool tests in 18 files |
+| `npm run test:e2e` | 25 Playwright Chromium tests against the production Express build |
 | `npm run build:client` | Generate registry sitemap, build Vite client, and run build-time static HTML prerenderer (`scripts/prerender.ts`) |
 | `npm run build:server` | Build the Express server |
 | `npm run check` | Typecheck, lint, Vitest, then production build |
@@ -22,4 +22,4 @@ P1-B3 adds shared numeric/randomness coverage in `tests/functional-tools.test.ts
 
 Final P0-B verification: 75/75 Vitest and 8/8 Playwright tests pass; typecheck, lint, client/server/combined builds, `check`, and dependency audit pass. The audit reports zero known vulnerabilities.
 
-Zero-cost production coverage verifies the 12/30/51/20 registry totals, disabled non-indexable Audio Transcriber, zero-secret health/readiness, structured transcription 410, no provider invocation, sitemap derivation, and the truthful disabled route. Run a build before Playwright because its stable server uses `server-dist/server.cjs`. Post-deployment verification is `npm run verify:deployment -- --base-url=https://...` and never invokes Gemini.
+Zero-cost production coverage verifies the 22/25/46/20 registry totals, disabled non-indexable Audio Transcriber, zero-secret health/readiness, structured transcription 410, no provider invocation, sitemap derivation, and the truthful disabled route. Run a build before Playwright because its stable server uses `server-dist/server.cjs`. Post-deployment verification is `npm run verify:deployment -- --base-url=https://...` and never invokes Gemini.

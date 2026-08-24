@@ -240,12 +240,11 @@ All 12 existing Functional tools remain intact:
 
 ## Remaining Roadmap
 
-### P2-A2 — Data Conversion (next batch)
-- csv-to-json (needs proper CSV parser)
-- json-to-csv (needs nested object handling)
-- markdown-to-html (needs proper Markdown library)
+### P2-A2 — Tool Expansion Batch 2 (Complete ✓)
+Promoted: slug-generator, text-sorter, uuid-generator, base-converter, contrast-checker.
+See `docs/P2A2_TOOL_EXPANSION_REPORT.md`.
 
-### P2-A3 — Math/Health Calculators
+### P2-A3 — Math/Health Calculators (next batch)
 - unit-converter (needs bidirectional conversion)
 - bmi-calc (needs custom input fields)
 - age-calc (needs next birthday fix)

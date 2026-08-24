@@ -36,6 +36,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://panutility.vercel.app/tools/slug-generator</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://panutility.vercel.app/tools/text-sorter</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://panutility.vercel.app/tools/morse-translator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -67,6 +77,21 @@
   </url>
   <url>
     <loc>https://panutility.vercel.app/tools/json-formatter</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://panutility.vercel.app/tools/uuid-generator</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://panutility.vercel.app/tools/contrast-checker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://panutility.vercel.app/tools/base-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

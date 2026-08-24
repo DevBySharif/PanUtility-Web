@@ -1,5 +1,19 @@
 # PanUtility-Web project audit
 
+## P2-A2 Tool Expansion — 2026-08-25
+
+P2-A2 is complete: 5 hidden tools promoted from Coming Soon to Functional (17→22 total).
+
+Tools promoted: slug-generator, text-sorter, uuid-generator, base-converter, contrast-checker.
+
+All tools are browser-local, zero-cost, deterministic, and use GenericUtilityWorkspace
+Template A with dedicated action buttons. No new dependencies, no new lazy chunks.
+
+- 277/277 Vitest (17 files), 25/25 Playwright, typecheck, lint, all builds, and `check` pass.
+- Sitemap: 23 URLs (1 homepage + 22 functional tools).
+- Route IDs unchanged at 113. Zero-cost architecture preserved. social-downloader untouched.
+- See `docs/P2A2_TOOL_EXPANSION_REPORT.md`.
+
 ## P1-B3 Calculator & Game Tools Production Quality — 2026-08-04
 
 P1-B3 is complete: the four functional Calculator/Game tools (Percentage Calculator, Tip

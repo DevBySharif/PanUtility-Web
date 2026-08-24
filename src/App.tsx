@@ -4,6 +4,9 @@ import {
   ArrowRight,
   ArrowsCounterClockwise,
   Code,
+  Eye,
+  Lightning,
+  Shuffle,
   FileCode,
   FileImage,
   FileText,
@@ -300,6 +303,9 @@ function AppContent() {
       Code: <Code className="w-5 h-5" />,
       ArrowsCounterClockwise: <ArrowsCounterClockwise className="w-5 h-5" />,
       SpeakerHigh: <SpeakerHigh className="w-5 h-5" />,
+      Lightning: <Lightning className="w-5 h-5" />,
+      Shuffle: <Shuffle className="w-5 h-5" />,
+      Eye: <Eye className="w-5 h-5" />,
     };
     return iconMap[name] || <SquaresFour className="w-5 h-5" />;
   };

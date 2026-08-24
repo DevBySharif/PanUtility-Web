@@ -91,6 +91,12 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
   const [tipPercentInput, setTipPercentInput] = useState('15');
   const [tipPeopleInput, setTipPeopleInput] = useState('2');
   const [toolError, setToolError] = useState('');
+  // P2-A2 tool states
+  const [uuidCount, setUuidCount] = useState(5);
+  const [baseFrom, setBaseFrom] = useState(10);
+  const [baseTo, setBaseTo] = useState(16);
+  const [contrastFg, setContrastFg] = useState('#FFFFFF');
+  const [contrastBg, setContrastBg] = useState('#000000');
   const [uploadedFile, setUploadedFile] = useState<File | null>(initialFile || null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [gpaCourses, setGpaCourses] = useState<Array<{ id: string; name: string; credits: number; grade: string }>>([
@@ -799,6 +805,120 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
     { id: 2, text: 'Drink 60oz of water', done: true },
     { id: 3, text: 'Read for 15 minutes', done: false },
   ]);
+
+  // --- P2-A2 TOOL LOGIC ---
+
+  // Slug Generator
+  const runSlugGenerate = () => {
+    if (!inputText) { setOutputText(''); return; }
+    const slug = inputText
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    setOutputText(slug);
+    addLog('Generated URL slug.');
+  };
+
+  // Text Sorter
+  const runTextSort = (mode: 'az' | 'za' | 'num-asc' | 'num-desc') => {
+    if (!inputText) { setOutputText(''); return; }
+    const lines = inputText.split('\n');
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: mode.startsWith('num') });
+    let sorted: string[];
+    if (mode === 'az') {
+      sorted = [...lines].sort((a, b) => collator.compare(a, b));
+    } else if (mode === 'za') {
+      sorted = [...lines].sort((a, b) => collator.compare(b, a));
+    } else if (mode === 'num-asc') {
+      sorted = [...lines].sort((a, b) => {
+        const na = parseFloat(a), nb = parseFloat(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return collator.compare(a, b);
+      });
+    } else {
+      sorted = [...lines].sort((a, b) => {
+        const na = parseFloat(a), nb = parseFloat(b);
+        if (!isNaN(na) && !isNaN(nb)) return nb - na;
+        return collator.compare(b, a);
+      });
+    }
+    setOutputText(sorted.join('\n'));
+    addLog(`Sorted lines ${mode}.`);
+  };
+
+  // UUID Generator
+  const runUuidGenerate = () => {
+    const count = Math.max(1, Math.min(100, uuidCount));
+    const uuids: string[] = [];
+    for (let i = 0; i < count; i++) {
+      uuids.push(crypto.randomUUID());
+    }
+    setOutputText(uuids.join('\n'));
+    addLog(`Generated ${count} UUID(s).`);
+  };
+
+  // Base Converter
+  const runBaseConvert = () => {
+    if (!inputText.trim()) { setOutputText(''); return; }
+    try {
+      const prefixes: Record<number, string> = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
+      const fromPrefix = prefixes[baseFrom] ?? '';
+      const val = BigInt(fromPrefix + inputText.trim());
+      const result = val.toString(baseTo).toUpperCase();
+      const prefix = prefixes[baseTo] ?? '';
+      setOutputText(`${prefix}${result}`);
+      addLog(`Converted from base ${baseFrom} to base ${baseTo}.`);
+    } catch {
+      const maxDigit = baseFrom <= 10
+        ? String.fromCharCode(48 + baseFrom - 1)
+        : '9,A-' + String.fromCharCode(55 + baseFrom);
+      setOutputText(`Invalid input for base ${baseFrom}. Use digits 0-${maxDigit}.`);
+    }
+  };
+
+  // Contrast Checker
+  const runContrastCheck = () => {
+    const parseHex = (hex: string): [number, number, number] | null => {
+      const match = hex.replace(/^#/, '').match(/^([0-9a-f]{3,8})$/i);
+      if (!match) return null;
+      let h = match[1];
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (h.length !== 6) return null;
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    };
+    const luminance = (r: number, g: number, b: number) => {
+      const [rs, gs, bs] = [r, g, b].map(c => {
+        c /= 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    };
+    const fgRgb = parseHex(contrastFg);
+    const bgRgb = parseHex(contrastBg);
+    if (!fgRgb || !bgRgb) {
+      setOutputText('Invalid color format. Use #RRGGBB hex.');
+      return;
+    }
+    const l1 = luminance(...fgRgb);
+    const l2 = luminance(...bgRgb);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    const ratioStr = ratio.toFixed(2);
+    const aaNormal = ratio >= 4.5;
+    const aaLarge = ratio >= 3;
+    const aaaNormal = ratio >= 7;
+    const aaaLarge = ratio >= 4.5;
+    setOutputText(
+      `Contrast Ratio: ${ratioStr}:1\n\n` +
+      `WCAG AA Normal Text (≥4.5:1): ${aaNormal ? 'PASS ✓' : 'FAIL ✗'}\n` +
+      `WCAG AA Large Text (≥3:1): ${aaLarge ? 'PASS ✓' : 'FAIL ✗'}\n` +
+      `WCAG AAA Normal Text (≥7:1): ${aaaNormal ? 'PASS ✓' : 'FAIL ✗'}\n` +
+      `WCAG AAA Large Text (≥4.5:1): ${aaaLarge ? 'PASS ✓' : 'FAIL ✗'}`
+    );
+    addLog(`Contrast ratio: ${ratioStr}:1`);
+  };
 
   const handleDownloadResult = () => {
     if (convertedBlobUrl) {
@@ -1548,7 +1668,7 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
           {/* Dynamic Template Switcher */}
           
           {/* TEMPLATE A: TEXT & CODE TRANSFORM UTILITIES */}
-          {(tool.category === 'Text & Writing' || tool.id === 'json-formatter' || tool.id === 'yaml-to-json' || tool.id === 'xml-beautifier' || tool.id === 'jwt-debugger' || tool.id === 'sql-formatter' || tool.id === 'hash-generator') && (
+          {(tool.category === 'Text & Writing' || tool.category === 'Developer Tools' || tool.id === 'json-formatter' || tool.id === 'yaml-to-json' || tool.id === 'xml-beautifier' || tool.id === 'jwt-debugger' || tool.id === 'sql-formatter' || tool.id === 'hash-generator') && (
             <div className="flex flex-col gap-4 w-full">
               
               {/* Text area inputs */}
@@ -1766,6 +1886,90 @@ export default function GenericUtilityWorkspace({ tool, onBack, initialFile }: G
 
                 {tool.id === 'hash-generator' && (
                   <button onClick={runHashGen} className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all cursor-pointer font-bold">Generate Cryptographic Hashes</button>
+                )}
+
+                {tool.id === 'slug-generator' && (
+                  <button onClick={runSlugGenerate} className="px-4 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Generate URL Slug</button>
+                )}
+
+                {tool.id === 'text-sorter' && (
+                  <>
+                    <button onClick={() => runTextSort('az')} className="px-3.5 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">A → Z</button>
+                    <button onClick={() => runTextSort('za')} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Z → A</button>
+                    <button onClick={() => runTextSort('num-asc')} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Numeric ↑</button>
+                    <button onClick={() => runTextSort('num-desc')} className="px-3.5 py-1.5 bg-[#151515] border border-[#222] text-white hover:bg-[#1f1f1f] text-xs rounded transition-all cursor-pointer font-bold">Numeric ↓</button>
+                  </>
+                )}
+
+                {tool.id === 'uuid-generator' && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Count:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={uuidCount}
+                      onChange={(e) => setUuidCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                      aria-label="Number of UUIDs to generate"
+                      className="w-16 min-h-10 bg-black border border-[#222] text-xs text-[#10b981] font-bold p-2 rounded font-mono text-center"
+                    />
+                    <button onClick={runUuidGenerate} className="px-4 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Generate UUIDs</button>
+                  </div>
+                )}
+
+                {tool.id === 'base-converter' && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">From:</label>
+                    <select
+                      value={baseFrom}
+                      onChange={(e) => setBaseFrom(Number(e.target.value))}
+                      aria-label="Input base"
+                      className="bg-black border border-[#222] text-xs text-[#10b981] font-bold p-2 rounded font-mono"
+                    >
+                      <option value={2}>Binary (2)</option>
+                      <option value={8}>Octal (8)</option>
+                      <option value={10}>Decimal (10)</option>
+                      <option value={16}>Hex (16)</option>
+                    </select>
+                    <span className="text-gray-500 text-xs">→</span>
+                    <label className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">To:</label>
+                    <select
+                      value={baseTo}
+                      onChange={(e) => setBaseTo(Number(e.target.value))}
+                      aria-label="Output base"
+                      className="bg-black border border-[#222] text-xs text-[#10b981] font-bold p-2 rounded font-mono"
+                    >
+                      <option value={2}>Binary (2)</option>
+                      <option value={8}>Octal (8)</option>
+                      <option value={10}>Decimal (10)</option>
+                      <option value={16}>Hex (16)</option>
+                    </select>
+                    <button onClick={runBaseConvert} className="px-4 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Convert</button>
+                  </div>
+                )}
+
+                {tool.id === 'contrast-checker' && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Foreground:</label>
+                    <input
+                      type="text"
+                      value={contrastFg}
+                      onChange={(e) => setContrastFg(e.target.value)}
+                      aria-label="Foreground color hex"
+                      className="w-24 min-h-10 bg-black border border-[#222] text-xs text-white font-bold p-2 rounded font-mono text-center"
+                      placeholder="#FFFFFF"
+                    />
+                    <label className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Background:</label>
+                    <input
+                      type="text"
+                      value={contrastBg}
+                      onChange={(e) => setContrastBg(e.target.value)}
+                      aria-label="Background color hex"
+                      className="w-24 min-h-10 bg-black border border-[#222] text-xs text-white font-bold p-2 rounded font-mono text-center"
+                      placeholder="#000000"
+                    />
+                    <button onClick={runContrastCheck} className="px-4 py-1.5 bg-[#10b981] text-black hover:bg-[#10b981]/90 text-xs rounded transition-all cursor-pointer font-bold">Check Contrast</button>
+                  </div>
                 )}
 
                 <button 

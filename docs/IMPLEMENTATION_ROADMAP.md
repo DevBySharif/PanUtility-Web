@@ -1,5 +1,16 @@
 # PanUtility-Web implementation roadmap
 
+## P2-A2 status — 2026-08-25
+
+**P2-A2 Tool Expansion is Complete.** 5 hidden tools promoted to Functional (17→22 total):
+slug-generator, text-sorter, uuid-generator, base-converter, contrast-checker.
+
+All are browser-local, zero-cost, deterministic. No new dependencies or lazy chunks.
+277/277 Vitest, 25/25 Playwright, typecheck, lint, builds, and check all pass.
+Sitemap: 23 URLs. Route IDs unchanged at 113.
+
+**Next:** P2-A3 — Math/Health Calculators (unit-converter, bmi-calc, age-calc).
+
 ## P1-B3 status — 2026-08-04
 
 **P1-B3 Calculator & Game Tools production-quality pass is Complete.** Percentage

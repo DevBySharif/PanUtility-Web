@@ -1,5 +1,10 @@
 # PanUtility-Web tool inventory
 
+> P2-A2 update (2026-08-25): 5 hidden tools promoted to Functional (17→22 total).
+> slug-generator, text-sorter, uuid-generator, base-converter, contrast-checker are
+> now production-quality, browser-local, zero-cost. All use GenericUtilityWorkspace
+> Template A with dedicated action buttons. See `docs/P2A2_TOOL_EXPANSION_REPORT.md`.
+
 > P1-B3 update (2026-08-04): calculator/game production-quality pass complete. Percentage
 > Calculator (text %/base inputs, blank/finite validation, zero + decimals, stripped
 > display, Enter submit, reset, announced results), Tip Calculator (dedicated

@@ -1127,6 +1127,7 @@ const DEDICATED_COMPONENTS: Partial<Record<ToolId, ToolComponentKey>> = {
   'instagram-downloader': 'instagram-downloader',
   'tiktok-downloader': 'tiktok-downloader',
   'facebook-downloader': 'facebook-downloader',
+  'social-downloader': 'social-downloader',
 };
 
 function formatsFor(category: ToolCategory): { input: string[]; output: string[] } {

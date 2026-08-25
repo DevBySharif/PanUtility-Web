@@ -31,6 +31,38 @@ const TOOL_CATALOG = [
     badge: 'Popular'
   },
   {
+    id: 'youtube-downloader',
+    title: 'YouTube Downloader',
+    description: 'Download public YouTube videos, shorts, and music via a self-hosted Cobalt API backend.',
+    category: 'Video',
+    icon: 'YoutubeLogo',
+    color: 'border-red-500/20 hover:border-red-500/60 text-red-400 bg-red-500/5'
+  },
+  {
+    id: 'instagram-downloader',
+    title: 'Instagram Downloader',
+    description: 'Download public Instagram reels, posts, and stories via a self-hosted Cobalt API backend.',
+    category: 'Video',
+    icon: 'InstagramLogo',
+    color: 'border-pink-500/20 hover:border-pink-500/60 text-pink-400 bg-pink-500/5'
+  },
+  {
+    id: 'tiktok-downloader',
+    title: 'TikTok Downloader',
+    description: 'Download public TikTok videos via a self-hosted Cobalt API backend.',
+    category: 'Video',
+    icon: 'TiktokLogo',
+    color: 'border-cyan-500/20 hover:border-cyan-500/60 text-cyan-400 bg-cyan-500/5'
+  },
+  {
+    id: 'facebook-downloader',
+    title: 'Facebook Downloader',
+    description: 'Download public Facebook videos and reels via a self-hosted Cobalt API backend.',
+    category: 'Video',
+    icon: 'FacebookLogo',
+    color: 'border-blue-500/20 hover:border-blue-500/60 text-blue-400 bg-blue-500/5'
+  },
+  {
     id: 'gif-maker',
     title: 'GIF Converter & Maker',
     description: 'Convert MP4 videos or multiple static images into lightweight animated GIFs.',
@@ -946,6 +978,10 @@ export type ToolId = (typeof TOOL_CATALOG)[number]['id'];
 const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
   'video-splitter': 'disabled',
   'social-downloader': 'disabled',
+  'youtube-downloader': 'beta',
+  'instagram-downloader': 'beta',
+  'tiktok-downloader': 'beta',
+  'facebook-downloader': 'beta',
   'gif-maker': 'beta',
   'video-to-audio': 'beta',
   'frame-extractor': 'beta',
@@ -1088,6 +1124,10 @@ const DEDICATED_COMPONENTS: Partial<Record<ToolId, ToolComponentKey>> = {
   'audio-trimmer': 'audio-trimmer',
   'qr-generator': 'qr-generator',
   'color-extractor': 'color-extractor',
+  'youtube-downloader': 'youtube-downloader',
+  'instagram-downloader': 'instagram-downloader',
+  'tiktok-downloader': 'tiktok-downloader',
+  'facebook-downloader': 'facebook-downloader',
 };
 
 function formatsFor(category: ToolCategory): { input: string[]; output: string[] } {

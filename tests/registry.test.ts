@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { FUNCTIONAL_TOOLS, HIDDEN_TOOLS, INDEXABLE_TOOLS, PUBLIC_TOOLS, PUBLIC_TOOL_IDS, TOOL_BY_ID, TOOL_REGISTRY, isToolId } from '../src/toolsData';
 
 describe('typed tool registry', () => {
-  it('contains exactly 113 unique route definitions', () => {
-    expect(TOOL_REGISTRY).toHaveLength(113);
-    expect(new Set(TOOL_REGISTRY.map((tool) => tool.id)).size).toBe(113);
+  it('contains exactly 117 unique route definitions', () => {
+    expect(TOOL_REGISTRY).toHaveLength(117);
+    expect(new Set(TOOL_REGISTRY.map((tool) => tool.id)).size).toBe(117);
   });
 
   it('uses the zero-cost catalog totals and disables transcription truthfully', () => {
     const totals = Object.fromEntries(['functional', 'beta', 'coming-soon', 'disabled'].map((status) => [status, TOOL_REGISTRY.filter((tool) => tool.status === status).length]));
-    expect(totals).toEqual({ functional: 22, beta: 25, 'coming-soon': 46, disabled: 20 });
+    expect(totals).toEqual({ functional: 22, beta: 29, 'coming-soon': 46, disabled: 20 });
     expect(TOOL_BY_ID['audio-transcriber']).toMatchObject({ status: 'disabled', processingType: 'none', isIndexable: false });
     expect(TOOL_BY_ID['audio-transcriber'].componentKey).toBeUndefined();
     expect(TOOL_BY_ID['audio-transcriber'].statusReason).toMatch(/Server-based transcription is temporarily unavailable/i);
@@ -54,7 +54,7 @@ describe('typed tool registry', () => {
   it('exposes public catalog selectors limited to the 22 functional tools', () => {
     expect(FUNCTIONAL_TOOLS).toHaveLength(22);
     expect(PUBLIC_TOOLS).toHaveLength(22);
-    expect(HIDDEN_TOOLS).toHaveLength(91);
+    expect(HIDDEN_TOOLS).toHaveLength(95);
     expect(PUBLIC_TOOLS.every((tool) => tool.status === 'functional')).toBe(true);
     expect(HIDDEN_TOOLS.every((tool) => tool.status !== 'functional')).toBe(true);
     expect(PUBLIC_TOOLS.length + HIDDEN_TOOLS.length).toBe(TOOL_REGISTRY.length);

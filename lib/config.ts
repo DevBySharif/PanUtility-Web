@@ -10,6 +10,8 @@ export interface AppConfig {
   redisUrl?: string;
   redisToken?: string;
   identitySecret?: string;
+  cobaltApiUrl?: string;
+  cobaltApiKey?: string;
 }
 
 function normalizeOrigin(value: string): string {
@@ -42,7 +44,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (redisUrl && (!redisUrl.startsWith('https://') || new URL(redisUrl).username || new URL(redisUrl).password)) throw new Error('Shared rate-limit URL must be credential-free HTTPS.');
   const identitySecret = transcriptionEnabled ? env.RATE_LIMIT_IDENTITY_SECRET : undefined;
   if (identitySecret && identitySecret.length < 32) throw new Error('Rate-limit identity secret must be at least 32 characters.');
-  return { environment, vercel: env.VERCEL === '1', vercelEnvironment, transcriptionEnabled, geminiApiKey: transcriptionEnabled ? env.GEMINI_API_KEY || undefined : undefined, allowedOrigins, redisUrl, redisToken, identitySecret };
+  const cobaltApiUrl = env.COBALT_API_URL || undefined;
+  const cobaltApiKey = env.COBALT_API_KEY || undefined;
+  return { environment, vercel: env.VERCEL === '1', vercelEnvironment, transcriptionEnabled, geminiApiKey: transcriptionEnabled ? env.GEMINI_API_KEY || undefined : undefined, allowedOrigins, redisUrl, redisToken, identitySecret, cobaltApiUrl, cobaltApiKey };
 }
 
 export function requireProductionLimiter(config: AppConfig): void {

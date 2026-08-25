@@ -9,6 +9,10 @@ const AudioTrimmer = lazy(() => import('./AudioTrimmer'));
 const QrGenerator = lazy(() => import('./QrGenerator'));
 const ColorExtractor = lazy(() => import('./ColorExtractor'));
 const GenericUtilityWorkspace = lazy(() => import('./GenericUtilityWorkspace'));
+const YouTubeDownloader = lazy(() => import('./YouTubeDownloader'));
+const InstagramDownloader = lazy(() => import('./InstagramDownloader'));
+const TikTokDownloader = lazy(() => import('./TikTokDownloader'));
+const FacebookDownloader = lazy(() => import('./FacebookDownloader'));
 
 interface ToolWorkspaceProps {
   tool: ToolDefinition;
@@ -139,6 +143,10 @@ function renderEnabledTool(tool: ToolDefinition, onBack: () => void, initialFile
     case 'audio-trimmer': return <AudioTrimmer onBack={onBack} initialFile={initialFile} />;
     case 'qr-generator': return <QrGenerator onBack={onBack} />;
     case 'color-extractor': return <ColorExtractor onBack={onBack} initialFile={initialFile} />;
+    case 'youtube-downloader': return <YouTubeDownloader onBack={onBack} />;
+    case 'instagram-downloader': return <InstagramDownloader onBack={onBack} />;
+    case 'tiktok-downloader': return <TikTokDownloader onBack={onBack} />;
+    case 'facebook-downloader': return <FacebookDownloader onBack={onBack} />;
     case 'generic': return <GenericUtilityWorkspace tool={tool} onBack={onBack} initialFile={initialFile} />;
     case undefined: throw new Error(`Enabled tool ${tool.id} is missing a component key.`);
   }

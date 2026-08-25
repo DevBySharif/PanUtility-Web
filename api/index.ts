@@ -3,6 +3,9 @@ import { ApiError, errorMiddleware, requestId, sendError } from '../lib/security
 import { clientIp, hashIdentity } from '../lib/security/clientIdentity.js';
 import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from '../lib/security/rateLimit.js';
 import { loadConfig, requireProductionLimiter, type AppConfig } from '../lib/config.js';
+import { CobaltProvider } from '../lib/providers/cobalt.js';
+import { validatePlatformUrl } from '../lib/providers/platforms.js';
+import type { Platform } from '../lib/providers/types.js';
 
 export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
 export const BODY_LIMIT = '4.25mb';
@@ -104,6 +107,47 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
   }
 
   for (const route of ['/api/resolve-social', '/api/media-proxy']) app.all(route, (_req, _res, next) => next(new ApiError(410, 'FEATURE_DISABLED', 'This feature is temporarily unavailable.')));
+
+  const cobaltProvider = config.cobaltApiUrl ? new CobaltProvider(config.cobaltApiUrl, config.cobaltApiKey) : null;
+
+  const downloadParser = express.json({ limit: '16kb', strict: true });
+  const PLATFORMS: Platform[] = ['youtube', 'instagram', 'tiktok', 'facebook'];
+
+  for (const platform of PLATFORMS) {
+    app.all(`/api/download/${platform}`, (req, res, next) => {
+      if (req.method !== 'POST') return next(new ApiError(405, 'METHOD_NOT_ALLOWED', 'Use POST for this endpoint.'));
+      if (!req.is('application/json')) return next(new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type must be application/json.'));
+      next();
+    });
+    app.post(`/api/download/${platform}`, downloadParser, async (req, res, next) => {
+      try {
+        if (!cobaltProvider) throw new ApiError(503, 'SERVICE_UNAVAILABLE', 'Social download service is not configured.');
+        const body = req.body as Record<string, unknown>;
+        const keys = Object.keys(body);
+        if (keys.some((k) => !['url', 'videoQuality', 'audioFormat', 'downloadMode'].includes(k))) {
+          throw new ApiError(400, 'BAD_REQUEST', 'The request contains unsupported fields.');
+        }
+        const { url, videoQuality, audioFormat, downloadMode } = body;
+        if (typeof url !== 'string' || !url.trim()) throw new ApiError(400, 'BAD_REQUEST', 'A URL is required.');
+        const validation = validatePlatformUrl(platform, url);
+        if (!validation.valid) throw new ApiError(400, 'BAD_REQUEST', validation.error!);
+        const result = await cobaltProvider.resolve(platform, validation.normalizedUrl, {
+          videoQuality: typeof videoQuality === 'string' ? videoQuality : undefined,
+          audioFormat: typeof audioFormat === 'string' ? audioFormat : undefined,
+          downloadMode: typeof downloadMode === 'string' ? downloadMode : undefined,
+        });
+        if (result.status === 'error') {
+          const code = result.errorCode === 'PROVIDER_NOT_CONFIGURED' ? 'SERVICE_UNAVAILABLE'
+            : result.errorCode === 'PROVIDER_TIMEOUT' ? 'PROVIDER_TIMEOUT'
+            : 'PROVIDER_ERROR';
+          const status = code === 'SERVICE_UNAVAILABLE' ? 503 : code === 'PROVIDER_TIMEOUT' ? 504 : 502;
+          throw new ApiError(status, code, `The download provider could not resolve this URL.`);
+        }
+        res.json({ ...result, requestId: res.locals.requestId });
+      } catch (error) { next(error instanceof ApiError ? error : new ApiError(502, 'PROVIDER_ERROR', 'The download provider could not complete the request.')); }
+    });
+  }
+
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'NOT_FOUND', 'API route not found.')));
   app.use(errorMiddleware);
   return app;

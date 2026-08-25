@@ -20,6 +20,10 @@ export type ToolComponentKey =
   | 'audio-transcriber'
   | 'qr-generator'
   | 'color-extractor'
+  | 'youtube-downloader'
+  | 'instagram-downloader'
+  | 'tiktok-downloader'
+  | 'facebook-downloader'
   | 'generic';
 
 export interface ToolDefinition {

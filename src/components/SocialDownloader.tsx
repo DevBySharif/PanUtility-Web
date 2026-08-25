@@ -126,30 +126,61 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     } finally { setIsReResolving(false); }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!meta?.videoUrl) return;
     const isAudio = QUALITIES[selectedQuality].id === 'mp3';
     const cleanTitle = meta.title.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_').slice(0, 60);
     const ext = isAudio ? 'mp3' : 'mp4';
+    const filename = `${cleanTitle}.${ext}`;
 
     setStatus('downloading');
-    setProgress(5);
+    setProgress(0);
 
-    const iv = setInterval(() => {
-      setProgress(p => {
-        if (p >= 90) { clearInterval(iv); setTimeout(() => { setProgress(100); setStatus('completed'); confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } }); }, 400); return 90; }
-        return p + Math.random() * 25 + 15;
-      });
-    }, 150);
+    try {
+      const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(filename)}`;
+      const response = await fetch(proxyUrl);
 
-    const filename = `${cleanTitle}.${ext}`;
-    const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(filename)}`;
-    const a = document.createElement('a');
-    a.href = proxyUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+      if (!response.ok) {
+        let errMsg = `Download failed (${response.status}).`;
+        try { const e = await response.json(); if (e.error?.message) errMsg = e.error.message; } catch { /* */ }
+        setErrorMsg(errMsg);
+        setStatus('error');
+        return;
+      }
+
+      const contentLength = Number(response.headers.get('Content-Length') || 0);
+      const reader = response.body?.getReader();
+      if (!reader) { setErrorMsg('Download stream not available.'); setStatus('error'); return; }
+
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.byteLength;
+        if (contentLength > 0) setProgress(Math.round((received / contentLength) * 100));
+        else setProgress(Math.min(95, Math.round(received / 1048576) * 2));
+      }
+
+      setProgress(100);
+      const blob = new Blob(chunks);
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      setStatus('completed');
+      confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
+    } catch {
+      setErrorMsg('Download failed — check your connection and try again.');
+      setStatus('error');
+    }
   };
 
   const reset = () => { setUrl(''); setStatus('idle'); setMeta(null); setProgress(0); setSelectedQuality(0); setIsReResolving(false); };

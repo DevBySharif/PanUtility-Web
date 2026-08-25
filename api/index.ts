@@ -1,4 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
+import { execFile } from 'node:child_process';
 import { ApiError, errorMiddleware, requestId, sendError } from '../lib/security/errors.js';
 import { clientIp, hashIdentity } from '../lib/security/clientIdentity.js';
 import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from '../lib/security/rateLimit.js';
@@ -12,6 +13,35 @@ export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
 export const BODY_LIMIT = '4.25mb';
 const PROVIDER_TIMEOUT_MS = 20_000;
 const AUDIO_MIME = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/aac', 'audio/flac']);
+
+async function resolveWithYtdlp(targetUrl: string, maxDuration = 600): Promise<{ videoUrl: string; title: string; thumbnail: string; duration: string } | null> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => { try { child.kill(); } catch {} resolve(null); }, 25_000);
+    const child = execFile('yt-dlp', [
+      '-j', '--no-download', '--no-update', '--no-warnings',
+      '--format', 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
+      '--no-playlist', '--socket-timeout', '15',
+      targetUrl,
+    ], { timeout: 20_000, maxBuffer: 5 * 1024 * 1024 }, (err, stdout) => {
+      clearTimeout(timeout);
+      if (err || !stdout?.trim()) { resolve(null); return; }
+      try {
+        const info = JSON.parse(stdout.trim().split('\n')[0]) as Record<string, any>;
+        const videoUrl = info.url as string;
+        if (!videoUrl) { resolve(null); return; }
+        const secs = typeof info.duration === 'number' ? Math.floor(info.duration) : 0;
+        const duration = secs ? `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}` : '00:00';
+        resolve({
+          videoUrl,
+          title: (info.title as string) || '',
+          thumbnail: (info.thumbnail as string) || '',
+          duration,
+        });
+      } catch { resolve(null); }
+    });
+    child.on('error', () => { clearTimeout(timeout); resolve(null); });
+  });
+}
 
 function originPolicy(config: AppConfig) { return (req: Request, res: Response, next: NextFunction) => {
   const origin = req.get('origin');
@@ -153,11 +183,22 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
               const best = sorted.find((f: any) => f.url && (f.height || 999) <= 720) || sorted.find((f: any) => f.url);
               if (best?.url) videoUrl = best.url;
             }
-          } catch { /* InnerTube failed, fall through to Cobalt */ }
+          } catch { /* InnerTube failed, fall through to yt-dlp */ }
         }
       }
 
-      // 2. Cobalt race for stream URL (all platforms, including YouTube fallback)
+      // 2. yt-dlp fallback (works for YouTube + other platforms when yt-dlp is available on the server)
+      if (!videoUrl) {
+        const ytdlpResult = await resolveWithYtdlp(url);
+        if (ytdlpResult) {
+          videoUrl = ytdlpResult.videoUrl;
+          if (!title && ytdlpResult.title) title = ytdlpResult.title;
+          if (!thumbnail && ytdlpResult.thumbnail) thumbnail = ytdlpResult.thumbnail;
+          if (duration === '00:00' && ytdlpResult.duration !== '00:00') duration = ytdlpResult.duration;
+        }
+      }
+
+      // 3. Cobalt race for stream URL (all platforms, including YouTube fallback)
       if (!videoUrl) {
         const cobaltEndpoints = ['https://cobalt.api.red.velvet.ink/', 'https://api.cobalt.tools/', 'https://cobalt.catvibers.me/', 'https://api.cobalt.best/'];
         const cobaltBody = JSON.stringify({ url, vQuality: '720', videoQuality: '720', filenameStyle: 'classic' });
@@ -184,7 +225,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
         } catch { /* all Cobalt instances failed */ }
       }
 
-      // 3. Metadata fallback: YouTube oEmbed or OG scrape
+      // 4. Metadata fallback: YouTube oEmbed or OG scrape
       if (!title || !thumbnail) {
         if (isYT) {
           const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
@@ -209,7 +250,9 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
         }
       }
 
-      if (!videoUrl) throw new ApiError(422, 'PROVIDER_ERROR', isYT ? 'YouTube blocked the extraction. The video may be age-restricted or region-locked.' : 'Could not extract a stream URL for this link.');
+      if (!videoUrl) throw new ApiError(422, 'PROVIDER_ERROR', isYT
+        ? 'All extraction methods failed. YouTube may be blocking this server\'s IP, or the video is private/age-restricted. Try again later or use a different link.'
+        : 'Could not extract a stream URL. The link may be private, expired, or unsupported.');
       if (!title) title = `${platform} Video`;
       if (!thumbnail) thumbnail = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60';
 

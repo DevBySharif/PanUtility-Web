@@ -2,20 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { loadConfig } from '../lib/config';
 import { clientIp, hashIdentity, normalizeIp } from '../lib/security/clientIdentity';
 
-const production = { NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production', ALLOWED_ORIGINS: 'https://panutility.vercel.app' };
+const production = { NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production', ALLOWED_ORIGINS: 'https://omnitily.vercel.app' };
 const developmentTranscription = { NODE_ENV: 'development', ENABLE_TRANSCRIPTION: 'true', GEMINI_API_KEY: 'key', UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 'token', RATE_LIMIT_IDENTITY_SECRET: 'x'.repeat(32) };
 
 describe('production environment schema', () => {
   it('boots production with no secrets and defaults to the canonical origin', () => {
-    const config = loadConfig({ NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production' }); expect(config.environment).toBe('production'); expect(config.allowedOrigins.has('https://panutility.vercel.app')).toBe(true);
+    const config = loadConfig({ NODE_ENV: 'production', VERCEL: '1', VERCEL_ENV: 'production' }); expect(config.environment).toBe('production'); expect(config.allowedOrigins.has('https://omnitily.vercel.app')).toBe(true);
     expect(config.transcriptionEnabled).toBe(false); expect(config.geminiApiKey).toBeUndefined(); expect(config.redisUrl).toBeUndefined();
     expect(loadConfig({ NODE_ENV: 'development' }).allowedOrigins.has('http://localhost:3000')).toBe(true);
     expect(loadConfig({ NODE_ENV: 'test' }).environment).toBe('test');
   });
   it.each([
     [{ ...production, ALLOWED_ORIGINS: 'not-url' }],
-    [{ ...production, ALLOWED_ORIGINS: 'https://panutility.vercel.app/' }],
-    [{ ...production, ALLOWED_ORIGINS: 'http://panutility.vercel.app' }],
+    [{ ...production, ALLOWED_ORIGINS: 'https://omnitily.vercel.app/' }],
+    [{ ...production, ALLOWED_ORIGINS: 'http://omnitily.vercel.app' }],
     [{ ...production, NODE_ENV: 'staging' }],
     [{ ...production, VERCEL_ENV: 'staging' }],
     [{ ...production, ENABLE_TRANSCRIPTION: 'true' }],

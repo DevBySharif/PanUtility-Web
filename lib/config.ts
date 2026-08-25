@@ -27,8 +27,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const vercelEnvironment = ['production', 'preview', 'development'].includes(env.VERCEL_ENV || '') ? env.VERCEL_ENV as AppConfig['vercelEnvironment'] : undefined;
   if (env.VERCEL_ENV && !vercelEnvironment) throw new Error('VERCEL_ENV is invalid.');
   const defaultOrigins = environment === 'production'
-    ? 'https://panutility.vercel.app'
-    : 'https://panutility.vercel.app,http://localhost:3000,http://127.0.0.1:3000';
+    ? 'https://omnitily.vercel.app'
+    : 'https://omnitily.vercel.app,http://localhost:3000,http://127.0.0.1:3000';
   const rawOrigins = env.ALLOWED_ORIGINS || defaultOrigins;
   const allowedOrigins = new Set(rawOrigins.split(',').map((item) => normalizeOrigin(item.trim())));
   if (environment === 'production' && [...allowedOrigins].some((origin) => !origin.startsWith('https://'))) throw new Error('Production origins must use HTTPS.');

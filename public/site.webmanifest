@@ -1,6 +1,6 @@
 {
-  "name": "PanUtility - Universal Media & Format Workstation",
-  "short_name": "PanUtility",
+  "name": "Omnitily - Universal Utility Suite",
+  "short_name": "Omnitily",
   "description": "A transparent all-in-one utility catalog with clear availability and browser, server, or third-party processing labels.",
   "start_url": "/",
   "display": "standalone",

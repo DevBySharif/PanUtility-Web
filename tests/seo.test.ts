@@ -3,26 +3,26 @@ import { describe, expect, it } from 'vitest';
 import { HIDDEN_TOOLS, INDEXABLE_TOOLS, TOOL_REGISTRY } from '../src/toolsData';
 
 describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
-  it('robots.txt points to canonical sitemap URL on panutility.vercel.app', () => {
+  it('robots.txt points to canonical sitemap URL on omnitily.vercel.app', () => {
     expect(existsSync('public/robots.txt')).toBe(true);
     const content = readFileSync('public/robots.txt', 'utf8');
     expect(content).toContain('User-agent: *');
     expect(content).toContain('Allow: /');
-    expect(content).toContain('Sitemap: https://panutility.vercel.app/sitemap.xml');
-    expect(content).not.toContain('panutility.com');
+    expect(content).toContain('Sitemap: https://omnitily.vercel.app/sitemap.xml');
+    expect(content).not.toContain('omnitily.com');
   });
 
-  it('sitemap.xml contains exactly 1 + indexable-tool canonical URLs on panutility.vercel.app', () => {
+  it('sitemap.xml contains exactly 1 + indexable-tool canonical URLs on omnitily.vercel.app', () => {
     expect(existsSync('public/sitemap.xml')).toBe(true);
     const content = readFileSync('public/sitemap.xml', 'utf8');
-    expect(content).not.toContain('panutility.com');
+    expect(content).not.toContain('omnitily.com');
 
-    const locs = content.match(/<loc>(https:\/\/panutility\.vercel\.app\/[^<]*)<\/loc>/g) || [];
+    const locs = content.match(/<loc>(https:\/\/omnitily\.vercel\.app\/[^<]*)<\/loc>/g) || [];
     expect(locs).toHaveLength(1 + INDEXABLE_TOOLS.length); // 1 homepage + indexable (public functional) tools
-    expect(locs[0]).toContain('<loc>https://panutility.vercel.app/</loc>');
+    expect(locs[0]).toContain('<loc>https://omnitily.vercel.app/</loc>');
 
     for (const tool of INDEXABLE_TOOLS) {
-      expect(content).toContain(`<loc>https://panutility.vercel.app/tools/${tool.id}</loc>`);
+      expect(content).toContain(`<loc>https://omnitily.vercel.app/tools/${tool.id}</loc>`);
     }
   });
 
@@ -32,10 +32,10 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
 
     expect(html).toMatch(/<html[^>]*lang="en"/);
     expect(html).toContain('<meta name="theme-color" content="#07080a" />');
-    expect(html).toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
-    expect(html).toContain('<meta property="og:site_name" content="PanUtility" />');
+    expect(html).toContain('<link rel="canonical" href="https://omnitily.vercel.app/" />');
+    expect(html).toContain('<meta property="og:site_name" content="Omnitily" />');
     expect(html).toContain('<meta property="og:type" content="website" />');
-    expect(html).toContain('<meta property="og:url" content="https://panutility.vercel.app/" />');
+    expect(html).toContain('<meta property="og:url" content="https://omnitily.vercel.app/" />');
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
   });
 
@@ -43,8 +43,8 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     if (!existsSync('dist/index.html')) return; // Run after build
 
     const html = readFileSync('dist/index.html', 'utf8');
-    expect(html).toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
-    expect(html).toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
+    expect(html).toContain('<title>Omnitily - Universal Media &amp; Format Workstation</title>');
+    expect(html).toContain('<link rel="canonical" href="https://omnitily.vercel.app/" />');
     expect(html).toContain('application/ld+json');
 
     const jsonMatches = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs) || [];
@@ -55,7 +55,7 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
 
     expect(types).toContain('WebSite');
     expect(types).toContain('Organization');
-    expect(html).toContain('PanUtility Workstation');
+    expect(html).toContain('Omnitily Workstation');
     expect(html).toContain('/tools/image-converter');
   });
 
@@ -63,8 +63,8 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     if (!existsSync('dist/tools/image-converter/index.html')) return; // Run after build
 
     const html = readFileSync('dist/tools/image-converter/index.html', 'utf8');
-    expect(html).toContain('<title>Image Format Converter - PanUtility</title>');
-    expect(html).toContain('<link rel="canonical" href="https://panutility.vercel.app/tools/image-converter" />');
+    expect(html).toContain('<title>Image Format Converter - Omnitily</title>');
+    expect(html).toContain('<link rel="canonical" href="https://omnitily.vercel.app/tools/image-converter" />');
     expect(html).toContain('<meta name="robots" content="index, follow" />');
     expect(html).toContain('<h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">Image Format Converter</h1>');
 
@@ -82,8 +82,8 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     if (!existsSync('dist/tools/pdf-compiler/index.html')) return; // Run after build
 
     const html = readFileSync('dist/tools/pdf-compiler/index.html', 'utf8');
-    expect(html).toContain('<title>PDF Compiler (Images to PDF) - PanUtility</title>');
-    expect(html).toContain('<link rel="canonical" href="https://panutility.vercel.app/tools/pdf-compiler" />');
+    expect(html).toContain('<title>PDF Compiler (Images to PDF) - Omnitily</title>');
+    expect(html).toContain('<link rel="canonical" href="https://omnitily.vercel.app/tools/pdf-compiler" />');
     expect(html).toContain('<h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">PDF Compiler (Images to PDF)</h1>');
   });
 
@@ -91,8 +91,8 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     if (!existsSync('dist/tools/json-formatter/index.html')) return; // Run after build
 
     const html = readFileSync('dist/tools/json-formatter/index.html', 'utf8');
-    expect(html).toContain('<title>JSON Beautifier &amp; Validator - PanUtility</title>');
-    expect(html).toContain('<link rel="canonical" href="https://panutility.vercel.app/tools/json-formatter" />');
+    expect(html).toContain('<title>JSON Beautifier &amp; Validator - Omnitily</title>');
+    expect(html).toContain('<link rel="canonical" href="https://omnitily.vercel.app/tools/json-formatter" />');
     expect(html).toContain('<h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">JSON Beautifier &amp; Validator</h1>');
   });
 
@@ -126,9 +126,9 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
     for (const tool of HIDDEN_TOOLS) {
       const html = readFileSync(`dist/tools/${tool.id}/index.html`, 'utf8');
       expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
-      expect(html).toContain(`<link rel="canonical" href="https://panutility.vercel.app/tools/${tool.id}" />`);
-      expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
-      expect(html).not.toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
+      expect(html).toContain(`<link rel="canonical" href="https://omnitily.vercel.app/tools/${tool.id}" />`);
+      expect(html).not.toContain('<title>Omnitily - Universal Media &amp; Format Workstation</title>');
+      expect(html).not.toContain('<link rel="canonical" href="https://omnitily.vercel.app/" />');
       expect(html).not.toContain('"@type":"WebSite"');
     }
   });
@@ -138,9 +138,9 @@ describe('P1-A2 Production SEO Rendering & Static Prerendering', () => {
 
     const html = readFileSync('dist/404.html', 'utf8');
     expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
-    expect(html).toContain('<title>Page Not Found - PanUtility</title>');
+    expect(html).toContain('<title>Page Not Found - Omnitily</title>');
     expect(html).not.toContain('<link rel="canonical"');
-    expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
+    expect(html).not.toContain('<title>Omnitily - Universal Media &amp; Format Workstation</title>');
     expect(html).not.toContain('"@type":"WebSite"');
   });
 });

@@ -16,6 +16,6 @@
     <path d="M0 -92 L0 92 M -92 0 L92 0" stroke="url(#accent)" stroke-width="8" opacity="0.4"/>
     <path d="M0 -46 L31 0 L0 46 L-31 0 Z" fill="#10b981" opacity="0.85"/>
   </g>
-  <text x="600" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800" fill="#ffffff" letter-spacing="2">PanUtility</text>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800" fill="#ffffff" letter-spacing="2">Omnitily</text>
   <text x="600" y="472" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" fill="#10b981" letter-spacing="7">UNIVERSAL UTILITY SUITE</text>
 </svg>

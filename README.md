@@ -1,6 +1,6 @@
-# PanUtility-Web
+# Omnitily-Web
 
-PanUtility is a React/Vite utility catalog with 113 stable route IDs. P0-A introduces truthful maturity states: functional, beta, coming soon, and temporarily unavailable. Tool pages disclose whether processing happens in the browser, on PanUtility’s server, or through an external provider.
+Omnitily is a React/Vite utility catalog with 113 stable route IDs. P0-A introduces truthful maturity states: functional, beta, coming soon, and temporarily unavailable. Tool pages disclose whether processing happens in the browser, on Omnitily’s server, or through an external provider.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ npm install
 npm run dev
 ```
 
-The free production deployment requires no secrets, database, Redis, Gemini key, custom domain, or paid API. Browser-local tools remain available. Audio Transcriber is intentionally disabled and its route shows a truthful unavailable state. `ALLOWED_ORIGINS` is optional in production and defaults to `https://panutility.vercel.app`.
+The free production deployment requires no secrets, database, Redis, Gemini key, custom domain, or paid API. Browser-local tools remain available. Audio Transcriber is intentionally disabled and its route shows a truthful unavailable state. `ALLOWED_ORIGINS` is optional in production and defaults to `https://omnitily.vercel.app`.
 
 Server transcription can be exercised only in development or tests through the explicit `ENABLE_TRANSCRIPTION=true` flag and separate local credentials; production rejects that flag.
 
@@ -38,7 +38,7 @@ npm run verify:deployment -- --base-url=https://your-deployment.example
 ## Processing and privacy
 
 - Browser tools show “Processed locally in your browser.”
-- Server tools disclose that data is sent to PanUtility’s server.
+- Server tools disclose that data is sent to Omnitily’s server.
 - External tools disclose that data or URLs are sent to a third-party provider.
 - Audio transcription requires confirmation before audio is sent to the server and Google Gemini.
 - Production transcription accepts supported audio files up to 3 MiB; Vercel rejects function payloads above 4.5 MB before application code runs.

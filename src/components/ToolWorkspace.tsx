@@ -40,7 +40,7 @@ function ToolBreadcrumb({ tool, onNavigate }: { tool: ToolDefinition; onNavigate
         <li className="text-zinc-600 select-none">/</li>
         <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center gap-1.5">
           <span className="text-zinc-400 font-medium" itemProp="name">{tool.category}</span>
-          <meta itemProp="item" content="https://panutility.vercel.app/" />
+          <meta itemProp="item" content="https://omnitily.vercel.app/" />
           <meta itemProp="position" content="2" />
         </li>
         <li className="text-zinc-600 select-none">/</li>
@@ -48,7 +48,7 @@ function ToolBreadcrumb({ tool, onNavigate }: { tool: ToolDefinition; onNavigate
           <span className="text-emerald-400 font-semibold truncate max-w-[200px]" aria-current="page" itemProp="name">
             {tool.name}
           </span>
-          <meta itemProp="item" content={`https://panutility.vercel.app/tools/${tool.id}`} />
+          <meta itemProp="item" content={`https://omnitily.vercel.app/tools/${tool.id}`} />
           <meta itemProp="position" content="3" />
         </li>
       </ol>

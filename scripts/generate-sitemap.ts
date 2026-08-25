@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { INDEXABLE_TOOLS } from '../src/toolsData.ts';
 
-const baseUrl = 'https://panutility.vercel.app';
+const baseUrl = 'https://omnitily.vercel.app';
 const urls = [
   `${baseUrl}/`,
   ...INDEXABLE_TOOLS.map((tool) => `${baseUrl}/tools/${tool.id}`),

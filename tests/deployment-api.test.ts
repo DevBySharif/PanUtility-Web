@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createApp } from '../api/index';
 import type { AppConfig } from '../lib/config';
 
-const origin = 'https://panutility.vercel.app';
+const origin = 'https://omnitily.vercel.app';
 const config: AppConfig = { environment: 'production', vercel: true, vercelEnvironment: 'production', transcriptionEnabled: false, allowedOrigins: new Set([origin]) };
 const app = () => createApp({ config });
 
@@ -33,12 +33,12 @@ describe('zero-cost production API behavior', () => {
 
   it.each([
     [origin, 200, origin],
-    ['https://panutility.vercel.app.evil.example', 403, undefined],
+    ['https://omnitily.vercel.app.evil.example', 403, undefined],
     ['https://random-preview.vercel.app', 403, undefined],
     ['null', 403, undefined],
-    ['https://panutility.vercel.app.', 403, undefined],
-    ['https://panutility.vercel.app:444', 403, undefined],
-    ['http://panutility.vercel.app', 403, undefined],
+    ['https://omnitily.vercel.app.', 403, undefined],
+    ['https://omnitily.vercel.app:444', 403, undefined],
+    ['http://omnitily.vercel.app', 403, undefined],
   ])('enforces exact origin %s', async (candidate, status, reflected) => {
     const response = await request(app()).get('/api/health').set('Origin', candidate);
     expect(response.status).toBe(status); expect(response.headers['access-control-allow-origin']).toBe(reflected); expect(response.headers.vary).toContain('Origin');

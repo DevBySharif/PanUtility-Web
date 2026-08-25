@@ -22,7 +22,7 @@ export function ToolStatusBadge({ status }: { status: ToolStatus }) {
 
 const PROCESSING_COPY: Record<ProcessingType, string> = {
   browser: 'Processed locally in your browser.',
-  server: 'This operation sends data to PanUtility’s server.',
+  server: 'This operation sends data to Omnitily’s server.',
   external: 'This operation sends data or URLs to a third-party provider.',
   none: 'Processing is not available for this tool.',
 };
@@ -77,7 +77,7 @@ export function ToolNotFound({ onBack }: { onBack: () => void }) {
     <section data-testid="tool-not-found" className="mx-auto max-w-xl rounded-2xl border border-zinc-800 bg-[#0d0d0f] p-8 text-center">
       <WarningCircle className="mx-auto h-10 w-10 text-amber-300" />
       <h1 className="mt-4 text-3xl font-bold text-white">Tool not found</h1>
-      <p className="mt-3 text-zinc-400">This route does not match a tool in the PanUtility catalog.</p>
+      <p className="mt-3 text-zinc-400">This route does not match a tool in the Omnitily catalog.</p>
       <button onClick={onBack} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2 text-sm font-bold text-black">
         <ArrowLeft className="h-4 w-4" /> Back to catalog
       </button>

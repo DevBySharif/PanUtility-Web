@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://panutility.vercel.app/sitemap.xml
+Sitemap: https://omnitily.vercel.app/sitemap.xml

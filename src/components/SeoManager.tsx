@@ -11,7 +11,7 @@ interface SeoManagerProps {
   routeNotFound?: boolean;
 }
 
-const DOMAIN = 'https://panutility.vercel.app';
+const DOMAIN = 'https://omnitily.vercel.app';
 
 function setMetaTag(attribute: 'name' | 'property', attrValue: string, content: string) {
   let element = document.querySelector(`meta[${attribute}="${attrValue}"]`);
@@ -44,14 +44,14 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
 }) => {
   useEffect(() => {
     // Clean up previous JSON-LD script tags
-    const existingScripts = document.querySelectorAll('script[data-seo="panutility-jsonld"]');
+    const existingScripts = document.querySelectorAll('script[data-seo="omnitily-jsonld"]');
     existingScripts.forEach((script) => script.remove());
 
     const isToolView = Boolean(toolId && toolTitle && toolDescription && !routeNotFound);
 
     if (routeNotFound) {
-      const title = 'Page Not Found - PanUtility';
-      const desc = 'The requested page or utility could not be found on PanUtility.';
+      const title = 'Page Not Found - Omnitily';
+      const desc = 'The requested page or utility could not be found on Omnitily.';
       const canonical = `${DOMAIN}/`;
 
       document.title = title;
@@ -60,7 +60,7 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('name', 'robots', 'noindex, nofollow');
       setMetaTag('name', 'keywords', 'utility tools, page not found');
       
-      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:site_name', 'Omnitily');
       setMetaTag('property', 'og:type', 'website');
       setMetaTag('property', 'og:title', title);
       setMetaTag('property', 'og:description', desc);
@@ -73,12 +73,12 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('name', 'twitter:image', `${DOMAIN}/og-image.svg`);
     } else if (isToolView) {
       const canonical = `${DOMAIN}/tools/${toolId}`;
-      const titleText = `${toolTitle} - PanUtility`;
+      const titleText = `${toolTitle} - Omnitily`;
       
       const processingCopy = processingType === 'browser'
         ? 'Processed locally in your browser.'
         : processingType === 'server'
-          ? 'This operation sends data to PanUtility’s server.'
+          ? 'This operation sends data to Omnitily’s server.'
           : processingType === 'external'
             ? 'This operation uses a third-party provider.'
             : 'Processing is currently unavailable.';
@@ -92,7 +92,7 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('name', 'robots', isIndexable ? 'index, follow' : 'noindex, nofollow');
       setMetaTag('name', 'keywords', keywordText);
 
-      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:site_name', 'Omnitily');
       setMetaTag('property', 'og:type', 'website');
       setMetaTag('property', 'og:title', titleText);
       setMetaTag('property', 'og:description', descText);
@@ -147,19 +147,19 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
         };
 
         const appScript = document.createElement('script');
-        appScript.setAttribute('data-seo', 'panutility-jsonld');
+        appScript.setAttribute('data-seo', 'omnitily-jsonld');
         appScript.type = 'application/ld+json';
         appScript.text = JSON.stringify(webAppSchema);
         document.head.appendChild(appScript);
 
         const breadcrumbScript = document.createElement('script');
-        breadcrumbScript.setAttribute('data-seo', 'panutility-jsonld');
+        breadcrumbScript.setAttribute('data-seo', 'omnitily-jsonld');
         breadcrumbScript.type = 'application/ld+json';
         breadcrumbScript.text = JSON.stringify(breadcrumbSchema);
         document.head.appendChild(breadcrumbScript);
       }
     } else {
-      const title = 'PanUtility - Universal Media & Format Workstation';
+      const title = 'Omnitily - Universal Utility Suite';
       const desc = 'A transparent all-in-one utility catalog with clear availability and browser, server, or third-party processing labels.';
       const canonical = `${DOMAIN}/`;
 
@@ -169,7 +169,7 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       setMetaTag('name', 'robots', 'index, follow');
       setMetaTag('name', 'keywords', 'utility tools, browser media converter, pdf compiler, audio tools, qr code generator, online utilities');
 
-      setMetaTag('property', 'og:site_name', 'PanUtility');
+      setMetaTag('property', 'og:site_name', 'Omnitily');
       setMetaTag('property', 'og:type', 'website');
       setMetaTag('property', 'og:title', title);
       setMetaTag('property', 'og:description', desc);
@@ -184,7 +184,7 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       const webSiteSchema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'PanUtility',
+        name: 'Omnitily',
         url: `${DOMAIN}/`,
         description: desc,
       };
@@ -192,19 +192,19 @@ export const SeoManager: React.FC<SeoManagerProps> = ({
       const orgSchema = {
         '@context': 'https://schema.org',
         '@type': 'Organization',
-        name: 'PanUtility',
+        name: 'Omnitily',
         url: `${DOMAIN}/`,
         logo: `${DOMAIN}/favicon.svg`,
       };
 
       const siteScript = document.createElement('script');
-      siteScript.setAttribute('data-seo', 'panutility-jsonld');
+      siteScript.setAttribute('data-seo', 'omnitily-jsonld');
       siteScript.type = 'application/ld+json';
       siteScript.text = JSON.stringify(webSiteSchema);
       document.head.appendChild(siteScript);
 
       const orgScript = document.createElement('script');
-      orgScript.setAttribute('data-seo', 'panutility-jsonld');
+      orgScript.setAttribute('data-seo', 'omnitily-jsonld');
       orgScript.type = 'application/ld+json';
       orgScript.text = JSON.stringify(orgSchema);
       document.head.appendChild(orgScript);

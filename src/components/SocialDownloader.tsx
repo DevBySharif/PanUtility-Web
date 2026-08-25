@@ -201,7 +201,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
             <Download className="w-8 h-8 text-[#10b981]" /> Social Media Downloader
           </h1>
           <p className="text-gray-400 text-sm mt-1">Beta link resolver for supported public media. Platform, provider, format, and quality availability vary.</p>
-          <p className="mt-2 text-xs text-amber-300">Submitted URLs are sent to PanUtility’s server and third-party resolver providers.</p>
+          <p className="mt-2 text-xs text-amber-300">Submitted URLs are sent to Omnitily’s server and third-party resolver providers.</p>
         </div>
       </div>
 

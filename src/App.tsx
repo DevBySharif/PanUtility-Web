@@ -414,7 +414,7 @@ function AppContent() {
             </div>
             <div>
               <span className="font-extrabold text-lg text-white tracking-tight block font-sans font-sans">
-                PanUtility <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider ml-0.5 bg-emerald-950/40 border border-emerald-800/40 px-1.5 py-0.5 rounded">Core</span>
+                Omnitily <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider ml-0.5 bg-emerald-950/40 border border-emerald-800/40 px-1.5 py-0.5 rounded">Core</span>
               </span>
               <span className="text-[9px] text-zinc-500 font-mono block leading-none uppercase tracking-widest mt-1">Universal Utility Suite</span>
             </div>
@@ -1030,7 +1030,7 @@ function AppContent() {
       {/* Aesthetic Footer */}
       <footer className="bg-[#0c0c0e] border-t border-zinc-800/80 py-6 mt-12">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-widest text-gray-500 select-none font-medium">
-          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" /> PanUtility Workstation Framework &bull; Release 2026</span>
+          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" /> Omnitily Utility Suite &bull; Release 2026</span>
           <div className="flex gap-4">
             <span className="hover:text-white transition-colors">Truthful Availability</span>
             <span>&bull;</span>
@@ -1212,7 +1212,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
   }
 
   componentDidCatch(error: unknown) {
-    console.error('PanUtility UI error boundary caught:', error);
+    console.error('Omnitily UI error boundary caught:', error);
   }
 
   render() {
@@ -1224,7 +1224,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
           </span>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Something went wrong</h1>
           <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-            A runtime error interrupted this workspace. Please reload the page to continue using PanUtility.
+            A runtime error interrupted this workspace. Please reload the page to continue using Omnitily.
           </p>
           <button
             onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}

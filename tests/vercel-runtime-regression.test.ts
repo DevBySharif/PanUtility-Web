@@ -82,7 +82,7 @@ describe('build output safety', () => {
 // ---------------------------------------------------------------------------
 // 3 & 4. Zero-cost production API behavior (no secrets required)
 // ---------------------------------------------------------------------------
-const origin = 'https://panutility.vercel.app';
+const origin = 'https://omnitily.vercel.app';
 const prodConfig: AppConfig = {
   environment: 'production',
   vercel: true,

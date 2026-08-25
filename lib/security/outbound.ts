@@ -48,7 +48,7 @@ export async function secureFetch(raw: string, options: { fetchImpl?: typeof fet
   for (let redirects = 0; ; redirects++) {
     if (visited.has(current.href)) throw new ApiError(502, 'PROVIDER_ERROR', 'The upstream redirect looped.');
     visited.add(current.href);
-    const response = await fetchImpl(current, { redirect: 'manual', signal: AbortSignal.timeout(options.timeoutMs), headers: { Accept: '*/*', 'Accept-Encoding': 'identity', 'User-Agent': 'PanUtility/1.0' } });
+    const response = await fetchImpl(current, { redirect: 'manual', signal: AbortSignal.timeout(options.timeoutMs), headers: { Accept: '*/*', 'Accept-Encoding': 'identity', 'User-Agent': 'Omnitily/1.0' } });
     if ([301,302,303,307,308].includes(response.status)) {
       if (redirects >= (options.maxRedirects ?? 3)) throw new ApiError(502, 'PROVIDER_ERROR', 'The upstream redirected too many times.');
       const location = response.headers.get('location');

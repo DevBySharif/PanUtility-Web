@@ -51,7 +51,7 @@ export function createRateLimitMiddleware(options: { store: RateLimitStore; wind
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const identity = await options.identity(req);
-      const entry = await options.store.increment(`panutility:rl:${options.endpoint}:${identity}`, options.windowMs);
+      const entry = await options.store.increment(`omnitily:rl:${options.endpoint}:${identity}`, options.windowMs);
       if (entry.count > options.max) return next(new ApiError(429, 'RATE_LIMITED', 'Too many requests. Try again later.', Math.max(1, Math.ceil((entry.resetAt - Date.now()) / 1000))));
       next();
     } catch (error) { next(error instanceof ApiError ? error : new ApiError(503, 'SERVICE_UNAVAILABLE', 'Rate-limit protection is temporarily unavailable.')); }

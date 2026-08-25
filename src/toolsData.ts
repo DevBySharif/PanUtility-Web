@@ -1112,7 +1112,7 @@ function processingFor(id: ToolId, status: ToolStatus): ProcessingType {
 }
 
 function privacyFor(id: ToolId): string | undefined {
-  if (id === 'audio-transcriber') return 'Audio is sent to PanUtility’s server, which sends it to Google Gemini. Provider availability affects processing.';
+  if (id === 'audio-transcriber') return 'Audio is sent to Omnitily’s server, which sends it to Google Gemini. Provider availability affects processing.';
   if (id === 'qr-generator') return 'QR contents are sent to the external QR rendering provider.';
   return undefined;
 }

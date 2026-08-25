@@ -548,7 +548,7 @@ export default function AudioTranscriber({ onBack, initialFile }: AudioTranscrib
                     onChange={(event) => setProcessingConfirmed(event.target.checked)}
                     className="mt-0.5 h-4 w-4 accent-emerald-500"
                   />
-                  <span>I understand that this audio is sent to PanUtility’s server, which sends it to Google Gemini, and that provider availability affects processing.</span>
+                  <span>I understand that this audio is sent to Omnitily’s server, which sends it to Google Gemini, and that provider availability affects processing.</span>
                 </label>
                 {!isTranscribing ? (
                   <button

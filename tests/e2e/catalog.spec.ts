@@ -119,9 +119,9 @@ test('interacts with functional tools without console errors', async ({ page }) 
   
   // JSON Formatter E2E
   await page.goto('/tools/json-formatter');
-  await page.getByPlaceholder(/Type or paste your content/i).fill('{"name":"PanUtility"}');
+  await page.getByPlaceholder(/Type or paste your content/i).fill('{"name":"Omnitily"}');
   await page.getByRole('button', { name: /Verify & Format JSON/i }).click();
-  await expect(page.locator('textarea').last()).toHaveValue(/{\n {2}"name": "PanUtility"\n}/);
+  await expect(page.locator('textarea').last()).toHaveValue(/{\n {2}"name": "Omnitily"\n}/);
 
   // Tip Calculator E2E
   await page.goto('/tools/tip-calc');
@@ -324,8 +324,8 @@ test('raw HTTP HTML for hidden and unknown tool routes is noindex and not homepa
     expect(response.status(), `${route} should serve truthful hidden-route HTML`).toBe(200);
     const html = await response.text();
     expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
-    expect(html).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
-    expect(html).not.toContain('<link rel="canonical" href="https://panutility.vercel.app/" />');
+    expect(html).not.toContain('<title>Omnitily - Universal Media &amp; Format Workstation</title>');
+    expect(html).not.toContain('<link rel="canonical" href="https://omnitily.vercel.app/" />');
     expect(html).not.toContain('"@type":"WebSite"');
   }
 
@@ -333,9 +333,9 @@ test('raw HTTP HTML for hidden and unknown tool routes is noindex and not homepa
   expect(unknown.status()).toBe(404);
   const unknownHtml = await unknown.text();
   expect(unknownHtml).toContain('<meta name="robots" content="noindex, nofollow" />');
-  expect(unknownHtml).toContain('<title>Page Not Found - PanUtility</title>');
+  expect(unknownHtml).toContain('<title>Page Not Found - Omnitily</title>');
   expect(unknownHtml).not.toContain('<link rel="canonical"');
-  expect(unknownHtml).not.toContain('<title>PanUtility - Universal Media &amp; Format Workstation</title>');
+  expect(unknownHtml).not.toContain('<title>Omnitily - Universal Media &amp; Format Workstation</title>');
 });
 
 test('production output applies cache policy and does not expose server artifacts', async ({ page, request }) => {

@@ -1,117 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://panutility.vercel.app/</loc>
+    <loc>https://omnitily.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/image-converter</loc>
+    <loc>https://omnitily.vercel.app/tools/image-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/color-extractor</loc>
+    <loc>https://omnitily.vercel.app/tools/color-extractor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/pdf-compiler</loc>
+    <loc>https://omnitily.vercel.app/tools/pdf-compiler</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/case-converter</loc>
+    <loc>https://omnitily.vercel.app/tools/case-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/word-counter</loc>
+    <loc>https://omnitily.vercel.app/tools/word-counter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/lorem-ipsum</loc>
+    <loc>https://omnitily.vercel.app/tools/lorem-ipsum</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/slug-generator</loc>
+    <loc>https://omnitily.vercel.app/tools/slug-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/text-sorter</loc>
+    <loc>https://omnitily.vercel.app/tools/text-sorter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/morse-translator</loc>
+    <loc>https://omnitily.vercel.app/tools/morse-translator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/base64-coder</loc>
+    <loc>https://omnitily.vercel.app/tools/base64-coder</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/url-coder</loc>
+    <loc>https://omnitily.vercel.app/tools/url-coder</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/html-entities</loc>
+    <loc>https://omnitily.vercel.app/tools/html-entities</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/text-reverser</loc>
+    <loc>https://omnitily.vercel.app/tools/text-reverser</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/line-remover</loc>
+    <loc>https://omnitily.vercel.app/tools/line-remover</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/json-formatter</loc>
+    <loc>https://omnitily.vercel.app/tools/json-formatter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/uuid-generator</loc>
+    <loc>https://omnitily.vercel.app/tools/uuid-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/contrast-checker</loc>
+    <loc>https://omnitily.vercel.app/tools/contrast-checker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/base-converter</loc>
+    <loc>https://omnitily.vercel.app/tools/base-converter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/percent-calc</loc>
+    <loc>https://omnitily.vercel.app/tools/percent-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/tip-calc</loc>
+    <loc>https://omnitily.vercel.app/tools/tip-calc</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/dice-roller</loc>
+    <loc>https://omnitily.vercel.app/tools/dice-roller</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://panutility.vercel.app/tools/rock-paper-scissors</loc>
+    <loc>https://omnitily.vercel.app/tools/rock-paper-scissors</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

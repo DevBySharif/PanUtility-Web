@@ -24,6 +24,7 @@ export type ToolComponentKey =
   | 'instagram-downloader'
   | 'tiktok-downloader'
   | 'facebook-downloader'
+  | 'social-downloader'
   | 'generic';
 
 export interface ToolDefinition {

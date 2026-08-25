@@ -55,11 +55,11 @@ describe('API policy and retired endpoints', () => {
     const denied = await request(testApp()).post('/api/transcribe').set('Origin', 'https://evil.example').set('Content-Type', 'application/json').send({ audio: wav, mimeType: 'audio/wav' });
     expect(denied.status).toBe(403); expect(denied.headers['access-control-allow-origin']).toBeUndefined();
   });
-  it('disables resolver and proxy for every method and rejects unsigned URLs', async () => {
-    for (const path of ['/api/resolve-social', '/api/media-proxy?url=https://example.com/a']) {
-      const response = await request(testApp()).get(path).set('Origin', origin);
-      expect(response.status).toBe(410); expect(response.body.error.code).toBe('FEATURE_DISABLED');
-    }
+  it('resolve-social requires POST and media-proxy requires url parameter', async () => {
+    const resolveGet = await request(testApp()).get('/api/resolve-social').set('Origin', origin);
+    expect(resolveGet.status).toBe(405);
+    const proxyNoUrl = await request(testApp()).get('/api/media-proxy').set('Origin', origin);
+    expect(proxyNoUrl.status).toBe(400);
   });
   it('uses structured safe errors and request IDs', async () => {
     const response = await request(testApp()).get('/api/nope').set('Origin', origin);

@@ -977,7 +977,7 @@ export type ToolId = (typeof TOOL_CATALOG)[number]['id'];
 
 const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
   'video-splitter': 'disabled',
-  'social-downloader': 'disabled',
+  'social-downloader': 'functional',
   'youtube-downloader': 'beta',
   'instagram-downloader': 'beta',
   'tiktok-downloader': 'beta',
@@ -1096,7 +1096,6 @@ const STATUS_BY_ID: Record<ToolId, ToolStatus> = {
 };
 
 const DISABLED_REASONS: Partial<Record<ToolId, string>> = {
-  'social-downloader': 'The previous resolver depended on unsafe remote-script execution, unofficial scraping providers, and arbitrary media proxying. It is disabled until a safe documented provider is available.',
   'audio-transcriber': 'Server-based transcription is temporarily unavailable in the free deployment.',
   'video-splitter': 'The current export method can create structurally invalid video files. It is disabled until a real media pipeline is available.',
   'video-speed': 'The current implementation previews speed changes but does not create an adjusted video file.',

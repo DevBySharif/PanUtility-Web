@@ -7,10 +7,8 @@ import {
   Globe,
   Link,
   Shield,
-  Terminal,
   WarningCircle,
   Play,
-  MusicNote,
 } from '@phosphor-icons/react';
 import confetti from 'canvas-confetti';
 
@@ -53,7 +51,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     if (l.includes('tiktok.com')) return 'TikTok';
     if (l.includes('instagram.com')) return 'Instagram';
     if (l.includes('facebook.com') || l.includes('fb.watch')) return 'Facebook';
-    if (l.includes('twitter.com') || l.includes('x.com')) return 'Twitter/X';
     return 'Web Video';
   };
 
@@ -69,14 +66,12 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     const steps = [
       'Initiating connection…',
       `Resolving ${detectPlatform(trimmed)} stream…`,
-      'Bypassing protection layers…',
-      'Parsing media manifest…',
-      'Assembling download links…',
+      'Fetching media manifest…',
     ];
     let si = 0;
     const iv = setInterval(() => {
       if (si < steps.length) { setParsingStep(steps[si]); si++; }
-    }, 500);
+    }, 600);
 
     try {
       const r = await fetch('/api/resolve-social', {
@@ -95,12 +90,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
       }
       if (!r.ok) {
         let errMsg = `Server error (${r.status}).`;
-        try {
-          const e = await r.json();
-          if (e.error) {
-            errMsg = e.error;
-          }
-        } catch {}
+        try { const e = await r.json(); if (e.error) errMsg = typeof e.error === 'string' ? e.error : e.error.message || e.error.code || errMsg; } catch { /* non-JSON */ }
         setErrorMsg(errMsg);
         setStatus('error');
         return;
@@ -109,7 +99,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
       const d = await r.json();
       setMeta({ title: d.title, thumbnail: d.thumbnail, duration: d.duration, platform: d.platform, videoUrl: d.videoUrl });
       setStatus('ready');
-
     } catch {
       clearInterval(iv);
       setErrorMsg('Network error — check your connection and try again.');
@@ -120,34 +109,21 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
   const handleQualityChange = async (qualityIndex: number) => {
     setSelectedQuality(qualityIndex);
     if (!meta) return;
-
     setIsReResolving(true);
     setErrorMsg('');
-
     try {
       const r = await fetch('/api/resolve-social', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim(), quality: QUALITIES[qualityIndex].id }),
       });
-
-      if (!r.ok) {
-        let errMsg = 'Failed to switch quality.';
-        try {
-          const e = await r.json();
-          if (e.error) errMsg = e.error;
-        } catch {}
-        throw new Error(errMsg);
-      }
-
+      if (!r.ok) { let errMsg = 'Failed to switch quality.'; try { const e = await r.json(); if (e.error) errMsg = typeof e.error === 'string' ? e.error : e.error.message || errMsg; } catch { /* */ } throw new Error(errMsg); }
       const d = await r.json();
       setMeta(prev => prev ? { ...prev, videoUrl: d.videoUrl } : null);
     } catch (e: any) {
       setErrorMsg(e.message || 'Error switching quality.');
       setStatus('error');
-    } finally {
-      setIsReResolving(false);
-    }
+    } finally { setIsReResolving(false); }
   };
 
   const handleDownload = () => {
@@ -159,26 +135,15 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
     setStatus('downloading');
     setProgress(5);
 
-    // Simulate progress bar quickly while the browser launches the native download stream
     const iv = setInterval(() => {
       setProgress(p => {
-        if (p >= 90) {
-          clearInterval(iv);
-          setTimeout(() => {
-            setProgress(100);
-            setStatus('completed');
-            confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
-          }, 400);
-          return 90;
-        }
+        if (p >= 90) { clearInterval(iv); setTimeout(() => { setProgress(100); setStatus('completed'); confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } }); }, 400); return 90; }
         return p + Math.random() * 25 + 15;
       });
     }, 150);
 
     const filename = `${cleanTitle}.${ext}`;
     const proxyUrl = `/api/media-proxy?url=${encodeURIComponent(meta.videoUrl)}&filename=${encodeURIComponent(filename)}`;
-    
-    // Create temporary link and click to trigger browser native streaming download
     const a = document.createElement('a');
     a.href = proxyUrl;
     a.download = filename;
@@ -191,7 +156,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6" id="social-downloader-tool">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#2a2a2a]">
         <div>
           <button onClick={onBack} className="text-sm font-medium text-gray-400 hover:text-[#10b981] mb-2 inline-flex items-center gap-1 transition-colors cursor-pointer">
@@ -200,14 +164,12 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           <h1 className="text-3xl font-sans text-white tracking-tight flex items-center gap-2.5">
             <Download className="w-8 h-8 text-[#10b981]" /> Social Media Downloader
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Beta link resolver for supported public media. Platform, provider, format, and quality availability vary.</p>
-          <p className="mt-2 text-xs text-amber-300">Submitted URLs are sent to Omnitily’s server and third-party resolver providers.</p>
+          <p className="text-gray-400 text-sm mt-1">Download HD videos and extracts from YouTube, TikTok, Instagram, and Facebook.</p>
+          <p className="mt-2 text-xs text-amber-300">Submitted URLs are sent to Omnitily's server for resolution. No credentials are forwarded.</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-6">
-
-        {/* Input */}
         <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-6 md:p-8 shadow-xl flex flex-col gap-4 text-center max-w-3xl mx-auto w-full">
           <div className="flex flex-col items-center gap-1 mb-1">
             <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2 justify-center">
@@ -222,7 +184,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
               <input
                 id="video-url-input"
                 type="url"
-                placeholder="https://youtu.be/... or any video URL"
+                placeholder="https://youtu.be/..."
                 value={url}
                 onChange={e => { setUrl(e.target.value); if (status === 'error') setStatus('idle'); }}
                 onKeyDown={e => e.key === 'Enter' && handleFetch()}
@@ -236,10 +198,7 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
               disabled={!url.trim() || status === 'parsing' || status === 'downloading'}
               className="py-3 px-8 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-widest transition-all cursor-pointer shrink-0 disabled:bg-[#1c1c1c] disabled:text-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-md sm:rounded-none sm:rounded-r-md m-0.5 sm:m-0"
             >
-              {status === 'parsing'
-                ? <><ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Fetching…</>
-                : <>Download →</>
-              }
+              {status === 'parsing' ? <><ArrowsCounterClockwise className="w-4 h-4 animate-spin" /> Fetching…</> : <>Download →</>}
             </button>
           </div>
 
@@ -266,26 +225,20 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           </AnimatePresence>
         </div>
 
-        {/* Result Card */}
         <AnimatePresence>
           {(status === 'ready' || status === 'downloading' || status === 'completed') && meta && (
             <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="border border-[#2a2a2a] bg-[#0d0d0d] rounded-xl overflow-hidden shadow-2xl max-w-3xl mx-auto w-full">
-
               <div className="flex flex-col md:flex-row">
-                {/* Thumbnail */}
                 <div className="w-full md:w-60 aspect-video bg-[#0a0a0a] shrink-0 relative overflow-hidden">
                   {meta.thumbnail
-                    ? <img src={meta.thumbnail} alt="thumb" className="w-full h-full object-cover" referrerPolicy="no-referrer"
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    ? <img src={meta.thumbnail} alt="thumb" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     : <div className="w-full h-full flex items-center justify-center"><Play className="w-10 h-10 text-gray-700" /></div>
                   }
                   {meta.duration && meta.duration !== '00:00' && (
                     <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 rounded text-[10px] font-mono text-white font-bold">{meta.duration}</span>
                   )}
                 </div>
-
-                {/* Info + controls */}
                 <div className="flex-1 p-5 flex flex-col justify-between gap-4">
                   <div>
                     <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-950/40 text-[#10b981] px-2 py-0.5 rounded border border-[#10b981]/25">
@@ -293,7 +246,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                     </span>
                     <h3 className="text-sm md:text-base font-bold text-white mt-2 leading-snug line-clamp-2">{meta.title}</h3>
                   </div>
-
                   {status === 'ready' && (
                     <div className="flex items-center gap-3 h-10">
                       {isReResolving ? (
@@ -303,27 +255,16 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                         </div>
                       ) : (
                         <div className="flex items-stretch gap-0.5 rounded-lg overflow-hidden border border-[#2a2a2a] w-fit">
-                          <button
-                            id="download-btn"
-                            onClick={handleDownload}
-                            className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
-                          >
+                          <button id="download-btn" onClick={handleDownload} className="py-3 px-6 bg-[#10b981] hover:bg-[#059669] text-[#0a0a0a] font-bold text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all">
                             <Download className="w-4 h-4" /> Download
                           </button>
-                          <select
-                            value={selectedQuality}
-                            onChange={e => handleQualityChange(Number(e.target.value))}
-                            className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 text-xs font-semibold cursor-pointer focus:outline-none min-w-[130px]"
-                          >
-                            {QUALITIES.map((q, i) => (
-                              <option key={q.id} value={i}>{q.label}</option>
-                            ))}
+                          <select value={selectedQuality} onChange={e => handleQualityChange(Number(e.target.value))} className="bg-[#151515] hover:bg-[#1a1a1a] text-white border-l border-[#2a2a2a] py-3 px-4 text-xs font-semibold cursor-pointer focus:outline-none min-w-[130px]">
+                            {QUALITIES.map((q, i) => (<option key={q.id} value={i}>{q.label}</option>))}
                           </select>
                         </div>
                       )}
                     </div>
                   )}
-
                   {status === 'downloading' && (
                     <div className="flex flex-col gap-2 w-full max-w-xs">
                       <div className="flex justify-between text-xs font-semibold text-[#10b981]">
@@ -335,7 +276,6 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
                       </div>
                     </div>
                   )}
-
                   {status === 'completed' && (
                     <div className="flex flex-col sm:flex-row gap-3">
                       <div className="bg-emerald-950/20 text-emerald-300 rounded-lg p-3 text-xs flex items-center gap-2 border border-[#10b981]/20 flex-1">
@@ -353,21 +293,8 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
           )}
         </AnimatePresence>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 max-w-4xl mx-auto w-full">
-          <div className="md:col-span-2 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col gap-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
-              <Terminal className="w-5 h-5 text-[#10b981]" />
-              <h2 className="font-sans text-white text-sm font-semibold">Direct Stream Sniffer Guide</h2>
-            </div>
-            <p className="text-[11px] leading-relaxed text-gray-400">For private or restricted content, sniff the raw stream directly from your browser:</p>
-            <ol className="text-[11px] text-gray-300 flex flex-col gap-2 list-decimal pl-4 leading-relaxed">
-              <li>Open the platform and press <kbd className="bg-[#151515] border border-[#2a2a2a] px-1 rounded text-[10px] text-gray-400">F12</kbd> → Network tab.</li>
-              <li>Filter by <strong>Media</strong> or search for <code>.mp4</code>.</li>
-              <li>Play the video, copy the request URL, paste it here — it downloads instantly.</li>
-            </ol>
-          </div>
-          <div className="md:col-span-1 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col justify-between gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 max-w-3xl mx-auto w-full">
+          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col justify-between gap-3">
             <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
               <Shield className="w-5 h-5 text-[#10b981]" />
               <h2 className="font-sans text-white text-sm font-semibold">100% Private</h2>
@@ -378,8 +305,14 @@ export default function SocialDownloader({ onBack }: SocialDownloaderProps) {
               <span className="text-[10px] font-bold text-[#10b981]">Zero tracking</span>
             </div>
           </div>
+          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5 flex flex-col justify-between gap-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-[#2a2a2a]">
+              <Globe className="w-5 h-5 text-[#10b981]" />
+              <h2 className="font-sans text-white text-sm font-semibold">Supported Platforms</h2>
+            </div>
+            <p className="text-[11px] leading-relaxed text-gray-400">YouTube, Instagram, TikTok, and Facebook. Public media only. Format and quality depend on provider availability.</p>
+          </div>
         </div>
-
       </div>
     </div>
   );

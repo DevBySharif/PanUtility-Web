@@ -65,13 +65,13 @@ test('homepage surfaces only public functional tools', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'GIF Converter & Maker' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Video Compressor' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Scientific Algebra Calculator' })).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Social Video Downloader' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Social Video Downloader' })).toBeVisible();
 });
 
-test('search does not surface non-public tools', async ({ page }) => {
+test('search surfaces public functional tools', async ({ page }) => {
   await page.goto('/');
   await page.getByPlaceholder(/tools by name/i).fill('Social Video Downloader');
-  await expect(page.getByRole('heading', { name: /No tools found/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Social Video Downloader' })).toBeVisible();
 });
 
 test('opens a beta route without contacting providers', async ({ page }) => {
@@ -319,7 +319,7 @@ test('image and PDF functional tools produce real downloadable data without CSP 
 });
 
 test('raw HTTP HTML for hidden and unknown tool routes is noindex and not homepage metadata', async ({ request }) => {
-  for (const route of ['/tools/gif-maker', '/tools/video-compressor', '/tools/social-downloader']) {
+  for (const route of ['/tools/gif-maker', '/tools/video-compressor']) {
     const response = await request.get(route);
     expect(response.status(), `${route} should serve truthful hidden-route HTML`).toBe(200);
     const html = await response.text();

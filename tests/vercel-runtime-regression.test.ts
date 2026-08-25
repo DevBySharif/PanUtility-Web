@@ -134,11 +134,10 @@ describe('zero-cost API loads without external secrets', () => {
     expect(res.body.error).toMatchObject({ code: 'NOT_FOUND' });
   });
 
-  it('/api/resolve-social and /api/media-proxy return structured 410', async () => {
-    for (const route of ['/api/resolve-social', '/api/media-proxy']) {
-      const res = await request(createApp({ config: prodConfig })).get(route);
-      expect(res.status).toBe(410);
-      expect(res.body.error).toMatchObject({ code: 'FEATURE_DISABLED' });
-    }
+  it('/api/resolve-social rejects GET and /api/media-proxy requires url', async () => {
+    const resolveRes = await request(createApp({ config: prodConfig })).get('/api/resolve-social');
+    expect(resolveRes.status).toBe(405);
+    const proxyRes = await request(createApp({ config: prodConfig })).get('/api/media-proxy');
+    expect(proxyRes.status).toBe(400);
   });
 });

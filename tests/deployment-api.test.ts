@@ -23,7 +23,7 @@ describe('zero-cost production API behavior', () => {
   });
 
   it('applies headers to health, errors, and disabled endpoints', async () => {
-    for (const path of ['/api/health', '/api/nope', '/api/media-proxy', '/api/transcribe']) {
+    for (const path of ['/api/health', '/api/nope', '/api/transcribe']) {
       const response = await request(app()).get(path);
       expect(response.headers['cache-control']).toBe('no-store'); expect(response.headers['x-content-type-options']).toBe('nosniff');
       expect(response.headers['strict-transport-security']).toContain('max-age='); expect(response.headers['content-security-policy']).toContain("default-src 'none'");

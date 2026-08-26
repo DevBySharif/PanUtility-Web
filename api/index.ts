@@ -1,5 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { execFile } from 'node:child_process';
+import { ProxyAgent, fetch as undiciFetch } from 'undici';
 import { ApiError, errorMiddleware, requestId, sendError } from '../lib/security/errors.js';
 import { clientIp, hashIdentity } from '../lib/security/clientIdentity.js';
 import { MemoryRateLimitStore, UpstashRateLimitStore, createRateLimitMiddleware, type RateLimitStore } from '../lib/security/rateLimit.js';
@@ -13,6 +14,14 @@ export const AUDIO_MAX_BYTES = 3 * 1024 * 1024;
 export const BODY_LIMIT = '4.25mb';
 const PROVIDER_TIMEOUT_MS = 20_000;
 const AUDIO_MIME = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg', 'audio/mp4', 'audio/aac', 'audio/flac']);
+
+const PROXY_URL = process.env.PROXY_URL || '';
+const ytDispatcher = PROXY_URL ? new ProxyAgent(PROXY_URL) : undefined;
+
+async function ytFetch(input: string | URL, init: RequestInit = {}): Promise<globalThis.Response> {
+  if (ytDispatcher) return undiciFetch(input, { ...init, dispatcher: ytDispatcher } as any) as any;
+  return fetch(input, init);
+}
 
 async function resolveWithYtdlp(targetUrl: string, maxDuration = 600): Promise<{ videoUrl: string; title: string; thumbnail: string; duration: string } | null> {
   return new Promise((resolve) => {
@@ -171,7 +180,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
             try {
               const ctrl = new AbortController();
               const to = setTimeout(() => ctrl.abort(), 8000);
-              const pr = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+              const pr = await ytFetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'User-Agent': yc.ua, 'X-Goog-Api-Format-Version': '2', 'X-YouTube-Client-Name': '28', 'X-YouTube-Client-Version': yc.clientVersion },
                 body: JSON.stringify({

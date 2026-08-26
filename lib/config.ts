@@ -12,6 +12,7 @@ export interface AppConfig {
   identitySecret?: string;
   cobaltApiUrl?: string;
   cobaltApiKey?: string;
+  proxyUrl?: string;
 }
 
 function normalizeOrigin(value: string): string {
@@ -46,7 +47,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (identitySecret && identitySecret.length < 32) throw new Error('Rate-limit identity secret must be at least 32 characters.');
   const cobaltApiUrl = env.COBALT_API_URL || undefined;
   const cobaltApiKey = env.COBALT_API_KEY || undefined;
-  return { environment, vercel: env.VERCEL === '1', vercelEnvironment, transcriptionEnabled, geminiApiKey: transcriptionEnabled ? env.GEMINI_API_KEY || undefined : undefined, allowedOrigins, redisUrl, redisToken, identitySecret, cobaltApiUrl, cobaltApiKey };
+  const proxyUrl = env.PROXY_URL || undefined;
+  return { environment, vercel: env.VERCEL === '1', vercelEnvironment, transcriptionEnabled, geminiApiKey: transcriptionEnabled ? env.GEMINI_API_KEY || undefined : undefined, allowedOrigins, redisUrl, redisToken, identitySecret, cobaltApiUrl, cobaltApiKey, proxyUrl };
 }
 
 export function requireProductionLimiter(config: AppConfig): void {

@@ -164,6 +164,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
             { clientName: 'ANDROID_VR', clientVersion: '1.57.29', androidSdkVersion: 32, ua: 'com.google.android.apps.youtube.vr.oculus/1.57.29 (Linux; U; Android 12; eureka-user Build/SQ3A.220605.009.A1) gzip' },
             { clientName: 'ANDROID_VR', clientVersion: '1.60.19', androidSdkVersion: 32, ua: 'com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 13; Quest 3 Build/5.1.0) gzip' },
             { clientName: 'ANDROID_VR', clientVersion: '1.62.33', androidSdkVersion: 33, ua: 'com.google.android.apps.youtube.vr.oculus/1.62.33 (Linux; U; Android 14; Quest Pro Build/ST1A.230802.036) gzip' },
+            { clientName: 'ANDROID_VR', clientVersion: '1.64.21', androidSdkVersion: 34, ua: 'com.google.android.apps.youtube.vr.oculus/1.64.21 (Linux; U; Android 15; Quest S Build/AP3A.240905.015) gzip' },
           ];
           for (const yc of ytClients) {
             if (videoUrl) break;
@@ -172,7 +173,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
               const to = setTimeout(() => ctrl.abort(), 8000);
               const pr = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'User-Agent': yc.ua, 'X-Goog-Api-Format-Version': '2' },
+                headers: { 'Content-Type': 'application/json', 'User-Agent': yc.ua, 'X-Goog-Api-Format-Version': '2', 'X-YouTube-Client-Name': '28', 'X-YouTube-Client-Version': yc.clientVersion },
                 body: JSON.stringify({
                   videoId: ytId,
                   context: { client: { clientName: yc.clientName, clientVersion: yc.clientVersion, androidSdkVersion: yc.androidSdkVersion, hl: 'en', gl: 'US', osName: 'Android', osVersion: '14' } },
@@ -196,6 +197,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
                 }
               }
             } catch { /* try next client */ }
+            if (!videoUrl) await new Promise(r => setTimeout(r, 300));
           }
         }
       }
@@ -290,7 +292,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
       }
 
       if (!videoUrl) throw new ApiError(422, 'PROVIDER_ERROR', isYT
-        ? 'All extraction methods failed. YouTube may be blocking this server\'s IP, or the video is private/age-restricted. Try again later or use a different link.'
+        ? 'YouTube temporarily blocked this request (rate limit). Try a different video or wait a few minutes and try again.'
         : 'Could not extract a stream URL. The link may be private, expired, or unsupported.');
       if (!title) title = `${platform} Video`;
       if (!thumbnail) thumbnail = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&auto=format&fit=crop&q=60';

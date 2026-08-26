@@ -156,39 +156,47 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
 
       let title = '', thumbnail = '', videoUrl = '', duration = '00:00';
 
-      // 1. YouTube: InnerTube ANDROID_VR client (Oculus) — returns direct stream URLs without cipher
+      // 1. YouTube: InnerTube multi-client rotation — tries multiple client types to avoid rate limiting
       if (isYT) {
-          const ytId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
+        const ytId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
         if (ytId) {
-          try {
-            const ctrl = new AbortController();
-            const to = setTimeout(() => ctrl.abort(), 10000);
-            const pr = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'User-Agent': 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip', 'X-Goog-Api-Format-Version': '2' },
-              body: JSON.stringify({
-                videoId: ytId,
-                context: { client: { clientName: 'ANDROID_VR', clientVersion: '1.57.29', androidSdkVersion: 30, hl: 'en', gl: 'US' } },
-              }),
-              signal: ctrl.signal,
-            });
-            clearTimeout(to);
-            if (pr.ok) {
-              const pd = await pr.json() as Record<string, any>;
-              if (pd.playabilityStatus?.status === 'OK') {
-                const vd = pd.videoDetails;
-                if (vd?.title) title = vd.title;
-                if (vd?.thumbnail?.thumbnails?.length) { const thumbs = vd.thumbnail.thumbnails; thumbnail = thumbs[thumbs.length - 1].url; }
-                if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                const secs = parseInt(vd?.lengthSeconds || '0', 10);
-                if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
-                const formats: any[] = pd.streamingData?.formats || [];
-                const sorted = [...formats].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
-                const best = sorted.find((f: any) => f.url && (f.height || 999) <= 720) || sorted.find((f: any) => f.url);
-                if (best?.url) videoUrl = best.url;
+          const ytClients = [
+            { clientName: 'ANDROID_VR', clientVersion: '1.57.29', androidSdkVersion: 32, ua: 'com.google.android.apps.youtube.vr.oculus/1.57.29 (Linux; U; Android 12; eureka-user Build/SQ3A.220605.009.A1) gzip' },
+            { clientName: 'ANDROID_VR', clientVersion: '1.60.19', androidSdkVersion: 32, ua: 'com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 13; Quest 3 Build/5.1.0) gzip' },
+            { clientName: 'ANDROID_VR', clientVersion: '1.62.33', androidSdkVersion: 33, ua: 'com.google.android.apps.youtube.vr.oculus/1.62.33 (Linux; U; Android 14; Quest Pro Build/ST1A.230802.036) gzip' },
+          ];
+          for (const yc of ytClients) {
+            if (videoUrl) break;
+            try {
+              const ctrl = new AbortController();
+              const to = setTimeout(() => ctrl.abort(), 8000);
+              const pr = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'User-Agent': yc.ua, 'X-Goog-Api-Format-Version': '2' },
+                body: JSON.stringify({
+                  videoId: ytId,
+                  context: { client: { clientName: yc.clientName, clientVersion: yc.clientVersion, androidSdkVersion: yc.androidSdkVersion, hl: 'en', gl: 'US', osName: 'Android', osVersion: '14' } },
+                }),
+                signal: ctrl.signal,
+              });
+              clearTimeout(to);
+              if (pr.ok) {
+                const pd = await pr.json() as Record<string, any>;
+                if (pd.playabilityStatus?.status === 'OK') {
+                  const vd = pd.videoDetails;
+                  if (vd?.title) title = vd.title;
+                  if (vd?.thumbnail?.thumbnails?.length) { const thumbs = vd.thumbnail.thumbnails; thumbnail = thumbs[thumbs.length - 1].url; }
+                  if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                  const secs = parseInt(vd?.lengthSeconds || '0', 10);
+                  if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+                  const formats: any[] = pd.streamingData?.formats || [];
+                  const sorted = [...formats].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
+                  const best = sorted.find((f: any) => f.url && (f.height || 999) <= 720) || sorted.find((f: any) => f.url);
+                  if (best?.url) videoUrl = best.url;
+                }
               }
-            }
-          } catch { /* InnerTube ANDROID_VR failed, fall through to yt-dlp */ }
+            } catch { /* try next client */ }
+          }
         }
       }
 
@@ -203,7 +211,33 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
         }
       }
 
-      // 3. Cobalt race for stream URL (all platforms, including YouTube fallback)
+      // 3. TikTok: tikwm.com free API (no auth required)
+      if (!videoUrl && isTT) {
+        try {
+          const ctrl = new AbortController();
+          const to = setTimeout(() => ctrl.abort(), 10000);
+          const tr = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            signal: ctrl.signal,
+          });
+          clearTimeout(to);
+          if (tr.ok) {
+            const td = await tr.json() as Record<string, any>;
+            if (td.code === 0 && td.data) {
+              videoUrl = td.data.hdplay || td.data.play || '';
+              if (!title && td.data.title) title = td.data.title;
+              if (!thumbnail && td.data.cover) thumbnail = td.data.cover;
+              if (duration === '00:00' && td.data.duration) {
+                const secs = parseInt(td.data.duration, 10);
+                if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+              }
+            }
+          }
+        } catch { /* tikwm failed, fall through to Cobalt */ }
+      }
+
+      // 4. Cobalt race for stream URL (all platforms, including YouTube fallback)
       if (!videoUrl) {
         const cobaltEndpoints = ['https://cobalt.api.red.velvet.ink/', 'https://api.cobalt.tools/', 'https://cobalt.catvibers.me/', 'https://api.cobalt.best/'];
         const cobaltBody = JSON.stringify({ url, vQuality: '720', videoQuality: '720', filenameStyle: 'classic' });
@@ -230,7 +264,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
         } catch { /* all Cobalt instances failed */ }
       }
 
-      // 4. Metadata fallback: YouTube oEmbed or OG scrape
+      // 5. Metadata fallback: YouTube oEmbed or OG scrape
       if (!title || !thumbnail) {
         if (isYT) {
         const ytId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];

@@ -16,7 +16,7 @@ const AUDIO_MIME = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav
 
 async function resolveWithYtdlp(targetUrl: string, maxDuration = 600): Promise<{ videoUrl: string; title: string; thumbnail: string; duration: string } | null> {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => { try { child.kill(); } catch {} resolve(null); }, 25_000);
+    const timeout = setTimeout(() => { try { child.kill(); } catch { /* already exited */ } resolve(null); }, 25_000);
     const child = execFile('yt-dlp', [
       '-j', '--no-download', '--no-update', '--no-warnings',
       '--format', 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
@@ -158,7 +158,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
 
       // 1. YouTube: InnerTube ANDROID_VR client (Oculus) — returns direct stream URLs without cipher
       if (isYT) {
-        const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+          const ytId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
         if (ytId) {
           try {
             const ctrl = new AbortController();
@@ -233,7 +233,7 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
       // 4. Metadata fallback: YouTube oEmbed or OG scrape
       if (!title || !thumbnail) {
         if (isYT) {
-          const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+        const ytId = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1];
           if (ytId) {
             try {
               const oe = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);

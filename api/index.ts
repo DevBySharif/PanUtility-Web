@@ -156,34 +156,39 @@ export function createApp(options: { generateContent?: (audio: string, mimeType:
 
       let title = '', thumbnail = '', videoUrl = '', duration = '00:00';
 
-      // 1. YouTube: InnerTube ANDROID client (direct YouTube API, no cookies/credentials)
+      // 1. YouTube: InnerTube ANDROID_VR client (Oculus) — returns direct stream URLs without cipher
       if (isYT) {
         const ytId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
         if (ytId) {
           try {
             const ctrl = new AbortController();
-            const to = setTimeout(() => ctrl.abort(), 12000);
-            const pr = await fetch('https://www.youtube.com/youtubei/v1/player', {
+            const to = setTimeout(() => ctrl.abort(), 10000);
+            const pr = await fetch('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip', 'X-Goog-Api-Format-Version': '2', 'Accept-Language': 'en-US,en;q=0.9' },
-              body: JSON.stringify({ videoId: ytId, context: { client: { clientName: 'ANDROID', clientVersion: '17.31.35', androidSdkVersion: 30, hl: 'en', gl: 'US', utcOffsetMinutes: 0 } } }),
+              headers: { 'Content-Type': 'application/json', 'User-Agent': 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip', 'X-Goog-Api-Format-Version': '2' },
+              body: JSON.stringify({
+                videoId: ytId,
+                context: { client: { clientName: 'ANDROID_VR', clientVersion: '1.57.29', androidSdkVersion: 30, hl: 'en', gl: 'US' } },
+              }),
               signal: ctrl.signal,
             });
             clearTimeout(to);
             if (pr.ok) {
               const pd = await pr.json() as Record<string, any>;
-              const vd = pd.videoDetails;
-              if (vd?.title) title = vd.title;
-              if (vd?.thumbnail?.thumbnails?.length) { const thumbs = vd.thumbnail.thumbnails; thumbnail = thumbs[thumbs.length - 1].url; }
-              if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-              const secs = parseInt(vd?.lengthSeconds || '0', 10);
-              if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
-              const formats: any[] = pd.streamingData?.formats || [];
-              const sorted = [...formats].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
-              const best = sorted.find((f: any) => f.url && (f.height || 999) <= 720) || sorted.find((f: any) => f.url);
-              if (best?.url) videoUrl = best.url;
+              if (pd.playabilityStatus?.status === 'OK') {
+                const vd = pd.videoDetails;
+                if (vd?.title) title = vd.title;
+                if (vd?.thumbnail?.thumbnails?.length) { const thumbs = vd.thumbnail.thumbnails; thumbnail = thumbs[thumbs.length - 1].url; }
+                if (!thumbnail) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                const secs = parseInt(vd?.lengthSeconds || '0', 10);
+                if (secs) duration = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+                const formats: any[] = pd.streamingData?.formats || [];
+                const sorted = [...formats].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
+                const best = sorted.find((f: any) => f.url && (f.height || 999) <= 720) || sorted.find((f: any) => f.url);
+                if (best?.url) videoUrl = best.url;
+              }
             }
-          } catch { /* InnerTube failed, fall through to yt-dlp */ }
+          } catch { /* InnerTube ANDROID_VR failed, fall through to yt-dlp */ }
         }
       }
 
